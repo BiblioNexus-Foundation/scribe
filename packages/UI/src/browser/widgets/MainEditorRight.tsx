@@ -29,7 +29,7 @@ export class MainEditorRightWidget extends ReactWidget {
     this.id = MainEditorRightWidget.ID;
     this.title.label = MainEditorRightWidget.LABEL;
     this.title.caption = MainEditorRightWidget.LABEL;
-    this.title.closable = false;
+    this.title.closable = true;
 
     this.update();
   }
@@ -93,7 +93,7 @@ export class MainEditorRightContribution
     this.stateService
       .reachedState("ready")
       .then(() =>
-        this.openView({ reveal: true, area: "main", mode: "split-right" })
+        this.openView({ reveal: false, area: "main", mode: "split-right" })
       );
   }
 }
