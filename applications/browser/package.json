@@ -17,17 +17,20 @@
     "@theia/vsx-registry": "1.51.0",
     "@theia/plugin-ext": "1.51.0",
     "@theia/plugin-ext-vscode": "1.51.0",
-    "scribe-ui": "0.0.1"
+    "scribe-ui": "0.0.1",
+    "scribe-resources-manager": "0.0.1"
   },
   "devDependencies": {
     "@theia/cli": "1.51.0"
   },
   "scripts": {
     "bundle": "yarn rebuild && theia build --mode development",
+    "prepare": "yarn run clean",
     "rebuild": "theia rebuild:browser --cacheRoot ../..",
     "start": "theia start",
     "watch": "yarn rebuild && theia build --watch --mode development",
-    "clean": "theia clean && rimraf .browser_modules dist node_modules"
+    "clean": "theia clean && rimraf .browser_modules dist node_modules",
+    "build": "yarn bundle"
   },
   "theia": {
     "target": "browser"
