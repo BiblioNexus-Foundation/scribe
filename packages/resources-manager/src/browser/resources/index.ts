@@ -15,3 +15,21 @@ export const registeredResources: ScribeResource[] = [
   taResource,
   tqResource,
 ];
+
+export const resourcesGroups = [
+  {
+    id: "bible-group",
+    name: "Bible",
+    resources: [twResource, tnResource, twlResource, taResource, tqResource],
+  },
+  {
+    id: "obs-group",
+    name: "Open Bible Stories",
+    resources: [],
+  },
+  {
+    id: "upload-group",
+    name: "Upload",
+    resources: [],
+  },
+];

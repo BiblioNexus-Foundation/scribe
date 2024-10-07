@@ -14,10 +14,12 @@ import { twResource } from "./tw";
 import { parseTwlTsv, tsvToChapterVerseRef } from "./utils";
 import type { FileService } from "@theia/filesystem/lib/browser/file-service";
 import TranslationWordsList from "@/components/TranslationWordsList";
+import { IconLink } from "@tabler/icons-react";
 
 export const twlResource: ScribeResource<Door43RepoResponse> = {
   id: "codex.twl",
-  displayLabel: "Translation Words List",
+  displayLabel: "Words List",
+  icon: <IconLink />,
 
   getTableDisplayData: async () => {
     const resourceUrl = `https://git.door43.org/api/v1/catalog/search?subject=TSV Translation Words Links&metadataType=rc`;

@@ -5,12 +5,13 @@ import {
   fetchDoor43ResourceDisplayData,
 } from "./utils";
 import TranslationWords from "@/components/TranslationWords";
+import { IconLink } from "@tabler/icons-react";
 
 export const twResource: ScribeResource<Door43RepoResponse, TranslationWord[]> =
   {
     id: "codex.tw",
-    displayLabel: "Translation Word",
-
+    displayLabel: "Words",
+    icon: <IconLink />,
     getTableDisplayData: async () => {
       try {
         const data = await fetchDoor43ResourceDisplayData(twResource.id, {

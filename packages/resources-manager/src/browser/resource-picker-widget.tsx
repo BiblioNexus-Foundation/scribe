@@ -1,8 +1,25 @@
 import * as React from "@theia/core/shared/react";
 import { ReactDialog } from "@theia/core/lib/browser/dialogs/react-dialog";
 import { inject, injectable } from "@theia/core/shared/inversify";
-import { Dialog, DialogProps } from "@theia/core/lib/browser";
+import { DialogProps } from "@theia/core/lib/browser";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { resourcesGroups } from "./resources";
+import ResourceTypeDisplay from "../components/ResourcesManager/ResourcesDisplay";
 
+import { Message } from "@theia/core/lib/browser";
+
+import { MessageService } from "@theia/core";
+import {
+  ConfigResourceValues,
+  DownloadResourceUtils,
+  ScribeResource,
+} from "./resources/types";
+import { registeredResources } from "./resources";
+import { WorkspaceService } from "@theia/workspace/lib/browser/workspace-service";
+import { FileService } from "@theia/filesystem/lib/browser/file-service";
+
+import { ResourceManagerUtils } from "./utils";
+import { ResourceViewerOpener } from "./resource-viewer/resource-viewer-opener";
 @injectable()
 export class ResourcePickerDialogProps extends DialogProps {}
 
@@ -17,10 +34,38 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
     super({
       title: "Resources Picker",
     });
-    this.appendAcceptButton(Dialog.OK);
-    this.titleNode.className = "text-2xl font-bold";
+    // this.titleNode.className = "bg-grey-300 text-lg font-semibold";
 
-    this.titleNode.parentElement!.className = "bg-red-500";
+    // this.titleNode.parentElement!.className =
+    //   "bg-red-500 justify-between flex items-center p-2";
+    // this.titleNode.parentElement!.innerHTML = "Parent";
+  }
+
+  private downloadedResources: ConfigResourceValues[] = [];
+
+  @inject(ResourceViewerOpener)
+  protected readonly resourceViewerOpener: ResourceViewerOpener;
+
+  @inject(MessageService)
+  protected readonly messageService: MessageService;
+
+  @inject(WorkspaceService)
+  protected readonly workspaceService: WorkspaceService;
+
+  @inject(FileService)
+  protected readonly fs: FileService;
+
+  @inject(ResourceManagerUtils)
+  protected readonly resourcesManagerUtils: ResourceManagerUtils;
+
+  protected onAfterAttach(msg: Message): void {
+    super.onAfterAttach(msg);
+    this.resourcesManagerUtils
+      .getDownloadedResourcesFromProjectConfig()
+      .then((resources) => {
+        this.downloadedResources = resources ?? [];
+        this.update();
+      });
   }
 
   get value(): any {
@@ -29,12 +74,134 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
   }
 
   render(): React.ReactNode {
+    const allUngroupedResources = resourcesGroups.flatMap(
+      (group) => group.resources
+    );
+
+    const openHandler = async (
+      resourceInfo: ConfigResourceValues,
+      resource: ScribeResource
+    ) => {
+      if (!resource) {
+        await this.messageService.error("Resource type not found");
+        return;
+      }
+
+      this.close();
+
+      await this.resourceViewerOpener.open(resourceInfo, {
+        ...resource.openHandlers,
+        id: resource.id,
+      });
+    };
     return (
-      <div className="w-[900px] h-[700px]">
-        <p>
-          {` {"response":{"errors":[{"message":"null value found for non-nullable type: \"uuid!\"","extensions":{"path":"$","code":"validation-failed"}}],"status":200,"headers":{}},"request":{"query":"mutation addEncounter($id: uuid!, $userId: uuid!, $patientId: uuid!, $summary: String!, $wardId: uuid!, $conditions: [EncounterCondition_insert_input!] = {}, $diagnosis: [EncounterDiagnosis_insert_input!] = {}, $medications: [EncounterMedication_insert_input!] = {}, $weightInKg: String, $heightInCm: String, $legalStatus: [EncounterLegalStatus_insert_input!]! = {}, $observation: [EncounterObservation_insert_input!]!, $facilityPatientId: uuid!) {\n  added: insert_Encounter_one(\n    object: {Id: $id, UserId: $userId, LastUpdatedBy: $userId, PatientId: $patientId, Summary: $summary, WardId: $wardId, EncounterObservations: {data: $observation}, EncounterConditions: {data: $conditions, on_conflict: {constraint: EncounterCondition_pkey, update_columns: Condition}}, EncounterDiagnoses: {data: $diagnosis, on_conflict: {constraint: EncounterDiagnosis_pkey, update_columns: Diagnosis}}, EncounterMedications: {data: $medications, on_conflict: {constraint: EncounterMedication_pkey, update_columns: [AdministrationRoute]}}, EncounterLegalStatuses: {data: $legalStatus, on_conflict: {constraint: EncounterLegalStatus_pkey, update_columns: [LegalStatusType, ExpiryDate]}}, Vitals: {data: [{Id: $id, UserId: $userId, PatientId: $patientId, WeightInKg: $weightInKg, HeightInCm: $heightInCm}], on_conflict: {constraint: Vitals_pkey, update_columns: [WeightInKg, HeightInCm, UserId]}}, EncounterWards: {data: {IsCurrent: true, WardId: $wardId, CreatedBy: $userId, LastUpdatedBy: $userId}}, FacilityPatientEncounters: {data: {FacilityPatientId: $facilityPatientId}, on_conflict: {constraint: FacilityPatientEncounter_FacilityPatientId_EncounterId_key, update_columns: []}}}\n  ) {\n    Id\n    EncounterConditions {\n      Id\n      Condition\n    }\n    EncounterLegalStatuses {\n      LegalStatusType\n    }\n  }\n}","variables":{"id":"66f61be4-4a6c-4569-9baf-9bd218a28efc","userId":"d1b0397c-928e-4246-8c6f-beb6abc72fe3","patientId":"2b3779e3-fb22-481a-ba71-20bd8b95179d","summary":"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.","wardId":"8d83abd4-60f2-45f1-8018-c30f0ac964c0","medications":[],"conditions":[],"diagnosis":[],"weightInKg":"80","heightInCm":"180","observation":[{"Type":2,"CreatedBy":"d1b0397c-928e-4246-8c6f-beb6abc72fe3","UpdatedBy":"d1b0397c-928e-4246-8c6f-beb6abc72fe3","Status":"Day"},{"Type":1,"CreatedBy":"d1b0397c-928e-4246-8c6f-beb6abc72fe3","UpdatedBy":"d1b0397c-928e-4246-8c6f-beb6abc72fe3","Status":"Night"}],"legalStatus":{"IsActive":true,"ExpiryDate":"","LastUpdatedBy":"d1b0397c-928e-4246-8c6f-beb6abc72fe3","LegalStatusType":14,"CreatedBy":"d1b0397c-928e-4246-8c6f-beb6abc72fe3"},"facilityPatientId":null}}}`}
-        </p>
+      <div className="w-[90vw] h-[80vh] flex relative gap-3 justify-between">
+        <Tabs
+          defaultValue={allUngroupedResources[0].id}
+          className="w-full flex"
+        >
+          <TabsList className="flex flex-col w-1/4 h-fit">
+            {resourcesGroups.map((group) => (
+              <div key={group.id} className="flex flex-col gap-2 w-full">
+                <h1>{group.name}</h1>
+                {group.resources.map((resource) => (
+                  <TabsTrigger value={resource.id} asChild>
+                    <button className="flex gap-2">
+                      {resource.icon}
+                      <span>{resource.displayLabel}</span>
+                    </button>
+                  </TabsTrigger>
+                ))}
+              </div>
+            ))}
+          </TabsList>
+          <div className="w-3/4">
+            {allUngroupedResources.map((resource) => (
+              <TabsContent value={resource.id}>
+                <ResourceTypeDisplay
+                  resourceType={{
+                    value: resource.id,
+                    label: resource.displayLabel,
+                    getTableDisplayData: resource.getTableDisplayData,
+                    downloadHandler: <ResourceInfo extends {}>(
+                      resourceInfo: ResourceInfo
+                    ) =>
+                      this._downloadResource(
+                        resourceInfo,
+                        resource.downloadResource
+                      ),
+                  }}
+                  downloadedResources={this.downloadedResources}
+                  openResource={(resourceInfo) =>
+                    openHandler(resourceInfo, resource)
+                  }
+                />
+              </TabsContent>
+            ))}
+          </div>
+        </Tabs>
       </div>
     );
+  }
+
+  async _downloadResource<TResourceInfo>(
+    resourceInfo: TResourceInfo,
+    downloadHandler: (
+      resourceInfo: TResourceInfo,
+      { fs, resourceFolderUri }: DownloadResourceUtils
+    ) => Promise<ConfigResourceValues>
+  ) {
+    try {
+      const currentFolderURI = (await this.workspaceService.roots)?.[0]
+        .resource;
+
+      if (!currentFolderURI) {
+        await this.messageService.error(
+          "Please open a workspace folder to download resources"
+        );
+        return;
+      }
+
+      const fs = this.fs;
+
+      const resourceFolderUri = currentFolderURI.withPath(
+        currentFolderURI.path.join(".project", "resources")
+      );
+
+      const prog = await this.messageService.showProgress({
+        text: "Downloading resource ...",
+      });
+
+      const downloadedResource = await downloadHandler(resourceInfo, {
+        fs,
+        resourceFolderUri,
+      });
+
+      prog.report({ message: "Updating the configuration" });
+
+      const updatedDownloadedResourcePath = {
+        ...downloadedResource,
+        localPath: downloadedResource.localPath.includes(
+          currentFolderURI.path.fsPath()
+        )
+          ? downloadedResource.localPath.replace(
+              currentFolderURI.path.fsPath(),
+              ""
+            )
+          : downloadedResource.localPath,
+      };
+
+      await this.resourcesManagerUtils.addDownloadedResourceToProjectConfig(
+        updatedDownloadedResourcePath
+      );
+
+      this.update();
+      prog.cancel();
+
+      this.messageService.info("Resource downloaded successfully");
+    } catch (error) {
+      console.error(error);
+      await this.messageService.error("Unable to download resource ...");
+    }
   }
 }

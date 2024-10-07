@@ -75,8 +75,6 @@ export class MainEditorLeftContribution
   }
 
   async onStart(app: FrontendApplication): Promise<void> {
-    this.stateService
-      .reachedState("ready")
-      .then(() => this.openView({ reveal: false, area: "main" }));
+    this.stateService.reachedState("ready");
   }
 }

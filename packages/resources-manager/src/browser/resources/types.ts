@@ -6,6 +6,7 @@ import {
 } from "@theia/core/lib/common/buffer";
 import { FileService } from "@theia/filesystem/lib/browser/file-service";
 import { ResourceViewerWidgetHandlers } from "../resource-viewer/resource-viewer-widget";
+import type React from "@theia/core/shared/react";
 
 export type ResourceDisplay<FullResource> = {
   id: string;
@@ -44,6 +45,7 @@ export type ScribeResource<
 > = {
   id: string;
   displayLabel: string;
+  icon: React.ReactNode;
 
   //   supportsOfflineImport?: boolean;
   downloadResource: <ResourceInfo extends Record<string, any>>(

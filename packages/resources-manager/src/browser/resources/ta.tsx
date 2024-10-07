@@ -6,10 +6,12 @@ import {
 } from "./utils";
 import { Context } from "../resource-viewer/resource-viewer-widget";
 import { TranslationAcademy } from "@/components/TranslationAcademy";
+import { IconLibrary } from "@tabler/icons-react";
 
 export const taResource: ScribeResource<Door43RepoResponse, string[]> = {
   id: "codex.ta",
-  displayLabel: "Translation Academy",
+  displayLabel: "Academy",
+  icon: <IconLibrary />,
 
   getTableDisplayData: async () => {
     try {

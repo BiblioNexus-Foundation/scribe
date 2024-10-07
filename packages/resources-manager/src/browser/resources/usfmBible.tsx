@@ -9,6 +9,7 @@ import {
 import TranslationWords from "@/components/TranslationWords";
 import { extractBookChapterVerse } from "@/utils/tsv";
 import { URI } from "@theia/core";
+import { IconBook } from "@tabler/icons-react";
 
 type UsfmBibleValue = {
   bookUri: URI;
@@ -24,6 +25,7 @@ export const usfmBibleResource: ScribeResource<
 > = {
   id: "codex.usfm-bible",
   displayLabel: "Bible",
+  icon: <IconBook />,
 
   getTableDisplayData: async () => {
     try {

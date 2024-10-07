@@ -8,10 +8,12 @@ import {
   downloadDoor43Resource,
   fetchDoor43ResourceDisplayData,
 } from "./utils";
+import { IconNotes } from "@tabler/icons-react";
 
 export const tnResource: ScribeResource<Door43RepoResponse, TnTSV> = {
   id: "codex.tn",
-  displayLabel: "Translation Notes",
+  displayLabel: "Notes",
+  icon: <IconNotes />,
 
   getTableDisplayData: async () => {
     try {

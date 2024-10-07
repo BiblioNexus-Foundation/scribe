@@ -15,13 +15,15 @@ import TranslationWords from "@/components/TranslationWords";
 import type { URI } from "@theia/core";
 import type { FileService } from "@theia/filesystem/lib/browser/file-service";
 import TranslationQuestions from "@/components/TranslationQuestions";
+import { IconHelpHexagon } from "@tabler/icons-react";
 
 export const tqResource: ScribeResource<
   Door43RepoResponse,
   Record<string, string>[]
 > = {
   id: "codex.tq",
-  displayLabel: "Translation Questions",
+  displayLabel: "Questions",
+  icon: <IconHelpHexagon />,
 
   getTableDisplayData: async () => {
     try {

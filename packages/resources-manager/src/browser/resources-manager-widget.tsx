@@ -18,7 +18,7 @@ import {
   DownloadResourceUtils,
   ScribeResource,
 } from "./resources/types";
-import { registeredResources} from "./resources";
+import { registeredResources } from "./resources";
 import { WorkspaceService } from "@theia/workspace/lib/browser/workspace-service";
 import { FileService } from "@theia/filesystem/lib/browser/file-service";
 
@@ -65,6 +65,7 @@ export class ResourcesViewerWidget extends ReactWidget {
     this.title.closable = true;
     this.title.iconClass = codicon("flame");
     this.node.tabIndex = 0;
+    this.openDialog();
   }
 
   protected onAfterAttach(msg: Message): void {

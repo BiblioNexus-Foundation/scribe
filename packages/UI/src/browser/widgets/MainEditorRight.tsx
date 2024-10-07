@@ -90,10 +90,9 @@ export class MainEditorRightContribution
   }
 
   async onStart(app: FrontendApplication): Promise<void> {
-    this.stateService
-      .reachedState("ready")
-      .then(() =>
-        this.openView({ reveal: false, area: "main", mode: "split-right" })
-      );
+    this.stateService.reachedState("ready");
+    // .then(() =>
+    //   this.openView({ reveal: false, area: "main", mode: "split-right" })
+    // );
   }
 }

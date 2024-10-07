@@ -31,6 +31,8 @@ export class ResourceViewerOpener {
 
     widget.update();
 
-    const tab = this.shell.getTabBarFor(widget);
+    // const tab = this.shell.getTabBarFor(widget);
+
+    this.shell.activateWidget(widget.id);
   }
 }

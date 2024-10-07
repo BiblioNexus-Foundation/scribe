@@ -22,6 +22,8 @@ import {
   ResourcePickerDialogProps,
   ResourcesPickerWidget,
 } from "./resource-picker-widget";
+import { ResourcePickerContribution } from "./resource-picker-contribution";
+import { CommandContribution, MenuContribution } from "@theia/core";
 
 export default new ContainerModule(
   (
@@ -58,5 +60,8 @@ export default new ContainerModule(
     });
 
     bind(ResourcesPickerWidget).toSelf().inSingletonScope();
+
+    bind(ResourcePickerContribution).toSelf().inSingletonScope();
+    bind(CommandContribution).toService(ResourcePickerContribution);
   }
 );
