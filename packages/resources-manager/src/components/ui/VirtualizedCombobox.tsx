@@ -157,7 +157,7 @@ export function VirtualizedCombobox({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="">
+        <div className="flex gap-1 flex-row-reverse items-center ml-[-10px]">
           <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
           <Button
             variant="outline"
