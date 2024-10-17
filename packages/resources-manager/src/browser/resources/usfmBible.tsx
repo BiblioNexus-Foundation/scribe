@@ -1,4 +1,5 @@
 import * as React from "@theia/core/shared/react";
+import App from "@/usfm-components/App";
 import { ScribeResource, Door43RepoResponse, TranslationWord } from "./types";
 import {
   downloadDoor43Resource,
@@ -68,7 +69,7 @@ export const usfmBibleResource: ScribeResource<
       if (!ctx) {
         return "Err: Context is required to render Bible USFM";
       }
-      return null;
+      return <App data={data} ctx={ctx} />;
     },
   },
 };
