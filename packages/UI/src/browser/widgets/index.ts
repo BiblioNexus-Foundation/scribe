@@ -26,6 +26,10 @@ import { ChatContribution, ChatWidget } from "./ChatWidget";
 import { VideoContribution, VideoWidget } from "./Videowidget";
 import { AudioPlayContribution, AudioPlayWidget } from "./AudioplayWidget";
 import { ChapterContribution, ChapterWidget } from "./ChapterWidget";
+import {
+  CreateNewProjectContribution,
+  CreateNewProjectWidget,
+} from "./CreateNewProjectWidget";
 
 export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   // sidebar widget binds
@@ -141,6 +145,18 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
     .toDynamicValue((context) => ({
       id: AudioPlayWidget.ID,
       createWidget: () => context.container.get<ChapterWidget>(ChapterWidget),
+    }))
+    .inSingletonScope();
+
+  // CHAPTER NEW PROJECT WIDGET
+  bindViewContribution(bind, CreateNewProjectContribution);
+  bind(FrontendApplicationContribution).toService(CreateNewProjectContribution);
+  bind(CreateNewProjectWidget).toSelf();
+  bind(WidgetFactory)
+    .toDynamicValue((context) => ({
+      id: AudioPlayWidget.ID,
+      createWidget: () =>
+        context.container.get<CreateNewProjectWidget>(CreateNewProjectWidget),
     }))
     .inSingletonScope();
 };
