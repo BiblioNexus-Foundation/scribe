@@ -1,5 +1,5 @@
-import React, { useState } from "@theia/core/shared/react";
-import AdvancedSettings, { SettingsType } from "./AdvancedSettings";
+import React from "@theia/core/shared/react";
+import AdvancedSettings from "./AdvancedSettings";
 import Button from "./Button";
 import {
   Collapsible,
@@ -21,13 +21,6 @@ import {
   CircleAlert,
   ChevronsUpDown,
 } from "lucide-react";
-import { ProjectInitializer } from "../functions/initializeNewProject";
-
-const initialSettings = {
-  scope: "All books",
-  versification: "eng",
-  license: "cc by-sa",
-};
 interface initialProjectData {
   ProjectName: string;
   Abbreviation: string;
@@ -42,61 +35,61 @@ const initialProjectData: initialProjectData = {
   Language: "english",
   ProjectFilePath: "",
 };
+interface ProjectSettings {
+  scope: string;
+  versification: string;
+  license: string;
+}
 
-const CreateProjectComponents = () => {
-  const [activeDropdown, setActiveDropdown] = useState(false);
-  const [activeBooks, setActiveBooks] = useState("Bible translation");
-  const [settings, setSettings] = useState<SettingsType>(initialSettings);
-  const [projectData, setProjectData] =
-    useState<initialProjectData>(initialProjectData);
+interface ProjectData {
+  ProjectName: string;
+  Abbreviation: string;
+  Description: string;
+  Language: string;
+  ProjectFilePath: any;
+}
 
-  const handleSettingsChange = (key: keyof SettingsType, value: string) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
-  };
-  const projectInitialize = new ProjectInitializer();
+interface CreateProjectProps {
+  activeDropdown: boolean;
+  activeBooks: string;
+  settings: ProjectSettings;
+  projectData: ProjectData;
 
-  const handleInputChange = (
-    key: keyof typeof initialProjectData,
-    value: any
-  ) => {
-    setProjectData((prev) => ({ ...prev, [key]: value }));
-  };
+  setActiveDropdown: (value: boolean) => void;
+  setActiveBooks: (value: string) => void;
+  handleSettingsChange: (key: keyof ProjectSettings, value: string) => void;
+  handleInputChange: (key: keyof ProjectData, value: any) => void;
+  handleSubmit: (e: React.FormEvent) => void;
+  onFileSelect: (file: File) => void;
 
-  const validateForm = () => {
-    const requiredFields: string[] = [
-      "ProjectName",
-      "Abbreviation",
-      "Description",
-      "Language",
-    ];
-    for (const field of requiredFields) {
-      if (!projectData[field as keyof initialProjectData]) {
-        alert(`${field} is required.`);
-        return false;
-      }
-    }
-    return true;
-  };
+  supportedLanguages?: Array<{ code: string; name: string }>;
+  projectTypes?: Array<{ label: string; icon: React.ComponentType }>;
+}
+const CreateProjectComponents = ({
+  activeDropdown,
+  activeBooks,
+  settings,
+  projectData,
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  setActiveDropdown,
+  setActiveBooks,
+  handleSettingsChange,
+  handleInputChange,
+  handleSubmit,
+  onFileSelect,
 
-    projectInitialize.initializeNewProject({
-      projectName: projectData.ProjectName,
-      projectCategory: activeBooks,
-      userName: settings.scope,
-      abbreviation: projectData.Abbreviation,
-      sourceLanguage: projectData.Language,
-      targetLanguage: projectData.Language,
-      ProjectFilePath: projectData.ProjectFilePath,
-      // settings,
-      // activeDropdown,
-      // activeBooks,
-      // projectData,
-    });
-  };
-
+  supportedLanguages = [
+    { code: "eng", name: "English" },
+    { code: "fr", name: "French" },
+    { code: "swh", name: "Swahili" },
+  ],
+  projectTypes = [
+    { label: "Bible translation", icon: MenuSquare },
+    { label: "Audio", icon: Speaker },
+    { label: "OBS", icon: ImageIcon },
+    { label: "Juta", icon: BookOpen },
+  ],
+}: CreateProjectProps) => {
   return (
     <div className="mx-10 my-5 border p-5 rounded-lg border-zinc-900">
       <div className="w-9/12">
@@ -119,12 +112,7 @@ const CreateProjectComponents = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="p-0 border border-zinc-900 w-[15rem] bg-black mt-2">
               <div className="grid grid-cols-2 gap-0">
-                {[
-                  { label: "Bible translation", icon: MenuSquare },
-                  { label: "Audio", icon: Speaker },
-                  { label: "OBS", icon: ImageIcon },
-                  { label: "Juta", icon: BookOpen },
-                ].map(({ label, icon: Icon }) => (
+                {projectTypes.map(({ label, icon: Icon }) => (
                   <div
                     key={label}
                     onClick={() => setActiveBooks(label)}
@@ -195,9 +183,11 @@ const CreateProjectComponents = () => {
                   }
                   className="w-2/3 rounded-md bg-zinc-900 px-2 py-1 uppercase text-[12px] outline-none"
                 >
-                  <option value="english">eng</option>
-                  <option value="french">fr</option>
-                  <option value="swahili">swh</option>
+                  {supportedLanguages.map((el, index) => (
+                    <option value={el.name} key={index}>
+                      {el.code}
+                    </option>
+                  ))}
                 </select>
                 <CircleAlert size={20} />
                 <Button
