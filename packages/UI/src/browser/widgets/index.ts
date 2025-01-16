@@ -30,6 +30,7 @@ import {
   CreateNewProjectContribution,
   CreateNewProjectWidget,
 } from "./CreateNewProjectWidget";
+import { ProjectInitializer } from "../../functions/initializeNewProject";
 
 export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   // sidebar widget binds
@@ -92,6 +93,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
     }))
     .inSingletonScope();
 
+  //Todo bind Project Initializer
   // Audio widget binds
   bindViewContribution(bind, AudioContribution);
   bind(FrontendApplicationContribution).toService(AudioContribution);
@@ -143,7 +145,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   bind(ChapterWidget).toSelf();
   bind(WidgetFactory)
     .toDynamicValue((context) => ({
-      id: AudioPlayWidget.ID,
+      id: ChapterWidget.ID,
       createWidget: () => context.container.get<ChapterWidget>(ChapterWidget),
     }))
     .inSingletonScope();
@@ -159,4 +161,6 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
         context.container.get<CreateNewProjectWidget>(CreateNewProjectWidget),
     }))
     .inSingletonScope();
+
+  bind(ProjectInitializer).toSelf().inSingletonScope();
 };
