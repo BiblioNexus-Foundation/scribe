@@ -14,6 +14,12 @@ import { FrontendApplicationStateService } from "@theia/core/lib/browser/fronten
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import CreateProjectComponents from "../../components/CreateProjectComponents";
 import { ProjectInitializer } from "../../functions/initializeNewProject";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "../../components/ui/dialog";
+import { Plus } from "lucide-react";
 
 interface ProjectDataType {
   ProjectName: string;
@@ -151,18 +157,32 @@ export class CreateNewProjectWidget extends ReactWidget {
 
   render(): React.ReactNode {
     return (
-      <CreateProjectComponents
-        activeDropdown={this.state.activeDropdown}
-        activeBooks={this.state.activeBooks}
-        settings={this.state.settings}
-        projectData={this.state.projectData}
-        setActiveDropdown={(value) => this.setState({ activeDropdown: value })}
-        setActiveBooks={(value) => this.setState({ activeBooks: value })}
-        handleSettingsChange={this.handleSettingsChange}
-        handleInputChange={this.handleInputChange}
-        handleSubmit={this.handleSubmit}
-        onFileSelect={this.handleFileSelect}
-      />
+      <div className="w-full flex items-center justify-start">
+        <Dialog>
+          <DialogTrigger asChild>
+            <button className="px-3 py-2  mt-10 bg-cyan-500 text-xs hover:bg-neutral-700 border  justify-center items-center rounded-md flex gap-2">
+              <Plus size={18} />
+              Create New Project
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-3xl mt-3 bg-neutral-800 border-none z-50">
+            <CreateProjectComponents
+              activeDropdown={this.state.activeDropdown}
+              activeBooks={this.state.activeBooks}
+              settings={this.state.settings}
+              projectData={this.state.projectData}
+              setActiveDropdown={(value) =>
+                this.setState({ activeDropdown: value })
+              }
+              setActiveBooks={(value) => this.setState({ activeBooks: value })}
+              handleSettingsChange={this.handleSettingsChange}
+              handleInputChange={this.handleInputChange}
+              handleSubmit={this.handleSubmit}
+              onFileSelect={this.handleFileSelect}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
     );
   }
 }

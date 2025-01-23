@@ -270,7 +270,7 @@ function DraftbodySection() {
             // }
           />
           <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger className="focus:border-none">
               <Button
                 label={` ${activeBook} book ${activeNumber}:0`}
                 className="relative flex-row-reverse gap-3  text-[10px] flex item-center justify-content-center dark:text-gray-300 text-gray-600"
