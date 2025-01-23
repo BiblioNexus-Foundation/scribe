@@ -91,14 +91,15 @@ const CreateProjectComponents = ({
   ],
 }: CreateProjectProps) => {
   return (
-    <div className="mx-10 my-5 border p-5 rounded-lg border-zinc-900">
-      <div className="w-9/12">
+    <div className="mx-5 my-2  p-2 rounded-lg border-zinc-900">
+      <div className="w-full">
         <div className="flex-col mb-3">
           <p className="text-cyan-600 mb-2 text-sm ml-2">
-            Project Type : <span>{activeBooks}</span>
+            Project Type :{" "}
+            <span className="text-sm font-bold capitalize">{activeBooks}</span>
           </p>
           <DropdownMenu onOpenChange={setActiveDropdown}>
-            <DropdownMenuTrigger className="border-none">
+            <DropdownMenuTrigger className="border-none focus:border-none focus:outline-none">
               <div className="flex py-2 justify-center items-center gap-2 rounded-md px-2 bg-cyan-950 text-cyan-500">
                 <p className="uppercase text-xs">{activeBooks}</p>
                 <ChevronRight
@@ -110,7 +111,7 @@ const CreateProjectComponents = ({
                 />
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="p-0 border border-zinc-900 w-[15rem] bg-black mt-2">
+            <DropdownMenuContent className="p-0 border border-zinc-900 w-[15rem] bg-black mt-2 z-50">
               <div className="grid grid-cols-2 gap-0">
                 {projectTypes.map(({ label, icon: Icon }) => (
                   <div
@@ -130,8 +131,8 @@ const CreateProjectComponents = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="max-w-1/2">
-          <div className="flex justify-between items-center gap-5 rounded-md px-2">
+        <form onSubmit={handleSubmit} className="w-full">
+          <div className="flex justify-between items-center gap-2 rounded-md px-2">
             {[
               {
                 label: "Project Name*",
@@ -157,7 +158,7 @@ const CreateProjectComponents = ({
             ))}
           </div>
 
-          <div className="flex justify-between gap-5 rounded-md px-2 mt-4 mb-2">
+          <div className="flex  flex-col-reverse justify-between gap-3 rounded-md px-2 mt-4 mb-2">
             <div className="flex-1">
               <p className="text-cyan-600 mb-2 text-sm">Description*</p>
               <textarea
@@ -181,7 +182,7 @@ const CreateProjectComponents = ({
                   onChange={(e) =>
                     handleInputChange("Language", e.target.value)
                   }
-                  className="w-2/3 rounded-md bg-zinc-900 px-2 py-1 uppercase text-[12px] outline-none"
+                  className="w-1/2 rounded-md bg-zinc-900 px-2 py-1 uppercase text-[12px] outline-none"
                 >
                   {supportedLanguages.map((el, index) => (
                     <option value={el.name} key={index}>
@@ -208,7 +209,7 @@ const CreateProjectComponents = ({
 
                 <label
                   htmlFor="fileInput"
-                  className="bg-cyan-950 rounded-full w-28 border  hover:bg-gray-900 flex items-center justify-center cursor-pointer"
+                  className="bg-cyan-950 rounded-md text-[13px]  py-1 capitalize text-cyan-500 w-28   hover:bg-gray-900 flex items-center justify-center cursor-pointer"
                 >
                   <p
                   //  className="border rounded-md px-2 text-[10px] w-10 bg-cyan-950"
@@ -221,7 +222,7 @@ const CreateProjectComponents = ({
           </div>
 
           <Collapsible className="group/collapsible w-full">
-            <CollapsibleTrigger className="justify-between border-b text-cyan-500 w-1/2 border-zinc-900 cursor-pointer p-2 flex items-center">
+            <CollapsibleTrigger className="justify-between focus:outline-none  border-b text-cyan-500 w-1/2 border-zinc-900 cursor-pointer p-2 flex items-center">
               Advanced Settings
               <ChevronsUpDown
                 height={15}
