@@ -21,6 +21,7 @@ import {
 } from "../../components/ui/dialog";
 import { Plus } from "lucide-react";
 
+
 interface ProjectDataType {
   ProjectName: string;
   Abbreviation: string;
@@ -130,12 +131,6 @@ export class CreateNewProjectWidget extends ReactWidget {
   handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!this.validateForm()) return;
-    console.log(
-      "Form submitted:",
-      this.state.projectData,
-      "settings=========",
-      this.state.settings
-    );
     // Make the Props based on needed type
     const ProjectData = {
       projectName: this.state.projectData.ProjectName,
@@ -158,6 +153,7 @@ export class CreateNewProjectWidget extends ReactWidget {
   render(): React.ReactNode {
     return (
       <div className="w-full flex items-center justify-start">
+       
         <Dialog>
           <DialogTrigger asChild>
             <button className="px-3 py-2  mt-10 bg-cyan-500 text-xs hover:bg-neutral-700 border  justify-center items-center rounded-md flex gap-2">

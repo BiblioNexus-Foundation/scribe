@@ -52,14 +52,12 @@ export class ProjectInitializer {
         try {
           const fileData = await this.fileService.readFile(projectFilePath);
           const fileContent = fileData.value.toString();
-          const jsonMatch = fileContent.match(/\{(?:[^{}]|(?:\{[^}]*\}))*\}/s);
-          if (!jsonMatch) {
+          console.log(fileContent, "==================content");
+          if (!fileContent) {
             await this.messageService.error("file content is not json");
             return;
           }
-          const jsonString = jsonMatch[0];
-          const cleanedJson = jsonString.trim();
-          const metadata = JSON.parse(cleanedJson);
+          const metadata = JSON.parse(fileContent);
 
           const projectName = metadata.projectName;
           const confirmDelete = await this.messageService.info(
@@ -112,8 +110,8 @@ export class ProjectInitializer {
         );
         return;
       }
-      // const books = Object.keys(projectScope);
-
+      const books = Object.keys(projectScope);
+      console.log("================", books, "------------------ffd");
       // await createProjectNotebooks({ books, shouldOverWrite: true });
 
       // Refresh the scripture tree view
@@ -152,7 +150,9 @@ export class ProjectInitializer {
       },
     };
 
-    newProject.languages[0].tag = (details.targetLanguage as any).tag;
+    // (details.targetLanguage as any).tag;
+
+    newProject.languages[0].tag = {};
     newProject.languages[0].scriptDirection = (
       details.targetLanguage as any
     ).scriptDirection?.toLowerCase();
@@ -164,7 +164,7 @@ export class ProjectInitializer {
     const workspaceFolderUri = this.workspaceService.workspace;
 
     if (!workspaceFolderUri) {
-      console.error("No workspace folder found.");
+      this.messageService.error("No workspace folder found.");
       return;
     }
     const newFilePath = new URI(workspaceFolderUri.toString()).resolve(

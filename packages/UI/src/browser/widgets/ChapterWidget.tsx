@@ -15,6 +15,7 @@ import { WorkspaceService } from "@theia/workspace/lib/browser";
 import DraftbodySection from "../../components/DraftbodySection";
 import Button from "../../components/Button";
 import { IconPlus, IconX } from "@tabler/icons-react";
+import MenuDropdown from "../../components/Fonts/MenuDropdown";
 
 @injectable()
 export class ChapterWidget extends ReactWidget {
@@ -62,11 +63,22 @@ export class ChapterWidget extends ReactWidget {
               icon={<IconPlus size={14} stroke={2} strokeLinejoin="miter" />}
             />
           </div>
-          <Button
-            label=""
-            className="flex-row-reverse gap-3 rounded-none border-none dark:bg-transparent   text-[10px] flex item-center justify-content-center dark:text-gray-300 text-gray-600"
-            icon={<IconX size={15} stroke={2} strokeLinejoin="miter" />}
-          />
+          <div className="flex gap-2 items-center justify-center">
+            <MenuDropdown
+              selectedFont="font"
+              buttonStyle="button text-[10px] text-gray-200 bg-primary-500 hover:bg-primary-500/90 text-highlight-300 gap-1"
+              key={21}
+              showIcon={true}
+              setSelectedFont={(font) =>
+                console.log("====================", font)
+              }
+            />
+            <Button
+              label=""
+              className="flex-row-reverse gap-3 rounded-none border-none dark:bg-transparent   text-[10px] flex item-center justify-content-center dark:text-gray-300 text-gray-600"
+              icon={<IconX size={15} stroke={2} strokeLinejoin="miter" />}
+            />
+          </div>
         </div>
         <DraftbodySection />
       </div>

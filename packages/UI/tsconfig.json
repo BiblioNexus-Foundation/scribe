@@ -4,7 +4,8 @@
     "rootDir": "src",
     "outDir": "lib",
     "baseUrl": ".",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": ["src", "svg.d.ts"]
 }
