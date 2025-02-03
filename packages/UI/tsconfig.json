@@ -7,5 +7,6 @@
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "include": ["src", "svg.d.ts", "src/**/*.json"]
+  "include": ["src", "svg.d.ts", "types/**/*", "src/**/*.json"],
+  "typeRoots": ["./node_modules/@types", "./types"]
 }

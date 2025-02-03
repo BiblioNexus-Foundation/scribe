@@ -16,14 +16,17 @@
     "@theia/toolbar": "1.51.0",
     "@theia/vsx-registry": "1.51.0",
     "@theia/workspace": "1.51.0",
+    "@types/md5": "^2.3.5",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "inversify": "^6.0.1",
     "lodash": "^4.17.21",
     "lucide-react": "^0.378.0",
+    "md5": "^2.3.0",
     "npm-watch": "^0.13.0",
     "react-resizable-panels": "^2.0.19",
-    "tailwind-merge": "^2.3.0"
+    "tailwind-merge": "^2.3.0",
+    "usfm-grammar": "^3.0.0"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

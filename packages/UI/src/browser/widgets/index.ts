@@ -31,6 +31,7 @@ import {
   CreateNewProjectWidget,
 } from "./CreateNewProjectWidget";
 import { ProjectInitializer } from "../../functions/initializeNewProject";
+import { createVersificationUSFMClass } from "../../functions/createVersificationUSFM";
 
 export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   // sidebar widget binds
@@ -163,4 +164,5 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
     .inSingletonScope();
 
   bind(ProjectInitializer).toSelf().inSingletonScope();
+  bind(createVersificationUSFMClass).toSelf().inSingletonScope();
 };

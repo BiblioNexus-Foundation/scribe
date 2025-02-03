@@ -130,12 +130,6 @@ export class CreateNewProjectWidget extends ReactWidget {
   handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!this.validateForm()) return;
-    console.log(
-      "Form submitted:",
-      this.state.projectData,
-      "settings=========",
-      this.state.settings
-    );
     // Make the Props based on needed type
     const ProjectData = {
       projectName: this.state.projectData.ProjectName,

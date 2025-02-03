@@ -5,10 +5,11 @@ import { inject, injectable } from "inversify";
 import { ProjectDetails } from "src/utils/createProjectUtil";
 import { URI } from "@theia/core/lib/common/uri";
 // import { CommandService } from "@theia/core/lib/common";
-import { ProjectTemplate } from "./Constant";
+import { nonCanonicalBookRefs, ProjectTemplate } from "./Constant";
 import moment from "moment";
 import { v5 as uuidV5 } from "uuid";
-
+import { getAllBookRefs } from "../utils/newProjectUtils";
+import { createVersificationUSFMClass } from "./createVersificationUSFM";
 @injectable()
 export class ProjectInitializer {
   // @inject(CommandService)
@@ -16,6 +17,9 @@ export class ProjectInitializer {
 
   @inject(WorkspaceService)
   private readonly workspaceService: WorkspaceService;
+
+  @inject(createVersificationUSFMClass)
+  private readonly createVersificationUSFMClass: createVersificationUSFMClass;
 
   @inject(FileService)
   private readonly fileService: FileService;
@@ -49,53 +53,43 @@ export class ProjectInitializer {
       const fileExists = await this.fileService.exists(projectFilePath);
 
       if (fileExists) {
-        try {
-          const fileData = await this.fileService.readFile(projectFilePath);
-          const fileContent = fileData.value.toString();
-          const jsonMatch = fileContent.match(/\{(?:[^{}]|(?:\{[^}]*\}))*\}/s);
-          if (!jsonMatch) {
-            await this.messageService.error("file content is not json");
-            return;
-          }
-          const jsonString = jsonMatch[0];
-          const cleanedJson = jsonString.trim();
-          const metadata = JSON.parse(cleanedJson);
+        const fileData = await this.fileService.readFile(projectFilePath);
+        const fileContent = fileData.value.toString();
 
-          const projectName = metadata.projectName;
-          const confirmDelete = await this.messageService.info(
-            `A project named "${projectName}" already exists in this workspace. Do you want to delete it?`,
-            "Delete",
-            "Cancel"
-          );
+        const metadata = JSON.parse(fileContent);
 
-          if (confirmDelete !== "Delete") {
-            await this.messageService.info("cancel to delete the file !");
-            return;
-          }
-          await this.fileService.delete(projectFilePath);
-          const projectFolder = new URI(workspaceUri.toString()).resolve(
-            projectName
-          );
-          const files = await this.fileService.resolve(projectFolder);
+        const projectName = metadata.projectName;
+        const confirmDelete = await this.messageService.info(
+          `A project named "${projectName}" already exists in this workspace. Do you want to delete it?`,
+          "Delete",
+          "Cancel"
+        );
 
-          if (!files) {
-            await this.messageService.error("The file are not exist");
-          }
-          if (files.children) {
-            for (const child of files.children) {
-              const fileUri = child.resource;
-
-              await this.fileService.delete(fileUri, {
-                recursive: true,
-                useTrash: false,
-              });
-              console.log(`Deleted: ${fileUri.toString()}`);
-            }
-          }
-          await this.messageService.info(`Project ${projectName} deleted.`);
-        } catch (error) {
-          console.log(error, "==================");
+        if (confirmDelete !== "Delete") {
+          await this.messageService.info("cancel to delete the file !");
+          return;
         }
+        await this.fileService.delete(projectFilePath);
+        const projectFolder = new URI(workspaceUri.toString()).resolve(
+          projectName
+        );
+        const files = await this.fileService.resolve(projectFolder);
+
+        if (!files) {
+          await this.messageService.error("The file are not exist");
+        }
+        if (files.children) {
+          for (const child of files.children) {
+            const fileUri = child.resource;
+
+            await this.fileService.delete(fileUri, {
+              recursive: true,
+              useTrash: false,
+            });
+            console.log(`Deleted: ${fileUri.toString()}`);
+          }
+        }
+        await this.messageService.info(`Project ${projectName} deleted.`);
       }
 
       await this.messageService.info("Initializing new project...");
@@ -112,7 +106,21 @@ export class ProjectInitializer {
         );
         return;
       }
-      // const books = Object.keys(projectScope);
+      const books = Object.keys(projectScope);
+
+      await this.createVersificationUSFMClass.createVersificationUSFM({
+        username: "tchami Ernest",
+        project: projectData,
+        versification: "org",
+        books: books,
+        direction: "ltr",
+        id: "1",
+        importedFiles: [],
+        copyright: { licence: "license.md" },
+        currentBurrito: {},
+        call: "new",
+        projectType: projectData.projectCategory,
+      });
 
       // await createProjectNotebooks({ books, shouldOverWrite: true });
 
@@ -124,7 +132,6 @@ export class ProjectInitializer {
       // Trigger indexing of verse references in the source text
       // indexVerseRefsInSourceText();
     } catch (error) {
-      console.log(error, "error happening when we create Project============");
       await this.messageService.error("Failed to create project file.");
     }
   }
@@ -152,7 +159,7 @@ export class ProjectInitializer {
       },
     };
 
-    newProject.languages[0].tag = (details.targetLanguage as any).tag;
+    newProject.languages[0].tag = details.targetLanguage as any;
     newProject.languages[0].scriptDirection = (
       details.targetLanguage as any
     ).scriptDirection?.toLowerCase();
@@ -161,16 +168,15 @@ export class ProjectInitializer {
     newProject.languages[0].name.en = (details.targetLanguage as any).refName;
     newProject.copyright.licenses[0].ingredient = "license.md";
 
+    newProject.type.flavorType.currentScope = await this.generateProjectScope();
+
     const workspaceFolderUri = this.workspaceService.workspace;
 
     if (!workspaceFolderUri) {
       console.error("No workspace folder found.");
       return;
     }
-    const newFilePath = new URI(workspaceFolderUri.toString()).resolve(
-      "my-folder/my-file.txt"
-    );
-    console.log("New file path:", newFilePath.toString());
+
     const WORKSPACE_FOLDER = await this?.workspaceService?.roots;
 
     if (!WORKSPACE_FOLDER || WORKSPACE_FOLDER.length === 0) {
@@ -200,5 +206,22 @@ export class ProjectInitializer {
     newProject.languages = languages;
 
     return newProject;
+  }
+
+  private async generateProjectScope(skipNonCanonical: boolean = true) {
+    const books: string[] = getAllBookRefs();
+
+    const projectScope: any = {};
+
+    skipNonCanonical
+      ? books
+          .filter((book) => !nonCanonicalBookRefs.includes(book))
+          .forEach((book) => {
+            projectScope[book] = [];
+          })
+      : books.forEach((book) => {
+          projectScope[book] = [];
+        });
+    return projectScope;
   }
 }
