@@ -58,6 +58,8 @@ export class CloudSyncUtils {
       verbose: true,
     });
 
+    console.log("CloudSyncUtils::: remotes ", remotes);
+
     return remotes;
   }
 

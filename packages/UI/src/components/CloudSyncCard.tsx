@@ -62,6 +62,7 @@ export default function CloudSyncCard({
     setOpen(false);
   };
 
+  console.log("CloudSyncCard::: remotes ", remotes);
   return (
     <Card className="w-full max-w-3xl z-[999999]">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
