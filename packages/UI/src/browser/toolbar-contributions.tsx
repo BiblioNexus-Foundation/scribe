@@ -9,9 +9,13 @@ import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { AbstractToolbarContribution } from "@theia/toolbar/lib/browser/abstract-toolbar-contribution";
 import { ReactInteraction } from "@theia/toolbar/lib/browser/toolbar-constants";
 import { ToolbarContribution } from "@theia/toolbar/lib/browser/toolbar-interfaces";
-import { IconFolders } from "@tabler/icons-react";
+import { IconCloud, IconFolders } from "@tabler/icons-react";
 import { LayoutManager } from "./layout-manager";
 
+export const CLOUD_OPEN_DIALOG = {
+  id: "cloud.open-dialog",
+  label: "Open Cloud Dialog",
+};
 export const RESOURCE_PICKER_OPEN_DIALOG = {
   id: "resource-picker.open-dialog",
   label: "Open Resource Picker Dialog",
@@ -105,6 +109,20 @@ export class LayoutsToolbarContribution
   render(): React.ReactNode {
     return (
       <div className="toolbar-wrapper">
+        <div
+          role="button"
+          tabIndex={0}
+          className="item enabled toolbar-item action-label"
+          id="easy-save-item-icon"
+          onClick={() => {
+            console.log("Cloud Sync clicked 0---------------------");
+            this.commandService.executeCommand(CLOUD_OPEN_DIALOG.id);
+          }}
+          title="Cloud Sync"
+        >
+          <IconCloud stroke={2} />
+          <span>Cloud Sync</span>
+        </div>
         <div
           role="button"
           tabIndex={0}

@@ -15,6 +15,8 @@ import { FrontendApplicationStateService } from "@theia/core/lib/browser/fronten
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import Button from "../../components/Button";
 
+import { Git } from "@theia/git/lib/common";
+
 @injectable()
 export class BottomEditorRightWidget extends ReactWidget {
   static readonly ID = "scribe.editor.bottom.right";
@@ -24,6 +26,12 @@ export class BottomEditorRightWidget extends ReactWidget {
   protected init(): void {
     this.doInit();
   }
+
+  @inject(Git)
+  protected readonly git: Git;
+
+  @inject(WorkspaceService)
+  protected readonly workspaceService: WorkspaceService;
 
   protected async doInit(): Promise<void> {
     this.id = BottomEditorRightWidget.ID;
@@ -42,6 +50,21 @@ export class BottomEditorRightWidget extends ReactWidget {
     }
   }
   protected render(): React.ReactNode {
+    const asyncFn = async () => {
+      console.log("Running async function");
+      const rootUri = (await this.workspaceService.roots)?.[0]?.resource;
+      if (!rootUri) return;
+      const repos = await this.git.repositories(rootUri.toString(), {});
+
+      console.log("repos", repos);
+      const diffs = await this.git.diff(repos[0]);
+      console.log("diffs", diffs);
+      return diffs;
+    };
+
+    asyncFn().then((diffs) => {
+      console.log("Ran with diffs", diffs);
+    });
     return (
       <div className="bg-[var(--theia-editor-background)]">
         <p className="font-semibold text-xs text-center tracking-wide leading-4 text-[var(--theia-settings-textInputForeground)]var(--theia-settings-textInputForeground)]">
@@ -58,6 +81,17 @@ export class BottomEditorRightWidget extends ReactWidget {
           />
           <Button
             label="Verse"
+            onClick={async () => {
+              const rootUri = (await this.workspaceService.roots)?.[0]
+                ?.resource;
+              if (!rootUri) return;
+              const repos = await this.git.repositories(rootUri.toString(), {});
+              await this.git.exec(repos[0], ["add", "-A"]);
+
+              asyncFn().then((diffs) => {
+                console.log("Ran with diffs", diffs);
+              });
+            }}
             className="dark:bg-zinc-800 bg-[var(--theia-editor-background)] text-[var(--theia-settings-textInputForeground)] w-1/3 uppercase font-semibold"
           />
         </div>

@@ -5,14 +5,14 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../utils/clsx";
 
 const buttonVariants = cva(
-  "inline-flex items-center rounded-lg text-[var(--theia-settings-textInputForeground)]  text-xs justify-center whitespace-nowrap rounded-md font-normal transition-colors focus:outline-none gap-[5px]   disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center rounded-lg text-foreground  text-xs justify-center whitespace-nowrap rounded-md font-normal transition-colors focus:outline-none gap-[5px]   disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-[var(--theia-secondaryButton-foreground)]  hover:bg-[var(--theia-button-hoverBackground)]",
+        default: "bg-background hover:bg-background",
         destructive: "bg-destructive hover:bg-destructive/90",
         outline:
-          "border border-[var(rgba(66, 66, 71, 0.8))]  bg-[var(--theia-editor-background)] ",
+          "border border-[var(--theia-editorWidget-border)]  bg-[var(--theia-editor-background)] ",
         secondary: "bg-secondary hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "underline-offset-4 hover:underline",

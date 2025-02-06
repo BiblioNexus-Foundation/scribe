@@ -25,6 +25,13 @@ import {
 import { ChatContribution, ChatWidget } from "./ChatWidget";
 import { VideoContribution, VideoWidget } from "./Videowidget";
 import { AudioPlayContribution, AudioPlayWidget } from "./AudioplayWidget";
+import {
+  CloudSyncCommandContribution,
+  CloudSyncWidget,
+  CloudSyncWidgetDialogProps,
+} from "./cloud-sync-widget";
+import { CommandContribution } from "@theia/core";
+import { CloudSyncUtils } from "../../utils/CloudSyncUtils";
 
 export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   // sidebar widget binds
@@ -131,4 +138,13 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
         context.container.get<AudioPlayWidget>(AudioPlayWidget),
     }))
     .inSingletonScope();
+
+  bind(CloudSyncWidgetDialogProps).toConstantValue({
+    title: "Cloud Sync",
+  });
+  bind(CloudSyncWidget).toSelf().inSingletonScope();
+  bind(CloudSyncCommandContribution).toSelf().inSingletonScope();
+  bind(CommandContribution).toService(CloudSyncCommandContribution);
+
+  bind(CloudSyncUtils).toSelf().inSingletonScope();
 };
