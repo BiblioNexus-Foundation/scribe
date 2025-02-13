@@ -21,7 +21,7 @@ export class AudioContribution extends AbstractViewContribution<AudioWidget> {
         super({
             widgetId: AudioWidget.ID,
             widgetName: AudioWidget.LABEL,
-            defaultWidgetOptions: { area: 'left' },
+            defaultWidgetOptions: { area: 'bottom' },
             toggleCommandId: AudioCommand.id
         });
     }

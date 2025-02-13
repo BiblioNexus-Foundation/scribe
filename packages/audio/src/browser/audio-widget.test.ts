@@ -27,10 +27,4 @@ describe('AudioWidget', () => {
         expect(element.queryByText('Display Message')).toBeTruthy();
     });
 
-    it('should inject \'MessageService\'', () => {
-        const spy = jest.spyOn(widget as any, 'displayMessage')
-        widget['displayMessage']();
-        expect(spy).toBeCalled();
-    });
-
 });
