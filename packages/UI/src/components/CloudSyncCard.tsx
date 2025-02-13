@@ -1,14 +1,14 @@
 import React from "react";
 
 import { Buttons as Button } from "@/components/ui/Button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { Checkbox } from "@/components/ui/Checkbox";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/Tooltip";
+} from "@/components/ui/tooltip";
 import {
   IconBrandOnedrive,
   IconHistory,
