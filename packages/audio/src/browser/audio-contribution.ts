@@ -8,25 +8,24 @@ export const AudioCommand: Command = { id: 'audio:command' };
 
 @injectable()
 export class AudioContribution extends AbstractViewContribution<AudioWidget> {
+  /**
+   * `AbstractViewContribution` handles the creation and registering
+   *  of the widget including commands, menus, and keybindings.
+   *
+   * We can pass `defaultWidgetOptions` which define widget properties such as
+   * its location `area` (`main`, `left`, `right`, `bottom`), `mode`, and `ref`.
+   *
+   */
+  constructor() {
+    super({
+      widgetId: AudioWidget.ID,
+      widgetName: AudioWidget.LABEL,
+      defaultWidgetOptions: { area: 'bottom' },
+      toggleCommandId: AudioCommand.id,
+    });
+  }
 
-    /**
-     * `AbstractViewContribution` handles the creation and registering
-     *  of the widget including commands, menus, and keybindings.
-     * 
-     * We can pass `defaultWidgetOptions` which define widget properties such as 
-     * its location `area` (`main`, `left`, `right`, `bottom`), `mode`, and `ref`.
-     * 
-     */
-    constructor() {
-        super({
-            widgetId: AudioWidget.ID,
-            widgetName: AudioWidget.LABEL,
-            defaultWidgetOptions: { area: 'bottom' },
-            toggleCommandId: AudioCommand.id
-        });
-    }
-
-    /**
+  /**
      * Example command registration to open the widget from the menu, and quick-open.
      * For a simpler use case, it is possible to simply call:
      ```ts
@@ -44,13 +43,13 @@ export class AudioContribution extends AbstractViewContribution<AudioWidget> {
      *
      * @param commands
      */
-    registerCommands(commands: CommandRegistry): void {
-        commands.registerCommand(AudioCommand, {
-            execute: () => super.openView({ activate: false, reveal: true })
-        });
-    }
+  registerCommands(commands: CommandRegistry): void {
+    commands.registerCommand(AudioCommand, {
+      execute: () => super.openView({ activate: false, reveal: true }),
+    });
+  }
 
-    /**
+  /**
      * Example menu registration to contribute a menu item used to open the widget.
      * Default location when extending the `AbstractViewContribution` is the `View` main-menu item.
      * 
@@ -64,7 +63,7 @@ export class AudioContribution extends AbstractViewContribution<AudioWidget> {
      * 
      * @param menus
      */
-    registerMenus(menus: MenuModelRegistry): void {
-        super.registerMenus(menus);
-    }
+  registerMenus(menus: MenuModelRegistry): void {
+    super.registerMenus(menus);
+  }
 }
