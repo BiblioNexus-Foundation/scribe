@@ -25,6 +25,8 @@ import {
 } from "@tabler/icons-react";
 import Button from "../../components/Button";
 import ButtonGroups from "../../components/ButtonGroup";
+import {PrevVerse} from 'bcv-navigator/lib/browser/components/PrevVerse';
+import {NextVerse} from 'bcv-navigator/lib/browser/components/NextVerse';
 
 @injectable()
 export class AudioPlayWidget extends ReactWidget {
@@ -143,7 +145,7 @@ export class AudioPlayWidget extends ReactWidget {
                     <IconTrashX size={14} stroke={2} strokeLinejoin="miter" />
                   }
                 />
-              </div>
+            
               <div className="space-y-4">
                 <p className="uppercase dark:text-zinc-500 text-zinc-400 text-[10px] text-center  font-medium ">
                   Volume
@@ -167,26 +169,8 @@ export class AudioPlayWidget extends ReactWidget {
                 </span>
               </div>
             </div>
-            <div className="w-[1px] h-7 mt-auto bg-gray-300 dark:bg-zinc-700" />
-            <div className="2xl:w-[20%] w-[25%] flex flex-col gap-4 items-center ">
-              <span className="uppercase leading-3 dark:text-zinc-500 text-zinc-400 text-[10px]   font-medium ">
-                Takes
-              </span>
-              <div className="flex items-center gap-[10px]">
-                <Button
-                  className="dark:bg-green-500 rounded-full min-w-7 max-w-7 h-7 bg-green-400 hover:bg-green-500 dark:hover:bg-green-400 text-zinc-800 dark:text-zinc-50  dark:border-green-700"
-                  label="A"
-                />
-                <Button
-                  className="dark:bg-white border-cyan-400 rounded-full min-w-7 max-w-7 h-7 bg-white hover:bg-green-500  text-zinc-800 dark:text-black  dark:border-cyan-400"
-                  label="B"
-                />
-                <Button
-                  className="dark:bg-white border-cyan-400 rounded-full min-w-7 max-w-7 h-7 bg-white hover:bg-green-500  text-zinc-800 dark:text-black  dark:border-cyan-400"
-                  label="C"
-                />
-              </div>
-            </div>
+            <div className="w-[1px] h-7 mt-auto bg-gray-300 dark:bg-zinc-700" >
+           
             <div className="w-[1px] h-7 mt-auto bg-gray-300 dark:bg-zinc-700" />
 
             <div className="2xl:w-[10%] w-[15%] flex flex-col gap-4 items-center  ">
@@ -200,7 +184,17 @@ export class AudioPlayWidget extends ReactWidget {
                 className="dark:text-zinc-50 text-zinc-500"
               />
             </div>
+
           </div>
+          </div>
+           </div>
+              <div className=" p-5 flex items-center justify-center ">
+            
+          <PrevVerse/>
+          <NextVerse  />
+       
+            
+            </div>
           <div className="p-5 flex items-center justify-end">
             <Badge className="h-4 max-h-4">saved 5 mins ago</Badge>
           </div>
