@@ -44,7 +44,6 @@ export class AudioWidget extends ReactWidget {
 	// Handles theme change and updates widget state
 	protected handleThemeChange(): void {
 		const newTheme = this.themeService.getCurrentTheme().type;
-		console.log('In theme change', newTheme);
 		if (this.currentTheme !== newTheme) {
 			this.currentTheme = newTheme;
 			this.update(); // Trigger re-render
