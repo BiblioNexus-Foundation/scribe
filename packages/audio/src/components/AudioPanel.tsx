@@ -14,6 +14,7 @@ import Waveform from './player/Waveform';
 import { useState } from '@theia/core/shared/react';
 import VolumeBar from './player/VolumeBar';
 import SelectDropdown from './common/SelectDropdown';
+import RealTimeWaveform from './recorder/RealTimeWaveform';
 
 interface AudioPanelProps {
   theme: any;
@@ -30,6 +31,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme }) => {
     label: string;
     value: number;
   }>(options[0]);
+  const [displayWave, setDisplayWave] = useState<string>('recorder');
 
   return (
     <div className=''>
@@ -37,18 +39,22 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme }) => {
         <ButtonGroups />
       </div>
       <div className=' h-[30%]  border-t border-[rgb(250 250 250 / 0.1)] '>
-        <Waveform
-          url={
-            'https://www.mfiles.co.uk/mp3-downloads/brahms-st-anthony-chorale-theme-two-pianos.mp3'
-          }
-          control={control}
-          theme={theme}
-          setControl={(value: React.SetStateAction<string>) =>
-            setControl(value)
-          }
-          volume={volume}
-          speed={playbackSpeed.value}
-        />
+        {displayWave === 'recorder' ? (
+          <RealTimeWaveform waveformState={control} theme={theme} />
+        ) : (
+          <Waveform
+            url={
+              'https://www.mfiles.co.uk/mp3-downloads/brahms-st-anthony-chorale-theme-two-pianos.mp3'
+            }
+            control={control}
+            theme={theme}
+            setControl={(value: React.SetStateAction<string>) =>
+              setControl(value)
+            }
+            volume={volume}
+            speed={playbackSpeed.value}
+          />
+        )}
       </div>
       <div className='flex h-[30%]  border-t border-[rgb(250 250 250 / 0.1)]'>
         <div className='2xl:w-[15%] w-[20%] flex flex-col gap-4 items-center '>
@@ -77,6 +83,9 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme }) => {
               icon={
                 <IconMicrophone size={14} stroke={2} strokeLinejoin='miter' />
               }
+              onClick={() => {
+                setControl('start'), setDisplayWave('recorder');
+              }}
             />
           </div>
           <div className='space-y-2'>
@@ -88,6 +97,9 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme }) => {
               icon={
                 <IconPlayerStop size={14} stroke={2} strokeLinejoin='miter' />
               }
+              onClick={() => {
+                setControl('stop'), setDisplayWave('player');
+              }}
             />
           </div>
         </div>
@@ -108,7 +120,9 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme }) => {
                       strokeLinejoin='miter'
                     />
                   }
-                  onClick={() => setControl('pause')}
+                  onClick={() => {
+                    setControl('pause'), setDisplayWave('player');
+                  }}
                 />
               </>
             ) : (
@@ -125,7 +139,9 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme }) => {
                       strokeLinejoin='miter'
                     />
                   }
-                  onClick={() => setControl('play')}
+                  onClick={() => {
+                    setControl('play'), setDisplayWave('player');
+                  }}
                 />
               </>
             )}
@@ -139,7 +155,9 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme }) => {
               icon={
                 <IconPlayerStop size={14} stroke={2} strokeLinejoin='miter' />
               }
-              onClick={() => setControl('stop')}
+              onClick={() => {
+                setControl('stop'), setDisplayWave('player');
+              }}
             />
           </div>
           <div className='space-y-2'>
@@ -149,7 +167,9 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme }) => {
             <Button
               className='rounded-lg'
               icon={<IconRefresh size={14} stroke={2} strokeLinejoin='miter' />}
-              onClick={() => setControl('rewind')}
+              onClick={() => {
+                setControl('rewind'), setDisplayWave('player');
+              }}
             />
           </div>
           <div className='space-y-2'>
