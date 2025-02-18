@@ -8350,6 +8350,14 @@ font-awesome@^4.7.0:
   resolved "https://registry.yarnpkg.com/font-awesome/-/font-awesome-4.7.0.tgz#8fa8cf0411a1a31afd07b06d2902bb9fc815a133"
   integrity sha512-U6kGnykA/6bFmg1M/oT9EkFeIYv7JlX3bozwQJWiiLz6L0w3F5vBVPxHlwyX/vtNq1ckcpRKOB9f2Qal/VtFpg==
 
+font-detect-rhl@^1.1.5:
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/font-detect-rhl/-/font-detect-rhl-1.1.5.tgz#f841a32a54cccad1fef29a9dcf49dd1f9e28728b"
+  integrity sha512-Ysgj1DqdeRocajqWHkUudlbg3VYmL54ylyy9rUxEymw5fWf8SZsYZ4ev0zxoP3IbyANixnqLSmvBKSPwkaUQuA==
+  dependencies:
+    prop-types "^15.6.1"
+    use-deep-compare "^1.1.0"
+
 for-in@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/for-in/-/for-in-1.0.2.tgz#81068d295a8142ec0ac726c6e2200c30fb6d5e80"
@@ -15174,7 +15182,7 @@ use-callback-ref@^1.3.0:
   dependencies:
     tslib "^2.0.0"
 
-use-deep-compare@^1.3.0:
+use-deep-compare@^1.1.0, use-deep-compare@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/use-deep-compare/-/use-deep-compare-1.3.0.tgz#b36d304072d306e6bf27ca5653f3277dd66d2c0d"
   integrity sha512-94iG+dEdEP/Sl3WWde+w9StIunlV8Dgj+vkt5wTwMoFQLaijiEZSXXy8KtcStpmEDtIptRJiNeD4ACTtVvnIKA==
