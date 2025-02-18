@@ -36,6 +36,7 @@ import { ChapterContribution, ChapterWidget } from "./ChapterWidget";
 import {
   CreateNewProjectContribution,
   CreateNewProjectWidget,
+  CreateNewProjectDialogProps,
 } from "./CreateNewProjectWidget";
 import { ProjectInitializer } from "../../functions/initializeNewProject";
 import { createVersificationUSFMClass } from "../../functions/createVersificationUSFM";
@@ -169,14 +170,18 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   // CHAPTER NEW PROJECT WIDGET
   bindViewContribution(bind, CreateNewProjectContribution);
   bind(FrontendApplicationContribution).toService(CreateNewProjectContribution);
-  bind(CreateNewProjectWidget).toSelf();
+  bind(CreateNewProjectWidget).toSelf().inSingletonScope();
   bind(WidgetFactory)
     .toDynamicValue((context) => ({
-      id: AudioPlayWidget.ID,
+      id: CreateNewProjectWidget.ID,
       createWidget: () =>
         context.container.get<CreateNewProjectWidget>(CreateNewProjectWidget),
     }))
     .inSingletonScope();
+
+  bind(CreateNewProjectDialogProps).toConstantValue({
+    title: "New Project",
+  });
 
   bind(ProjectInitializer).toSelf().inSingletonScope();
   bind(createVersificationUSFMClass).toSelf().inSingletonScope();

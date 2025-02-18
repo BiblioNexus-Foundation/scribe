@@ -19,8 +19,9 @@ import {
   DialogContent,
   DialogTrigger,
 } from "../../components/ui/dialog";
-import { Plus } from "lucide-react";
-
+import { ReactDialog } from "@theia/core/lib/browser/dialogs/react-dialog";
+import { DialogProps } from "@theia/core/lib/browser";
+import { Search, FolderOpen, PlusCircle } from "lucide-react";
 interface ProjectDataType {
   ProjectName: string;
   Abbreviation: string;
@@ -44,19 +45,38 @@ interface WidgetState {
 }
 
 @injectable()
-export class CreateNewProjectWidget extends ReactWidget {
+export class CreateNewProjectDialogProps extends DialogProps {}
+
+@injectable()
+export class CreateNewProjectWidget extends ReactDialog<void> {
   static readonly ID = "Create-NewProject-Widget";
-  static readonly LABER = "NewProject";
+  static readonly LABER = "New Project";
 
   private state: WidgetState;
+  private hasOpenedAfterResourcePicker = false;
 
   @inject(ProjectInitializer)
   private readonly projectInitializer: ProjectInitializer;
 
-  constructor() {
-    super();
+  @inject(FrontendApplicationStateService)
+  protected readonly stateService: FrontendApplicationStateService;
+
+  constructor(
+    @inject(CreateNewProjectDialogProps)
+    protected override readonly props: CreateNewProjectDialogProps
+  ) {
+    super({
+      title: CreateNewProjectWidget.LABER,
+    });
+
+    if (this.titleNode && this.titleNode.parentElement) {
+      this.titleNode.parentElement.style.textTransform = "uppercase";
+      this.titleNode.parentElement.style.backgroundColor = "#083344";
+      this.titleNode.parentElement.style.color = "#164E63";
+    }
+
     this.state = {
-      activePopUp: false,
+      activePopUp: true,
       activeDropdown: false,
       activeBooks: "Bible translation",
       settings: {
@@ -83,7 +103,6 @@ export class CreateNewProjectWidget extends ReactWidget {
     this.id = CreateNewProjectWidget.ID;
     this.title.label = CreateNewProjectWidget.LABER;
     this.title.caption = CreateNewProjectWidget.LABER;
-    this.title.closable = true;
     this.update();
   }
 
@@ -157,19 +176,98 @@ export class CreateNewProjectWidget extends ReactWidget {
     this.handleInputChange("ProjectFilePath", file);
   };
 
+  handleClose = () => {
+    setTimeout(() => {
+      const resourcePicker = document.querySelector(
+        '[id="ResourcesPickerWidget"]'
+      );
+      if (!resourcePicker && !this.hasOpenedAfterResourcePicker) {
+        this.setState({ activePopUp: false });
+        this.hasOpenedAfterResourcePicker = false;
+      }
+    }, 1000);
+  };
+
+  get value(): void {
+    return undefined;
+  }
+
   render(): React.ReactNode {
     return (
-      <div className="w-full flex items-center justify-start">
+      <div className=" w-[80vw] h-[90vh] flex relative  flex-col justify-between">
+        <div className="h-full bg-black text-white p-6">
+          {/* Header */}
+          <header className="flex justify-between items-center mb-8">
+            <div className="flex items-center gap-2">
+              <FolderOpen className="w-5 h-5" />
+              <span className="font-medium">SCRIBE 2.0</span>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <button className="text-gray-400 hover:text-white">Import</button>
+              <button className="text-gray-400 hover:text-white flex items-center gap-1">
+                <span>Sync</span>
+              </button>
+              <button className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center">
+                  <span className="text-sm">J</span>
+                </div>
+                <span>John</span>
+              </button>
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <div className="max-w-2xl mx-auto text-center mt-20">
+            <h1 className="text-4xl font-bold mb-2">
+              Welcome to <span className="text-cyan-400">Scribe 3.0</span>
+            </h1>
+            <p className="text-gray-400 mb-12">Scripture editing made simple</p>
+
+            <div className="mb-12">
+              <p className="text-gray-300 mb-4">
+                What would you like to work on today?
+              </p>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search"
+                  className="w-full bg-gray-800 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-6">
+              <button className="group p-8 bg-gray-900 rounded-lg border border-cyan-400 hover:bg-gray-800 transition-all">
+                <div className="flex flex-col items-center gap-4">
+                  <FolderOpen className="w-8 h-8 text-cyan-400" />
+                  <span className="text-cyan-400 uppercase"> Open Project</span>
+                </div>
+              </button>
+
+              <button
+                className="group p-8 bg-gray-900 rounded-lg hover:bg-gray-800 transition-all"
+                onClick={() => this.setState({ activePopUp: true })}
+              >
+                <div className="flex flex-col items-center gap-4">
+                  <PlusCircle className="w-8 h-8 text-gray-400" />
+                  <span className="text-gray-400 uppercase">NEW PROJECT</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <Dialog
           open={this.state.activePopUp}
-          onOpenChange={(open) => this.setState({ activePopUp: open })}
+          onOpenChange={(open) => {
+            this.setState({ activePopUp: open });
+            if (!open) {
+              this.handleClose();
+            }
+          }}
         >
-          <DialogTrigger asChild>
-            <button className="px-3 py-2  mt-10 bg-cyan-500 text-xs hover:bg-neutral-700 border  justify-center items-center rounded-md flex gap-2">
-              <Plus size={18} />
-              Create New Project
-            </button>
-          </DialogTrigger>
           <DialogContent className="max-w-3xl mt-3 bg-neutral-800 border-none z-50">
             <CreateProjectComponents
               activeDropdown={this.state.activeDropdown}
