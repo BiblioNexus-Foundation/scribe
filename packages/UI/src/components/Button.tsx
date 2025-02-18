@@ -10,7 +10,7 @@ export default function Button({
   label?: string;
   icon?: React.ReactNode;
   className?: string;
-  onClick?: (e?: any) => void;
+  onClick?: () => void;
   size?: "default" | "sm" | "lg" | "icon";
 }) {
   return (
