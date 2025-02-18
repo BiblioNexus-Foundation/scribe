@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import RecordPlugin from 'wavesurfer.js/dist/plugins/record';
 
@@ -11,84 +11,130 @@ const RealTimeWaveform: React.FC<IRealTimeWaveform> = ({
   waveformState,
   theme,
 }) => {
-  const wavesurferRef = useRef<WaveSurfer | null>(null);
-  const recordRef = useRef<any>(null);
   const waveformRef = useRef<HTMLDivElement | null>(null);
-
-  // Initialize Wavesurfer and Record plugin
-  const createWaveSurfer = () => {
-    if (wavesurferRef.current) {
-      wavesurferRef.current.destroy();
-    }
-
-    wavesurferRef.current = WaveSurfer.create({
-      container: waveformRef.current!,
-      waveColor: '#22D3EE',
-      progressColor: theme === 'dark' ? '#FFFFFF' : '#000000',
-      cursorColor: '#22D3EE',
-      height: 'auto',
-      hideScrollbar: true,
-      interact: true,
-      barWidth: 2,
-      barGap: 2,
-      barRadius: 2,
-      backend: 'MediaElement',
-    });
-
-    recordRef.current = wavesurferRef.current.registerPlugin(
-      RecordPlugin.create({
-        renderRecordedAudio: false,
-        scrollingWaveform: true,
-      }),
-    );
-  };
+  const wavesurferRef = useRef<WaveSurfer | null>(null);
+  const recorderRef = useRef<RecordPlugin | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (recordRef.current) {
-      switch (waveformState) {
-        case 'start': {
-          recordRef.current.startRecording();
-          break;
-        }
-        case 'stop': {
-          recordRef.current.stopRecording();
-          break;
-        }
-        case 'pause': {
-          recordRef.current.pauseRecording();
-          break;
-        }
-        case 'resume': {
-          recordRef.current.resumeRecording();
-          break;
-        }
-        default:
-          break;
+    const initializeWaveSurfer = async () => {
+      if (!waveformRef.current || wavesurferRef.current) return;
+
+      try {
+        // Request microphone permissions first
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        const wavesurfer = WaveSurfer.create({
+          container: waveformRef.current,
+          waveColor: theme === 'dark' ? '#22D3EE' : '#0891B2',
+          progressColor: theme === 'dark' ? '#FFFFFF' : '#000000',
+          cursorColor: '#22D3EE',
+          height: 64,
+          normalize: true,
+          hideScrollbar: true,
+          interact: false,
+          barWidth: 2,
+          barGap: 2,
+          barRadius: 2,
+          backend: 'WebAudio',
+        });
+
+        // Initialize record plugin
+        const recorder = RecordPlugin.create({
+          scrollingWaveform: true,
+          renderRecordedAudio: true
+        });
+
+        wavesurfer.registerPlugin(recorder);
+
+        wavesurferRef.current = wavesurfer;
+        recorderRef.current = recorder;
+
+        // Set up event listeners
+        recorder.on('record-start', () => console.log('Recording started'));
+        recorder.on('record-pause', () => console.log('Recording paused'));
+        recorder.on('record-resume', () => console.log('Recording resumed'));
+        recorder.on('record-end', () => console.log('Recording stopped'));
+
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Error initializing WaveSurfer:', error);
+        setError(error instanceof Error ? error.message : 'Failed to initialize audio recorder');
       }
-    }
-  }, [waveformState]);
+    };
+
+    initializeWaveSurfer();
+
+    return () => {
+      if (recorderRef.current?.isRecording()) {
+        recorderRef.current.stopRecording();
+      }
+      if (wavesurferRef.current) {
+        wavesurferRef.current.destroy();
+        wavesurferRef.current = null;
+        recorderRef.current = null;
+      }
+    };
+  }, [theme]);
 
   useEffect(() => {
-    if (waveformState === 'start' && !recordRef.current) {
-      createWaveSurfer();
+    const handleRecording = async () => {
+      if (!isInitialized || !recorderRef.current) return;
 
-      recordRef.current.startRecording();
-
-      return () => {
-        if (wavesurferRef.current) {
-          wavesurferRef.current.destroy();
+      try {
+        switch (waveformState) {
+          case 'start':
+            if (!recorderRef.current.isRecording()) {
+              await recorderRef.current.startRecording();
+            }
+            break;
+          case 'stop':
+            if (recorderRef.current.isRecording()) {
+              await recorderRef.current.stopRecording();
+              if (wavesurferRef.current) {
+                wavesurferRef.current.empty();
+              }
+            }
+            break;
+          case 'pause':
+            if (recorderRef.current.isRecording()) {
+              await recorderRef.current.pauseRecording();
+            }
+            break;
+          case 'resume':
+            if (recorderRef.current.isPaused()) {
+              await recorderRef.current.resumeRecording();
+            }
+            break;
         }
-      };
-    }
-  }, [waveformState]);
+      } catch (error) {
+        console.error('Recording operation error:', error);
+        setError(error instanceof Error ? error.message : 'Recording operation failed');
+      }
+    };
+
+    handleRecording();
+  }, [waveformState, isInitialized]);
 
   return (
-    <div className='flex items-center justify-between w-full gap-3'>
+    <div className="flex items-center justify-between w-full gap-3">
       <div
-        className='flex-1 relative h-16'
         ref={waveformRef}
-        id='wav-container'
-      />
+        className="flex-1 relative h-16"
+        id="realtime-waveform"
+      >
+        {!isInitialized && !error && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-sm text-gray-500">Initializing waveform...</span>
+          </div>
+        )}
+        {error && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-sm text-red-500">{error}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
