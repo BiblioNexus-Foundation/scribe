@@ -20,7 +20,7 @@ export class FFmpegServerImpl implements FFmpegServer {
   private currentStoryId: string | null = null;
   private segmentCounter: number = 1;
   private selectedDevice: string | null = null;
-  public defaultWinDevices: string | null = null;
+  private defaultWinDevices: string | null = null;
 
   constructor() {
     this.checkFFmpegInstallation();
@@ -30,7 +30,6 @@ export class FFmpegServerImpl implements FFmpegServer {
     try {
       const devices = await this.getAudioDevices();
       this.defaultWinDevices = devices[0]?.alternativeName || null;
-      console.log(this.defaultWinDevices, 'defaultWinDevices');
     } catch (error) {
       console.error('Failed to initialize default Windows devices:', error);
     }
@@ -71,7 +70,7 @@ export class FFmpegServerImpl implements FFmpegServer {
                 path: fullPath,
               };
             }
-          }),
+          })
         );
         return items;
       } catch (error) {
@@ -121,7 +120,7 @@ export class FFmpegServerImpl implements FFmpegServer {
         this.outputDir,
         `temp_${this.segmentCounter.toString().padStart(3, '0')}_story-${
           this.currentStoryId
-        }.wav`,
+        }.wav`
       );
     }
     const command = [
@@ -248,7 +247,7 @@ export class FFmpegServerImpl implements FFmpegServer {
       await killProcess();
       // Wait for filesystem to release handles
       await new Promise((resolve) =>
-        setTimeout(resolve, os.platform() === 'win32' ? 1000 : 500),
+        setTimeout(resolve, os.platform() === 'win32' ? 1000 : 500)
       );
 
       if (!this.currentOutputFile) {
@@ -266,7 +265,7 @@ export class FFmpegServerImpl implements FFmpegServer {
 
       const finalOutputFile = path.join(
         this.outputDir,
-        `story-${this.currentStoryId || 'default'}.wav`,
+        `story-${this.currentStoryId || 'default'}.wav`
       );
 
       const sortedRecordings = [...this.tempRecordings].sort((a, b) => {
@@ -277,11 +276,11 @@ export class FFmpegServerImpl implements FFmpegServer {
 
       const fileListPath = path.join(
         this.outputDir,
-        `filelist_${Date.now()}.txt`,
+        `filelist_${Date.now()}.txt`
       );
       await fs.writeFile(
         fileListPath,
-        sortedRecordings.map((f) => `file '${f}'`).join('\n'),
+        sortedRecordings.map((f) => `file '${f}'`).join('\n')
       );
 
       await new Promise<void>((resolve, reject) => {
@@ -398,7 +397,7 @@ export class FFmpegServerImpl implements FFmpegServer {
     try {
       await killProcess();
       await new Promise((resolve) =>
-        setTimeout(resolve, os.platform() === 'win32' ? 1000 : 500),
+        setTimeout(resolve, os.platform() === 'win32' ? 1000 : 500)
       );
 
       if (!this.currentOutputFile) {
@@ -426,7 +425,7 @@ export class FFmpegServerImpl implements FFmpegServer {
       this.outputDir,
       `temp_${this.segmentCounter.toString().padStart(3, '0')}_story-${
         this.currentStoryId
-      }.wav`,
+      }.wav`
     );
     return this.startRecording({
       storyId: this.currentStoryId ? parseInt(this.currentStoryId) : undefined,
@@ -456,7 +455,6 @@ export class FFmpegServerImpl implements FFmpegServer {
   }
   async getSystemOS() {
     const currentOS = os.platform();
-    console.log('current os', currentOS, os.version());
     return currentOS;
   }
   private async checkFFmpegInstallation(): Promise<void> {
@@ -468,7 +466,7 @@ export class FFmpegServerImpl implements FFmpegServer {
         } catch (chmodErr) {
           console.warn(
             'Warning: Failed to set executable permissions:',
-            chmodErr,
+            chmodErr
           );
         }
       }
@@ -501,7 +499,7 @@ export class FFmpegServerImpl implements FFmpegServer {
   private validateOutputDir(): void {
     if (!this.outputDir) {
       throw new Error(
-        'Workspace path not set. Please call setWorkspacePath first.',
+        'Workspace path not set. Please call setWorkspacePath first.'
       );
     }
   }
@@ -559,7 +557,7 @@ export class FFmpegServerImpl implements FFmpegServer {
 
               // Match alternative name for the current device
               const alternativeMatch = line.match(
-                /Alternative name "([^"]+)"|Alternative name (@[^"]+)/,
+                /Alternative name "([^"]+)"|Alternative name (@[^"]+)/
               );
               if (alternativeMatch && currentDevice) {
                 currentDevice.alternativeName =
