@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import RecordPlugin from 'wavesurfer.js/dist/plugins/record';
 
@@ -14,8 +14,6 @@ const RealTimeWaveform: React.FC<IRealTimeWaveform> = ({
   const waveformRef = useRef<HTMLDivElement | null>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const recorderRef = useRef<RecordPlugin | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const initializeWaveSurfer = async () => {
@@ -43,7 +41,7 @@ const RealTimeWaveform: React.FC<IRealTimeWaveform> = ({
         // Initialize record plugin
         const recorder = RecordPlugin.create({
           scrollingWaveform: true,
-          renderRecordedAudio: true
+          renderRecordedAudio: true,
         });
 
         wavesurfer.registerPlugin(recorder);
@@ -56,11 +54,8 @@ const RealTimeWaveform: React.FC<IRealTimeWaveform> = ({
         recorder.on('record-pause', () => console.log('Recording paused'));
         recorder.on('record-resume', () => console.log('Recording resumed'));
         recorder.on('record-end', () => console.log('Recording stopped'));
-
-        setIsInitialized(true);
       } catch (error) {
         console.error('Error initializing WaveSurfer:', error);
-        setError(error instanceof Error ? error.message : 'Failed to initialize audio recorder');
       }
     };
 
@@ -80,7 +75,7 @@ const RealTimeWaveform: React.FC<IRealTimeWaveform> = ({
 
   useEffect(() => {
     const handleRecording = async () => {
-      if (!isInitialized || !recorderRef.current) return;
+      if (!recorderRef.current) return;
 
       try {
         switch (waveformState) {
@@ -110,31 +105,17 @@ const RealTimeWaveform: React.FC<IRealTimeWaveform> = ({
         }
       } catch (error) {
         console.error('Recording operation error:', error);
-        setError(error instanceof Error ? error.message : 'Recording operation failed');
       }
     };
-
     handleRecording();
-  }, [waveformState, isInitialized]);
+  }, [waveformState]);
 
   return (
-    <div className="flex items-center justify-between w-full gap-3">
+    <div className='flex items-center justify-between w-full gap-3'>
       <div
         ref={waveformRef}
-        className="flex-1 relative h-16"
-        id="realtime-waveform"
-      >
-        {!isInitialized && !error && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-sm text-gray-500">Initializing waveform...</span>
-          </div>
-        )}
-        {error && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-sm text-red-500">{error}</span>
-          </div>
-        )}
-      </div>
+        className='flex-1 relative h-16'
+        id='realtime-waveform'></div>
     </div>
   );
 };

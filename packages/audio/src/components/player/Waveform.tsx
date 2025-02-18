@@ -21,15 +21,12 @@ export const Waveform: React.FC<IWaveformProps> = ({
   const waveformRef = useRef<HTMLDivElement | null>(null);
   const [howl, setHowl] = useState<Howl | null>(null);
   const [waveSurfer, setWaveSurfer] = useState<WaveSurfer | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [audioBlob, setAudioBlob] = useState<string | null>(null);
 
   // Initialize WaveSurfer and Howl
   useEffect(() => {
     if (!url || !waveformRef.current) return;
 
-    setIsLoading(true);
-    
     // Cleanup previous instances
     if (howl) {
       howl.unload();
@@ -57,8 +54,8 @@ export const Waveform: React.FC<IWaveformProps> = ({
 
     // Load audio file
     fetch(url)
-      .then(response => response.blob())
-      .then(blob => {
+      .then((response) => response.blob())
+      .then((blob) => {
         const blobUrl = URL.createObjectURL(blob);
         setAudioBlob(blobUrl);
 
@@ -68,9 +65,6 @@ export const Waveform: React.FC<IWaveformProps> = ({
           rate: speed,
           format: ['mp3', 'wav'],
           html5: true,
-          onload: () => {
-            setIsLoading(false);
-          },
           onplay: () => {
             ws.play();
           },
@@ -79,27 +73,22 @@ export const Waveform: React.FC<IWaveformProps> = ({
           },
           onstop: () => {
             ws.stop();
-            setControl('stop');
           },
           onend: () => {
             ws.stop();
-            setControl('stop');
           },
           onloaderror: (id, error) => {
             console.error('Howl loading error:', error);
-            setControl('stop');
-            setIsLoading(false);
-          }
+            ws.stop();
+          },
         });
 
         ws.load(blobUrl);
         setWaveSurfer(ws);
         setHowl(sound);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Audio loading error:', error);
-        setIsLoading(false);
-        setControl('stop');
       });
 
     return () => {
@@ -108,11 +97,11 @@ export const Waveform: React.FC<IWaveformProps> = ({
       }
       ws.destroy();
     };
-  }, [url, theme, volume, speed]);
+  }, [url, theme]);
 
   // Handle playback controls
   useEffect(() => {
-    if (!howl || !waveSurfer || isLoading) return;
+    if (!howl || !waveSurfer) return;
 
     try {
       switch (control) {
@@ -125,54 +114,44 @@ export const Waveform: React.FC<IWaveformProps> = ({
           break;
         }
         case 'rewind': {
-          howl.stop();
           howl.seek(0);
           waveSurfer.seekTo(0);
-          setControl('stop');
+          setControl('play');
           break;
         }
         case 'stop': {
           howl.stop();
-          waveSurfer.seekTo(0);
           break;
         }
       }
     } catch (error) {
       console.error('Playback control error:', error);
-      setControl('stop');
     }
-  }, [control, howl, waveSurfer, setControl, isLoading]);
+  }, [control]);
 
   // Handle volume changes
   useEffect(() => {
-    if (howl && waveSurfer && !isLoading) {
+    if (howl && waveSurfer) {
       const newVolume = Math.min(Math.max(volume, 0), 1);
       howl.volume(newVolume);
       waveSurfer.setVolume(newVolume);
     }
-  }, [volume, howl, waveSurfer, isLoading]);
+  }, [volume]);
 
   // Handle speed changes
   useEffect(() => {
-    if (howl && waveSurfer && !isLoading) {
+    if (howl && waveSurfer) {
       howl.rate(speed);
       waveSurfer.setPlaybackRate(speed);
     }
-  }, [speed, howl, waveSurfer, isLoading]);
+  }, [speed]);
 
   return (
-    <div className="flex items-center justify-between w-full gap-3">
+    <div className='flex items-center justify-between w-full gap-3'>
       <div
-        className="flex-1 relative h-16"
+        className='flex-1 relative h-16'
         ref={waveformRef}
-        id="wav-container"
-      >
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-sm text-gray-500">Loading audio...</span>
-          </div>
-        )}
-      </div>
+        id='wav-container'></div>
     </div>
   );
 };
