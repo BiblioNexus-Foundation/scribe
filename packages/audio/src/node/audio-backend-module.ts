@@ -20,11 +20,21 @@ export class FFmpegServerImpl implements FFmpegServer {
   private currentStoryId: string | null = null;
   private segmentCounter: number = 1;
   private selectedDevice: string | null = null;
+  public defaultWinDevices: string | null = null;
 
   constructor() {
     this.checkFFmpegInstallation();
+    this.initializeDefaultWinDevices();
   }
-
+  private async initializeDefaultWinDevices(): Promise<void> {
+    try {
+      const devices = await this.getAudioDevices();
+      this.defaultWinDevices = devices[0]?.alternativeName || null;
+      console.log(this.defaultWinDevices, 'defaultWinDevices');
+    } catch (error) {
+      console.error('Failed to initialize default Windows devices:', error);
+    }
+  }
   // Add method to set selected device
   async setSelectedDevice(device: string): Promise<void> {
     this.selectedDevice = device;
@@ -444,6 +454,11 @@ export class FFmpegServerImpl implements FFmpegServer {
         throw new Error('Unsupported OS platform for FFmpeg');
     }
   }
+  async getSystemOS() {
+    const currentOS = os.platform();
+    console.log('current os', currentOS, os.version());
+    return currentOS;
+  }
   private async checkFFmpegInstallation(): Promise<void> {
     try {
       await fs.access(this.ffmpegPath, fs.constants.F_OK);
@@ -469,11 +484,11 @@ export class FFmpegServerImpl implements FFmpegServer {
     switch (os.platform()) {
       case 'win32':
         console.log('selectedDevice', this.selectedDevice);
-
         return {
           format: 'dshow',
           device:
-            'audio=@device_cm_{33D9A762-90C8-11D0-BD43-00A0C911CE86}\\wave_{0891B2D9-6D3E-4A0B-8030-6E5118AA574B}',
+            'audio=' +
+            (this.selectedDevice || this.defaultWinDevices || 'default'),
         };
       case 'linux':
         return { format: 'alsa', device: this.selectedDevice || 'default' };
