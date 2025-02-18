@@ -33,7 +33,8 @@
   },
   "theiaExtensions": [
     {
-      "frontend": "lib/browser/audio-frontend-module"
+      "frontend": "lib/browser/audio-frontend-module",
+      "backend": "lib/node/backend-module"
     }
   ]
 }
