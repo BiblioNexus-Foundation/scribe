@@ -12,6 +12,11 @@ import ButtonGroups from 'scribe-ui/lib/components/ButtonGroup';
 import Button from 'scribe-ui/lib/components/Button';
 import Waveform from './player/Waveform';
 import { useState, useEffect } from '@theia/core/shared/react';
+
+interface Option {
+  label: string;
+  value: string;
+}
 import VolumeBar from './player/VolumeBar';
 import SelectDropdown from './common/SelectDropdown';
 import RealTimeWaveform from './recorder/RealTimeWaveform';
@@ -41,7 +46,32 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
   const [control, setControl] = useState('');
   const [waveformState, setWaveformState] = useState('stop');
   const [currentOS, setCurrentOS] = useState('');
+  const [devices, setDevices] = useState<Option[]>([]);
+  const [selectedDevice, setSelectedDevice] = useState<Option | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
+  const handleSettingsClick = () => {
+    setShowSettings(!showSettings);
+  };
+
+  useEffect(() => {
+    const getDevices = async () => {
+      const listDevices = await server.getAudioDevices();
+      const deviceOptions = listDevices.map((device) => ({
+        label: device.name,
+        value: device.alternativeName,
+      }));
+      setDevices(deviceOptions);
+      if (deviceOptions.length > 0) {
+        setSelectedDevice(deviceOptions[0]);
+        server.setSelectedDevice(deviceOptions[0].value);
+      }
+    };
+
+    if (!devices || devices.length === 0) {
+      getDevices();
+    }
+  }, []);
   const handlePauseResume = async () => {
     try {
       if (isRecording) {
@@ -67,7 +97,6 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
         setIsRecording(false);
         setIsPaused(false);
         setWaveformState('stop');
-
         if (filePath) {
           setCurrentFile(filePath);
           setDisplayWave('player');
@@ -119,14 +148,6 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
       ? 'dark:bg-cyan-500 rounded-lg bg-cyan-400 hover:bg-cyan-500 dark:hover:bg-cyan-400 text-zinc-800 dark:text-zinc-50 dark:border-cyan-700 cursor-pointer'
       : 'dark:bg-cyan-500 rounded-lg bg-cyan-400 opacity-50 cursor-not-allowed';
 
-  const micSettings = () => {
-    console.log('Select mic');
-
-    // const { shell } = window.require('electron');
-    // shell.openExternal('ms-settings:sound');
-    // shell.openExternal('x-apple.systempreferences:');
-  };
-  console.log('os-', currentOS);
   useEffect(() => {
     const getOS = async () => {
       const os = await server.getSystemOS();
@@ -136,6 +157,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
       getOS();
     }
   }, []);
+
   return (
     <div className=''>
       <div>
@@ -219,7 +241,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
                 </p>
                 <Button
                   className={getButtonClass(
-                    !isRecording && Boolean(currentFile),
+                    !isRecording && Boolean(currentFile)
                   )}
                   icon={
                     <IconPlayerPause
@@ -242,7 +264,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
                 </p>
                 <Button
                   className={getPlayButtonClass(
-                    !isRecording && Boolean(currentFile),
+                    !isRecording && Boolean(currentFile)
                   )}
                   icon={
                     <IconPlayerPlay
@@ -310,17 +332,29 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
           </div>
         </div>
         <div className='w-[1px] h-7 mt-auto bg-gray-300 dark:bg-zinc-700' />
-        <div className='2xl:w-[10%] w-[15%] flex flex-col gap-4 items-center  '>
-          <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium '>
+        <div className='2xl:w-[10%] w-[15%] flex flex-col gap-4 items-center'>
+          <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
             Settings
           </p>
           <IconSettings
             size={24}
             stroke={2}
             strokeLinejoin='miter'
-            className='dark:text-zinc-50 text-zinc-500'
-            onClick={() => micSettings()}
+            className='dark:text-zinc-50 text-zinc-500 cursor-pointer'
+            onClick={handleSettingsClick}
           />
+          {currentOS === 'win32' && showSettings && (
+            <SelectDropdown
+              options={devices || []}
+              selectedOption={
+                selectedDevice || { label: 'Select device', value: '' }
+              }
+              setSelectedOption={(option: Option) => {
+                setSelectedDevice(option);
+                server.setSelectedDevice(option.value);
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

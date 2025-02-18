@@ -31,7 +31,6 @@ export interface FFmpegServer extends RpcServer<void> {
   setWorkspacePath(path: string): Promise<void>;
   resumeRecording(): Promise<string>;
   pauseRecording(): Promise<string>;
-  defaultWinDevices: string | null;
   getSystemOS(): Promise<string>;
   getAudioDevices(): Promise<Array<{ name: string; alternativeName: string }>>;
 }
