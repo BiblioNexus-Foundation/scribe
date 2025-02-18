@@ -14,7 +14,7 @@ import {
   rsc_json,
   rso_json,
   vul_json,
-} from "../lib/versification";
+} from "../templates/versifiation";
 import md5 from "md5";
 
 interface createVersificationUSFM {
