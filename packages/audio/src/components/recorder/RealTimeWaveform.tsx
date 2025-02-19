@@ -28,7 +28,7 @@ const RealTimeWaveform: React.FC<IRealTimeWaveform> = ({
           waveColor: theme === 'dark' ? '#22D3EE' : '#0891B2',
           progressColor: theme === 'dark' ? '#FFFFFF' : '#000000',
           cursorColor: '#22D3EE',
-          height: 64,
+          height: 'auto',
           normalize: true,
           hideScrollbar: true,
           interact: false,
@@ -115,7 +115,8 @@ const RealTimeWaveform: React.FC<IRealTimeWaveform> = ({
       <div
         ref={waveformRef}
         className='flex-1 relative h-16'
-        id='realtime-waveform'></div>
+        id='realtime-waveform'
+      ></div>
     </div>
   );
 };
