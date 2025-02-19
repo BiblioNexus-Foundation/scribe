@@ -4,10 +4,12 @@ import {
   RecordingOptions,
   FileNode,
 } from '../common/audio-protocol';
-import { spawn, execSync, ChildProcess } from 'child_process';
+import { spawn, execSync, ChildProcess, exec } from 'child_process';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs/promises';
+import { promisify } from 'util';
+const execAsync = promisify(exec);
 @injectable()
 export class FFmpegServerImpl implements FFmpegServer {
   private recordingProcess: ChildProcess | null = null;
@@ -24,7 +26,28 @@ export class FFmpegServerImpl implements FFmpegServer {
 
   constructor() {
     this.checkFFmpegInstallation();
-    this.initializeDefaultWinDevices();
+    if (os.platform() === 'win32') {
+      this.initializeDefaultWinDevices();
+    }
+  }
+
+  async openAudioSettings(): Promise<void> {
+    try {
+      console.log('Attempting to execute command: gnome-control-center sound');
+      await execAsync('gnome-control-center sound', {
+        env: {
+          ...process.env,
+          DISPLAY: ':0',
+          XDG_CURRENT_DESKTOP: 'GNOME',
+        },
+      });
+      console.log(
+        'Successfully opened audio settings with command: gnome-control-center sound'
+      );
+    } catch (error) {
+      console.error('Failed to open audio settings:', error);
+      throw error;
+    }
   }
   private async initializeDefaultWinDevices(): Promise<void> {
     try {
@@ -34,7 +57,6 @@ export class FFmpegServerImpl implements FFmpegServer {
       console.error('Failed to initialize default Windows devices:', error);
     }
   }
-  // Add method to set selected device
   async setSelectedDevice(device: string): Promise<void> {
     this.selectedDevice = device;
   }

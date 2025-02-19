@@ -68,7 +68,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
       }
     };
 
-    if (!devices || devices.length === 0) {
+    if ((!devices || devices.length === 0) && currentOS === 'win32') {
       getDevices();
     }
   }, []);
@@ -341,7 +341,11 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
             stroke={2}
             strokeLinejoin='miter'
             className='dark:text-zinc-50 text-zinc-500 cursor-pointer'
-            onClick={handleSettingsClick}
+            onClick={
+              currentOS === 'win32'
+                ? handleSettingsClick
+                : () => server.openAudioSettings()
+            }
           />
           {currentOS === 'win32' && showSettings && (
             <SelectDropdown

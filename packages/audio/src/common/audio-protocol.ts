@@ -33,4 +33,5 @@ export interface FFmpegServer extends RpcServer<void> {
   pauseRecording(): Promise<string>;
   getSystemOS(): Promise<string>;
   getAudioDevices(): Promise<Array<{ name: string; alternativeName: string }>>;
+  openAudioSettings(): Promise<void>;
 }
