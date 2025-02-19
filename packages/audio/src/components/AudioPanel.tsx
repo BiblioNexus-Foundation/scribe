@@ -49,6 +49,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
   const [devices, setDevices] = useState<Option[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<Option | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [hasRecorded, setHasRecorded] = useState(false);
 
   const handleSettingsClick = () => {
     setShowSettings(!showSettings);
@@ -72,9 +73,16 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
       getDevices();
     }
   }, []);
+
+  const handlePlaybackControl = (control: string) => {
+    if (!isRecording && currentFile) {
+      setControl(control);
+    }
+  };
+
   const handlePauseResume = async () => {
     try {
-      if (isRecording) {
+      if (isRecording && !hasRecorded) {
         if (isPaused) {
           await audioController.resumeRecording();
           setIsPaused(false);
@@ -92,11 +100,12 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
 
   const handleStop = async () => {
     try {
-      if (isRecording && !isPaused) {
+      if (isRecording && !isPaused && !hasRecorded) {
         const filePath = await audioController.stopRecording();
         setIsRecording(false);
         setIsPaused(false);
         setWaveformState('stop');
+        setHasRecorded(true);
         if (filePath) {
           setCurrentFile(filePath);
           setDisplayWave('player');
@@ -109,7 +118,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
 
   const handleRecord = async () => {
     try {
-      if (!isRecording) {
+      if (!isRecording && !hasRecorded) {
         await audioController.startRecording();
         setIsRecording(true);
         setControl('stop');
@@ -122,31 +131,38 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
     }
   };
 
-  const handlePlaybackControl = (control: string) => {
-    if (!isRecording && currentFile) {
-      setControl(control);
-    }
-  };
-
   const handleDelete = () => {
     if (currentFile) {
-      console.log('current file', currentFile);
       server.deleteFile(currentFile);
       setCurrentFile('');
       setControl('stop');
       setDisplayWave('recorder');
+      setHasRecorded(false); // Reset recorded state after deletion
     }
   };
 
-  const getButtonClass = (isActive: boolean): string =>
-    isActive
-      ? 'rounded-lg opacity-100 cursor-pointer'
-      : 'rounded-lg opacity-50 cursor-not-allowed';
+  // In the getButtonClass function
+  const getButtonClass = (isActive: boolean): string => {
+    if (!isActive) {
+      return 'rounded-lg opacity-50 cursor-not-allowed pointer-events-none'; // Changed pointer-not-allowed to pointer-events-none
+    }
+    return hasRecorded && !currentFile
+      ? 'rounded-lg opacity-50 cursor-not-allowed pointer-events-none' // Added pointer-events-none here as well
+      : 'rounded-lg opacity-100 cursor-pointer';
+  };
 
-  const getPlayButtonClass = (isActive: boolean): string =>
-    isActive
-      ? 'dark:bg-cyan-500 rounded-lg bg-cyan-400 hover:bg-cyan-500 dark:hover:bg-cyan-400 text-zinc-800 dark:text-zinc-50 dark:border-cyan-700 cursor-pointer'
-      : 'dark:bg-cyan-500 rounded-lg bg-cyan-400 opacity-50 cursor-not-allowed';
+  // In the getPlayButtonClass function
+  const getPlayButtonClass = (isActive: boolean): string => {
+    const baseClasses = 'dark:bg-cyan-500 rounded-lg bg-cyan-400';
+    const activeClasses =
+      'hover:bg-cyan-500 dark:hover:bg-cyan-400 text-zinc-800 dark:text-zinc-50 dark:border-cyan-700 cursor-pointer';
+    const inactiveClasses = 'opacity-50 cursor-not-allowed pointer-events-none'; // Added pointer-events-none
+
+    if (!isActive) {
+      return `${baseClasses} ${inactiveClasses}`;
+    }
+    return `${baseClasses} ${activeClasses}`;
+  };
 
   useEffect(() => {
     const getOS = async () => {
@@ -163,7 +179,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
       <div>
         <ButtonGroups />
       </div>
-      <div className=' h-[30%]  border-t border-[rgb(250 250 250 / 0.1)] '>
+      <div className='h-[30%] border-t border-[rgb(250 250 250 / 0.1)]'>
         {displayWave === 'recorder' ? (
           <RealTimeWaveform waveformState={waveformState} theme={theme} />
         ) : (
@@ -177,9 +193,9 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
           />
         )}
       </div>
-      <div className='flex h-[30%]  border-t border-[rgb(250 250 250 / 0.1)]'>
-        <div className='2xl:w-[15%] w-[20%] flex flex-col gap-4 items-center '>
-          <span className='uppercase leading-3 dark:text-zinc-500 text-zinc-400 text-[10px]   font-medium '>
+      <div className='flex h-[30%] border-t border-[rgb(250 250 250 / 0.1)]'>
+        <div className='2xl:w-[15%] w-[20%] flex flex-col gap-4 items-center'>
+          <span className='uppercase leading-3 dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
             Speed
           </span>
           <SelectDropdown
@@ -189,14 +205,20 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
           />
         </div>
         <div className='w-[1px] h-7 mt-auto bg-gray-300 dark:bg-zinc-700' />
-        <div className='2xl:w-[15%] w-[20%] flex gap-7 justify-center '>
+        <div className='2xl:w-[15%] w-[20%] flex gap-7 justify-center'>
           <div className='space-y-2'>
             <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
               {isRecording ? (isPaused ? 'Resume' : 'Pause') : 'Record'}
             </p>
             <Button
-              className={getButtonClass(true)}
-              onClick={isRecording ? handlePauseResume : handleRecord}
+              className={getButtonClass(!hasRecorded)}
+              onClick={
+                !hasRecorded
+                  ? isRecording
+                    ? handlePauseResume
+                    : handleRecord
+                  : undefined
+              }
               icon={
                 isRecording ? (
                   isPaused ? (
@@ -219,12 +241,18 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
             />
           </div>
           <div className='space-y-2'>
-            <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px]   font-medium '>
+            <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
               Stop
             </p>
             <Button
-              className={getButtonClass(isRecording && !isPaused)}
-              onClick={isRecording && !isPaused ? handleStop : undefined}
+              className={getButtonClass(
+                isRecording && !isPaused && !hasRecorded
+              )}
+              onClick={
+                isRecording && !isPaused && !hasRecorded
+                  ? handleStop
+                  : undefined
+              }
               icon={
                 <IconPlayerStop size={14} stroke={2} strokeLinejoin='miter' />
               }
