@@ -32,18 +32,34 @@ export class FFmpegServerImpl implements FFmpegServer {
   }
 
   async openAudioSettings(): Promise<void> {
+    if (os.platform() !== 'linux') {
+      throw new Error('This function is only supported on Linux systems');
+    }
+
     try {
+      // Get the current session type
+      const sessionType = process.env.XDG_SESSION_TYPE || '';
+      console.log('Current session type:', sessionType);
+
+      const baseEnv = {
+        ...process.env,
+        XDG_CURRENT_DESKTOP: 'GNOME',
+      };
+
+      // Configure environment based on session type
+      const env =
+        sessionType.toLowerCase() === 'wayland'
+          ? baseEnv
+          : {
+              ...baseEnv,
+              DISPLAY: ':0',
+              XAUTHORITY:
+                process.env.XAUTHORITY || `${os.homedir()}/.Xauthority`,
+            };
+
       console.log('Attempting to execute command: gnome-control-center sound');
-      await execAsync('gnome-control-center sound', {
-        env: {
-          ...process.env,
-          DISPLAY: ':0',
-          XDG_CURRENT_DESKTOP: 'GNOME',
-        },
-      });
-      console.log(
-        'Successfully opened audio settings with command: gnome-control-center sound'
-      );
+      await execAsync('gnome-control-center sound', { env });
+      console.log('Successfully opened audio settings');
     } catch (error) {
       console.error('Failed to open audio settings:', error);
       throw error;
