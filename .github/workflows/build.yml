@@ -155,13 +155,11 @@ jobs:
       - name: Verify memory setting (macOS)
         run: echo $NODE_OPTIONS
 
-      - name: Install Homebrew
-        run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-      - name: Install ripgrep
-        run: brew install ripgrep
+      - name: Install @vscode/ripgrep manually
+        run: yarn add @vscode/ripgrep
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn
 
       - name: Check installed Electron version
         run: yarn why electron
