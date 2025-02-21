@@ -3,8 +3,14 @@ name: Build and Package
 on:
   push:
     branches:
+      - development
+      - QA
       - main
-
+  pull_request:
+    branches:
+      - development
+      - QA
+      
 jobs:
 
   build-linux:
