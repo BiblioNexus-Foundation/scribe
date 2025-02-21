@@ -156,7 +156,7 @@ jobs:
         run: echo $NODE_OPTIONS
 
       - name: Install @vscode/ripgrep manually
-        run: yarn add @vscode/ripgrep
+        run: yarn add @vscode/ripgrep -W
 
       - name: Install dependencies
         run: yarn
