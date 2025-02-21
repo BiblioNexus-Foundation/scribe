@@ -4,7 +4,7 @@ import {
   VSCodeButton,
   VSCodeTextField,
 } from "@vscode/webview-ui-toolkit/react";
-import { List } from "react-virtualized";
+// import { List } from "react-virtualized";
 import { useEffect, useRef, useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import { ChevronDown } from "lucide-react";
@@ -147,7 +147,7 @@ const TranslationWordsDropdown = ({
                 className="rounded text-sm w-full"
               />
             </div>
-            <List
+            {/* <List
               className="rounded-md bg-[--panel-view-background] outline-0"
               width={textFieldWidth}
               height={300}
@@ -171,7 +171,7 @@ const TranslationWordsDropdown = ({
                   </Popover.Close>
                 );
               }}
-            />
+            /> */}
           </div>
         </Popover.Content>
       </Popover.Portal>
