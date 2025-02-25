@@ -22,7 +22,8 @@
     "@scribe/theia-utils": "0.0.1",
     "@theia/git": "1.51.0",
     "@theia/scm": "1.51.0",
-    "scribe-usfm-editor": "0.0.0"
+    "scribe-usfm-editor": "0.0.0",
+    "scribe-python": "0.1.0"
   },
   "devDependencies": {
     "@theia/cli": "1.51.0"
