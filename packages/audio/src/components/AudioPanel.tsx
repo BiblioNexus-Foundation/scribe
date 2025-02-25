@@ -171,9 +171,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
           <RealTimeWaveform waveformState={waveformState} theme={theme} />
         ) : (
           <Waveform
-            url={
-              'https://media.geeksforgeeks.org/wp-content/uploads/20241009180552641558/sample-12s.mp3'
-            }
+            url={currentFile}
             control={control}
             theme={theme}
             setControl={setControl}
