@@ -105,6 +105,25 @@ export default function LexicalEditor({
     },
     [usj]
   );
+  const focusEditor = useCallback(() => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+    }
+  }, [editorRef]);
+
+  // Expose the focus method to parent components
+  useEffect(() => {
+    // Make the focus method available to the parent DOM element
+    if (editorRef.current && editorRef.current.addEventListener) {
+      const container = document.querySelector(".lexical-editor-container");
+      if (container) {
+        // Add a focus event listener to the container that will focus the editor
+        container.addEventListener("focus", () => {
+          focusEditor();
+        });
+      }
+    }
+  }, [focusEditor]);
 
   return (
     <div className="lexical-editor-container">

@@ -27,13 +27,12 @@ export class CustomFileWidget extends ReactWidget implements Saveable {
   autosave: "off";
 
   async save(options?: SaveOptions): Promise<void> {
-    console.log("Frontend: Save called?");
     if (this.currentUsj && this.uri) {
-      console.log("Frontend: Saving file");
+      // console.log("Frontend: Saving file");
       try {
         await this.serializeContent();
         // Save the USFM content to file
-        console.log("Frontend: Writing to file:", this.uri, this.editedUsj);
+        // console.log("Frontend: Writing to file:", this.uri, this.editedUsj);
         await this.fileService.write(this.uri, this.editedUsj);
         // await this.fileService.write(fileToWrite, content);
 
@@ -99,7 +98,7 @@ export class CustomFileWidget extends ReactWidget implements Saveable {
   }
 
   protected async parseContent(): Promise<void> {
-    console.log("Frontend: parseContent called", this.fileContent);
+    // console.log("Frontend: parseContent called", this.fileContent);
     this.processedContent = JSON.parse(this.fileContent);
     console.log("Frontend: Processed content received");
     this.dirty = true;
@@ -107,14 +106,15 @@ export class CustomFileWidget extends ReactWidget implements Saveable {
   }
 
   protected async serializeContent(): Promise<void> {
-    console.log("Frontend: serializeContent called");
+    // console.log("Frontend: serializeContent called");
     if (this.currentUsj) {
       // const usfm = await this.fileProcessorService.serializeUsj(
       //   this.currentUsj
       // );
+      // console.log(usfm);
       const usj = JSON.stringify(this.currentUsj);
       this.editedUsj = usj;
-      console.log("Frontend: Serialized content:", usj);
+      // console.log("Frontend: Serialized content:", usj);
     }
   }
 
@@ -128,6 +128,7 @@ export class CustomFileWidget extends ReactWidget implements Saveable {
     this.dirty = true;
     this.onDirtyChangedEmitter.fire(undefined);
   };
+
   protected render(): React.ReactNode {
     return (
       <div className="custom-file-widget">
@@ -145,5 +146,14 @@ export class CustomFileWidget extends ReactWidget implements Saveable {
   protected onActivateRequest(msg: Message): void {
     super.onActivateRequest(msg);
     this.node.focus();
+    setTimeout(() => {
+      // Try to find the lexical editor's editable area and focus it
+      const editorElement = this.node.querySelector(
+        ".lexical-editor-container .editor-wrapper"
+      );
+      if (editorElement) {
+        (editorElement as HTMLElement).focus();
+      }
+    }, 50);
   }
 }
