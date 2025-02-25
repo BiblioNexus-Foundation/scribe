@@ -1,0 +1,56 @@
+{
+  "name": "@biblionexus-foundation/scribe-editor",
+  "version": "0.1.2-scribe-v3",
+  "description": "Scripture editor used in Scribe",
+  "license": "MIT",
+  "homepage": "https://github.com/BiblioNexus-Foundation/scripture-editors/tree/main/packages/scribe#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BiblioNexus-Foundation/scripture-editors.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BiblioNexus-Foundation/scripture-editors/issues"
+  },
+  "type": "module",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "!dist/package.json",
+    "src/index.ts",
+    "src/editor"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "prepublish": "cd ../.. && nx build scribe"
+  },
+  "peerDependencies": {
+    "react": ">=18.3.1",
+    "react-dom": ">=18.3.1"
+  },
+  "dependencies": {
+    "@biblionexus-foundation/scripture-utilities": "workspace:~",
+    "@floating-ui/dom": "^1.6.13",
+    "@lexical/mark": "^0.27.2",
+    "@lexical/react": "^0.27.2",
+    "@lexical/selection": "^0.27.2",
+    "@lexical/utils": "^0.27.2",
+    "autoprefixer": "^10.4.20",
+    "fast-equals": "^5.2.2",
+    "lexical": "^0.27.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "postcss": "^8.5.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "shared": "link:../shared",
+    "shared-react": "link:../shared-react",
+    "sj-usfm-grammar": "^3.0.0",
+    "tailwindcss": "^3.4.17"
+  },
+  "volta": {
+    "extends": "../../package.json"
+  }
+}

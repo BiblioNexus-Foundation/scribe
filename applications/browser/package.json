@@ -23,7 +23,7 @@
     "@theia/git": "1.57.0",
     "@theia/scm": "1.57.0",
     "scribe-usfm-editor": "0.0.0",
-    "project-manager": "0.0.0"
+    "@biblionexus-foundation/scribe-editor": "0.1.2-scribe-v3-dev"
   },
   "devDependencies": {
     "@theia/cli": "1.57.0"

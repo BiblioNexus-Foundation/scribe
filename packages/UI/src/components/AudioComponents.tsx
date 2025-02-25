@@ -121,7 +121,7 @@
 
 // //   // Create a reference to store callbacks
 // //   const verseRefCallbacks = useRef<((verseRef: VerseRefValue) => void)[]>([]);
-  
+
 // //   // Create verseRefUtils implementation
 // //   const verseRefUtils: VerseRefUtilsInterface = {
 // //     async getVerseRef(): Promise<VerseRefValue> {
@@ -133,7 +133,7 @@
 // //         verse: state.verse || 1 // Default to verse 1 if not specified
 // //       };
 // //     },
-    
+
 // //     async setVerseRef(verseRef: VerseRefValue): Promise<void> {
 // //       // Update the navigation state
 // //       const bookName = getBookName(verseRef.book); // You would need to implement this function
@@ -143,19 +143,19 @@
 // //         chapter: verseRef.chapter,
 // //         verse: verseRef.verse
 // //       };
-      
+
 // //       localStorage.setItem("bibleNavState", JSON.stringify(newState));
 // //       setCurrentNav(newState);
-      
+
 // //       // Notify all registered callbacks
 // //       verseRefCallbacks.current.forEach(callback => callback(verseRef));
 // //     },
-    
+
 // //     async onVerseRefChange(callback: (verseRef: VerseRefValue) => void): Promise<void> {
 // //       verseRefCallbacks.current.push(callback);
 // //     }
 // //   };
-  
+
 // //   // Helper function to get book name from abbreviation
 // //   const getBookName = (bookAbbr: string): string => {
 // //     // This is a simplified example. You should replace this with your actual book mapping.
@@ -166,7 +166,7 @@
 // //       JHN: "John",
 // //       // Add all other books as needed
 // //     };
-    
+
 // //     return bookMap[bookAbbr] || bookAbbr;
 // //   };
 
@@ -178,10 +178,10 @@
 // //         setCurrentNav(JSON.parse(savedState));
 // //       }
 // //     };
-    
+
 // //     // Listen for the custom event from the navigation component
 // //     window.addEventListener("bibleNavUpdated", handleStorageChange);
-    
+
 // //     // Also listen for storage events (in case localStorage is updated from another tab)
 // //     window.addEventListener("storage", (e) => {
 // //       if (e.key === "bibleNavState") {
@@ -189,7 +189,7 @@
 // //         setCurrentNav(newValue);
 // //       }
 // //     });
-    
+
 // //     // Cleanup listeners on unmount
 // //     return () => {
 // //       window.removeEventListener("bibleNavUpdated", handleStorageChange);
@@ -206,7 +206,7 @@
 // //         verseRefUtils={verseRefUtils} // Now passing a defined verseRefUtils object
 // //         // scope={myScope}
 // //       />
-      
+
 // //       <div className="bg-[var(--theia-editor-background)]">
 // //         {currentNav && (
 // //           <ChapterReading
@@ -239,20 +239,23 @@ const AudioComponents: React.FC<AudioComponentsProps> = ({ verseRefUtils }) => {
   const myScope = {
     EXO: [],
     PSA: [],
-    JHN: []
+    JHN: [],
   };
 
   // Load initial verse reference on mount
   useEffect(() => {
     if (verseRefUtils) {
-      verseRefUtils.getVerseRef().then(verseRef => {
-        setCurrentNav(verseRef);
-      }).catch(error => {
-        console.error("Failed to get verse reference:", error);
-      });
+      verseRefUtils
+        .getVerseRef()
+        .then((verseRef) => {
+          setCurrentNav(verseRef);
+        })
+        .catch((error) => {
+          console.error("Failed to get verse reference:", error);
+        });
 
       // Subscribe to verse reference changes
-      verseRefUtils.onVerseRefChange(verseRef => {
+      verseRefUtils.onVerseRefChange((verseRef) => {
         setCurrentNav(verseRef);
       });
     }
