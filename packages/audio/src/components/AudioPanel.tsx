@@ -12,17 +12,16 @@ import ButtonGroups from 'scribe-ui/lib/components/ButtonGroup';
 import Button from 'scribe-ui/lib/components/Button';
 import Waveform from './player/Waveform';
 import { useState, useEffect } from '@theia/core/shared/react';
-
-interface Option {
-  label: string;
-  value: string;
-}
 import VolumeBar from './player/VolumeBar';
 import SelectDropdown from './common/SelectDropdown';
 import RealTimeWaveform from './recorder/RealTimeWaveform';
 import { AudioController } from './recorder/AudioController';
 import { FFmpegServer } from '../common/audio-protocol';
 
+interface Option {
+  label: string;
+  value: string;
+}
 interface AudioPanelProps {
   theme: any;
   server: FFmpegServer;
@@ -48,12 +47,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
   const [currentOS, setCurrentOS] = useState('');
   const [devices, setDevices] = useState<Option[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<Option | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
   const [hasRecorded, setHasRecorded] = useState(false);
-
-  const handleSettingsClick = () => {
-    setShowSettings(!showSettings);
-  };
 
   useEffect(() => {
     const getDevices = async () => {
@@ -72,7 +66,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
     if ((!devices || devices.length === 0) && currentOS === 'win32') {
       getDevices();
     }
-  }, []);
+  }, [currentOS, devices]);
 
   const handlePlaybackControl = (control: string) => {
     if (!isRecording && currentFile) {
@@ -137,31 +131,8 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
       setCurrentFile('');
       setControl('stop');
       setDisplayWave('recorder');
-      setHasRecorded(false); // Reset recorded state after deletion
+      setHasRecorded(false);
     }
-  };
-
-  // In the getButtonClass function
-  const getButtonClass = (isActive: boolean): string => {
-    if (!isActive) {
-      return 'rounded-lg opacity-50 cursor-not-allowed pointer-events-none'; // Changed pointer-not-allowed to pointer-events-none
-    }
-    return hasRecorded && !currentFile
-      ? 'rounded-lg opacity-50 cursor-not-allowed pointer-events-none' // Added pointer-events-none here as well
-      : 'rounded-lg opacity-100 cursor-pointer';
-  };
-
-  // In the getPlayButtonClass function
-  const getPlayButtonClass = (isActive: boolean): string => {
-    const baseClasses = 'dark:bg-cyan-500 rounded-lg bg-cyan-400';
-    const activeClasses =
-      'hover:bg-cyan-500 dark:hover:bg-cyan-400 text-zinc-800 dark:text-zinc-50 dark:border-cyan-700 cursor-pointer';
-    const inactiveClasses = 'opacity-50 cursor-not-allowed pointer-events-none'; // Added pointer-events-none
-
-    if (!isActive) {
-      return `${baseClasses} ${inactiveClasses}`;
-    }
-    return `${baseClasses} ${activeClasses}`;
   };
 
   useEffect(() => {
@@ -174,6 +145,22 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
     }
   }, []);
 
+  const getButtonClass = (
+    isActive: boolean,
+    isSelected: boolean = false
+  ): string => {
+    if (!isActive) {
+      return 'rounded-lg opacity-50 cursor-not-allowed pointer-events-none';
+    }
+
+    if (isSelected) {
+      return 'rounded-lg bg-cyan-400 dark:bg-cyan-500 text-zinc-800 dark:text-zinc-50 transition-colors';
+    }
+
+    // Enhanced hover effect with a more distinct color
+    return 'rounded-lg hover:bg-cyan-200 dark:hover:bg-cyan-600/70 transition-colors';
+  };
+
   return (
     <div className=''>
       <div>
@@ -184,7 +171,9 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
           <RealTimeWaveform waveformState={waveformState} theme={theme} />
         ) : (
           <Waveform
-            url={currentFile}
+            url={
+              'https://media.geeksforgeeks.org/wp-content/uploads/20241009180552641558/sample-12s.mp3'
+            }
             control={control}
             theme={theme}
             setControl={setControl}
@@ -194,15 +183,17 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
         )}
       </div>
       <div className='flex h-[30%] border-t border-[rgb(250 250 250 / 0.1)]'>
-        <div className='2xl:w-[15%] w-[20%] flex flex-col gap-4 items-center'>
+        <div className='2xl:w-[15%] w-[20%] flex flex-col gap-4 items-center justify-center'>
           <span className='uppercase leading-3 dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
             Speed
           </span>
-          <SelectDropdown
-            options={options}
-            selectedOption={playbackSpeed}
-            setSelectedOption={setPlaybackSpeed}
-          />
+          <div className='h-8'>
+            <SelectDropdown
+              options={options}
+              selectedOption={playbackSpeed}
+              setSelectedOption={setPlaybackSpeed}
+            />
+          </div>
         </div>
         <div className='w-[1px] h-7 mt-auto bg-gray-300 dark:bg-zinc-700' />
         <div className='2xl:w-[15%] w-[20%] flex gap-7 justify-center'>
@@ -211,7 +202,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
               {isRecording ? (isPaused ? 'Resume' : 'Pause') : 'Record'}
             </p>
             <Button
-              className={getButtonClass(!hasRecorded)}
+              className={getButtonClass(!hasRecorded, isRecording && !isPaused)}
               onClick={
                 !hasRecorded
                   ? isRecording
@@ -264,12 +255,13 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
           <div className='space-y-2'>
             {control === 'play' ? (
               <>
-                <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px]   font-medium '>
+                <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
                   Pause
                 </p>
                 <Button
                   className={getButtonClass(
-                    !isRecording && Boolean(currentFile)
+                    !isRecording && Boolean(currentFile),
+                    true
                   )}
                   icon={
                     <IconPlayerPause
@@ -287,12 +279,13 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
               </>
             ) : (
               <>
-                <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px]   font-medium '>
+                <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
                   Play
                 </p>
                 <Button
-                  className={getPlayButtonClass(
-                    !isRecording && Boolean(currentFile)
+                  className={getButtonClass(
+                    !isRecording && Boolean(currentFile),
+                    control === 'play'
                   )}
                   icon={
                     <IconPlayerPlay
@@ -311,11 +304,14 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
             )}
           </div>
           <div className='space-y-2'>
-            <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px]   font-medium '>
+            <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
               Stop
             </p>
             <Button
-              className={getButtonClass(!isRecording && Boolean(currentFile))}
+              className={getButtonClass(
+                !isRecording && Boolean(currentFile),
+                control === 'stop'
+              )}
               icon={
                 <IconPlayerStop size={14} stroke={2} strokeLinejoin='miter' />
               }
@@ -327,7 +323,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
             />
           </div>
           <div className='space-y-2'>
-            <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px]   font-medium '>
+            <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
               Rewind
             </p>
             <Button
@@ -341,7 +337,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
             />
           </div>
           <div className='space-y-2'>
-            <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px]   font-medium '>
+            <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
               Delete
             </p>
             <Button
@@ -351,12 +347,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
             />
           </div>
           <div className='space-y-4'>
-            <VolumeBar
-              volume={volume}
-              setVolume={(value: React.SetStateAction<number>) =>
-                setVolume(value)
-              }
-            />
+            <VolumeBar volume={volume} setVolume={setVolume} />
           </div>
         </div>
         <div className='w-[1px] h-7 mt-auto bg-gray-300 dark:bg-zinc-700' />
@@ -364,29 +355,28 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
           <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
             Settings
           </p>
-          <IconSettings
-            size={24}
-            stroke={2}
-            strokeLinejoin='miter'
-            className='dark:text-zinc-50 text-zinc-500 cursor-pointer'
-            onClick={
-              currentOS === 'win32'
-                ? handleSettingsClick
-                : () => server.openAudioSettings()
-            }
-          />
-          {currentOS === 'win32' && showSettings && (
-            <SelectDropdown
-              options={devices || []}
-              selectedOption={
-                selectedDevice || { label: 'Select device', value: '' }
-              }
-              setSelectedOption={(option: Option) => {
-                setSelectedDevice(option);
-                server.setSelectedDevice(option.value);
-              }}
-            />
-          )}
+          <div className='h-8'>
+            {currentOS === 'win32' ? (
+              <SelectDropdown
+                options={devices || []}
+                selectedOption={
+                  selectedDevice || { label: 'Select device', value: '' }
+                }
+                setSelectedOption={(option: Option) => {
+                  setSelectedDevice(option);
+                  server.setSelectedDevice(option.value);
+                }}
+              />
+            ) : (
+              <IconSettings
+                size={24}
+                stroke={2}
+                strokeLinejoin='miter'
+                className='dark:text-zinc-50 text-zinc-500 cursor-pointer hover:text-cyan-400 dark:hover:text-cyan-400'
+                onClick={() => server.openAudioSettings()}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>

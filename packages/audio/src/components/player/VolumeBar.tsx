@@ -17,7 +17,9 @@ export const VolumeBar: React.FC<VolumeBarProps> = ({ volume, setVolume }) => {
           stroke={2}
           strokeLinejoin='miter'
           className='cursor-pointer dark:text-zinc-50 text-zinc-700'
-          onClick={() => volume > 0 && setVolume(volume - 0.1)}
+          onClick={() =>
+            volume > 0 && setVolume(parseFloat((volume - 0.1).toFixed(1)))
+          }
         />
         <input
           type='range'
@@ -35,7 +37,9 @@ export const VolumeBar: React.FC<VolumeBarProps> = ({ volume, setVolume }) => {
           stroke={2}
           strokeLinejoin='miter'
           className='cursor-pointer dark:text-zinc-50 text-zinc-700'
-          onClick={() => volume < 1 && setVolume(volume + 0.1)}
+          onClick={() =>
+            volume < 1 && setVolume(parseFloat((volume + 0.1).toFixed(1)))
+          }
         />
       </span>
     </>

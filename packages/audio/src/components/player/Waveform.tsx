@@ -21,7 +21,6 @@ export const Waveform: React.FC<IWaveformProps> = ({
   const waveformRef = useRef<HTMLDivElement | null>(null);
   const [howl, setHowl] = useState<Howl | null>(null);
   const [waveSurfer, setWaveSurfer] = useState<WaveSurfer | null>(null);
-  const [audioBlob, setAudioBlob] = useState<string | null>(null);
 
   // Initialize WaveSurfer and Howl
   useEffect(() => {
@@ -49,63 +48,47 @@ export const Waveform: React.FC<IWaveformProps> = ({
       barWidth: 2,
       barGap: 2,
       barRadius: 2,
-      backend: 'MediaElement',
+      backend: 'WebAudio',
     });
 
-    // Load audio file
-    fetch(url)
-      .then((response) => response.blob())
-      .then((blob) => {
-        const blobUrl = URL.createObjectURL(blob);
-        setAudioBlob(blobUrl);
+    ws.on('finish', () => {
+      setControl('stop');
+    });
 
-        const sound = new Howl({
-          src: [blobUrl],
-          volume: volume,
-          rate: speed,
-          format: ['mp3', 'wav'],
-          html5: true,
-          onplay: () => {
-            ws.play();
-          },
-          onpause: () => {
-            ws.pause();
-          },
-          onstop: () => {
-            ws.stop();
-          },
-          onend: () => {
-            ws.stop();
-          },
-          onloaderror: (id, error) => {
-            console.error('Howl loading error:', error);
-            ws.stop();
-          },
-        });
+    ws.load(url);
+    const sound = new Howl({
+      src: [url],
+      volume: volume,
+      rate: speed,
+      format: ['mp3', 'wav'],
+      html5: true,
+      onplay: () => ws.play(),
+      onpause: () => ws.pause(),
+      onstop: () => ws.stop(),
+      onend: () => ws.stop(),
+      onloaderror: (id, error) => {
+        console.error('Howl loading error:', error);
+        ws.stop();
+      },
+    });
 
-        ws.load(blobUrl);
-        setWaveSurfer(ws);
-        setHowl(sound);
-      })
-      .catch((error) => {
-        console.error('Audio loading error:', error);
-      });
+    setWaveSurfer(ws);
+    setHowl(sound);
 
     return () => {
-      if (audioBlob) {
-        URL.revokeObjectURL(audioBlob);
-      }
       ws.destroy();
     };
   }, [url, theme]);
 
-  // Handle playback controls
   useEffect(() => {
     if (!howl || !waveSurfer) return;
 
     try {
       switch (control) {
         case 'play': {
+          const newVolume = Math.min(Math.max(volume, 0), 1);
+          howl.volume(newVolume);
+          waveSurfer.setVolume(newVolume);
           howl.play();
           break;
         }
@@ -129,7 +112,6 @@ export const Waveform: React.FC<IWaveformProps> = ({
     }
   }, [control]);
 
-  // Handle volume changes
   useEffect(() => {
     if (howl && waveSurfer) {
       const newVolume = Math.min(Math.max(volume, 0), 1);
@@ -138,7 +120,6 @@ export const Waveform: React.FC<IWaveformProps> = ({
     }
   }, [volume]);
 
-  // Handle speed changes
   useEffect(() => {
     if (howl && waveSurfer) {
       howl.rate(speed);
@@ -151,7 +132,8 @@ export const Waveform: React.FC<IWaveformProps> = ({
       <div
         className='flex-1 relative h-16'
         ref={waveformRef}
-        id='wav-container'></div>
+        id='wav-container'
+      ></div>
     </div>
   );
 };
