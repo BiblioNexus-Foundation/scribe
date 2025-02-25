@@ -14,12 +14,15 @@ import { FrontendApplicationStateService } from "@theia/core/lib/browser/fronten
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import CreateProjectComponents from "../../components/CreateProjectComponents";
 import { ProjectInitializer } from "../../functions/initializeNewProject";
+import { Dialog, DialogContent } from "../../components/ui/dialog";
+import { FolderOpen, Plus, PlusCircle, Search } from "lucide-react";
+import { MessageService } from "@theia/core";
+import { FileService } from "@theia/filesystem/lib/browser/file-service";
+import { URI } from "@theia/core/lib/common/uri";
 import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "../../components/ui/dialog";
-import { Plus } from "lucide-react";
+  FileDialogService,
+  OpenFileDialogProps,
+} from "@theia/filesystem/lib/browser";
 
 interface ProjectDataType {
   ProjectName: string;
@@ -52,6 +55,18 @@ export class CreateNewProjectWidget extends ReactWidget {
 
   @inject(ProjectInitializer)
   private readonly projectInitializer: ProjectInitializer;
+
+  @inject(WorkspaceService)
+  private readonly workspaceService: WorkspaceService;
+
+  @inject(MessageService)
+  private readonly messageService: MessageService;
+
+  @inject(FileService)
+  private readonly fileService: FileService;
+
+  @inject(FileDialogService)
+  private readonly fileDialog: FileDialogService;
 
   constructor() {
     super();
@@ -157,19 +172,161 @@ export class CreateNewProjectWidget extends ReactWidget {
     this.handleInputChange("ProjectFilePath", file);
   };
 
+  handleFileClick = async () => {
+    const roots = await this.workspaceService.roots;
+
+    if (!roots || roots.length === 0) {
+      this.messageService.error("No workspace folder found.");
+      return undefined;
+    }
+
+    const workspaceUri = roots[0].resource.toString();
+    const decodeUri = decodeURIComponent(workspaceUri);
+    const normalizedPath = decodeUri.replace(/\\/g, "/");
+    const projectFilePath = new URI(normalizedPath).resolve("metadata.json");
+
+    const fileExists = await this.fileService.exists(projectFilePath);
+
+    if (fileExists) {
+      const fileData = await this.fileService.readFile(projectFilePath);
+      const fileContent = fileData.value.toString();
+      const metadata = JSON.parse(fileContent);
+      const projectName = metadata.projectName;
+
+      const userChoice = await this.messageService.info(
+        `A project named "${projectName}" already exists. Do you want to continue with this project or create a new one?`,
+        "Continue",
+        "Create New"
+      );
+
+      if (userChoice === "Create New") {
+        const selectedFolder = await this.selectFolder();
+        if (selectedFolder) {
+          this.handleInputChange("ProjectFilePath", selectedFolder);
+          this.setState({ activePopUp: true });
+        }
+        return;
+      }
+      return;
+    }
+
+    const selectedFolder = await this.selectFolder();
+    if (selectedFolder) {
+      this.handleInputChange("ProjectFilePath", selectedFolder);
+      this.setState({ activePopUp: true });
+    } else {
+      await this.messageService.error("Project file path is missing.");
+    }
+  };
+
+  private async selectFolder(): Promise<string | undefined> {
+    try {
+      const props: OpenFileDialogProps = {
+        title: "Select Project Folder",
+        canSelectFolders: true,
+        canSelectFiles: false,
+      };
+
+      const uri = await this.fileDialog.showOpenDialog(props);
+
+      if (uri) {
+        const selectedFolderUri = new URI(uri.toString());
+        this.workspaceService.open(uri, {
+          preserveWindow: true,
+        });
+
+        this.messageService.info(
+          `Workspace opened at: ${selectedFolderUri.toString()}`
+        );
+        uri.toString();
+        return selectedFolderUri.toString();
+      }
+      return undefined;
+    } catch (error) {
+      this.messageService.error(`Failed to open folder dialog: ${error}`);
+      return undefined;
+    }
+  }
+
   render(): React.ReactNode {
     return (
-      <div className="w-full flex items-center justify-start">
+      <div className="w-full flex flex-col items-center justify-start">
+        <div className="h-full w-full bg-black text-white p-6">
+          {/* Header */}
+          <header className="flex justify-between items-center mb-8">
+            <div className="flex items-center gap-2">
+              <FolderOpen className="w-5 h-5" />
+              <span className="font-medium">SCRIBE 2.0</span>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <button className="text-gray-400 hover:text-white">Import</button>
+              <button className="text-gray-400 hover:text-white flex items-center gap-1">
+                <span>Sync</span>
+              </button>
+              <button className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center">
+                  <span className="text-sm">J</span>
+                </div>
+                <span>John</span>
+              </button>
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <div className="max-w-2xl mx-auto text-center mt-20">
+            <h1 className="text-4xl font-bold mb-2">
+              Welcome to <span className="text-cyan-400">Scribe 3.0</span>
+            </h1>
+            <p className="text-gray-400 mb-12">Scripture editing made simple</p>
+
+            <div className="mb-12">
+              <p className="text-gray-300 mb-4">
+                What would you like to work on today?
+              </p>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search"
+                  className="w-full bg-gray-800 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-6">
+              <button
+                className="group p-8 bg-gray-900 rounded-lg border border-cyan-400 hover:bg-gray-800 transition-all"
+                onClick={this.handleFileClick} // Added click handler
+              >
+                <div className="flex flex-col items-center gap-4">
+                  <FolderOpen className="w-8 h-8 text-cyan-400" />
+                  <span className="text-cyan-400 uppercase"> Open Project</span>
+                </div>
+              </button>
+
+              <button
+                className="group p-8 bg-gray-900 rounded-lg hover:bg-gray-800 transition-all"
+                onClick={() => this.handleFileClick()}
+              >
+                <div className="flex flex-col items-center gap-4">
+                  <PlusCircle className="w-8 h-8 text-gray-400" />
+                  <span className="text-gray-400 uppercase">NEW PROJECT</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
         <Dialog
           open={this.state.activePopUp}
           onOpenChange={(open) => this.setState({ activePopUp: open })}
         >
-          <DialogTrigger asChild>
-            <button className="px-3 py-2  mt-10 bg-cyan-500 text-xs hover:bg-neutral-700 border  justify-center items-center rounded-md flex gap-2">
-              <Plus size={18} />
-              Create New Project
-            </button>
-          </DialogTrigger>
+          {/* <DialogTrigger asChild>
+          <button className="px-3 py-2  mt-10 bg-cyan-500 text-xs hover:bg-neutral-700 border  justify-center items-center rounded-md flex gap-2">
+            <Plus size={18} />
+            Create New Project
+          </button>
+        </DialogTrigger> */}
           <DialogContent className="max-w-3xl mt-3 bg-neutral-800 border-none z-50">
             <CreateProjectComponents
               activeDropdown={this.state.activeDropdown}
