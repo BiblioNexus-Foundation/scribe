@@ -157,8 +157,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
       return 'rounded-lg bg-cyan-400 dark:bg-cyan-500 text-zinc-800 dark:text-zinc-50 transition-colors';
     }
 
-    // Enhanced hover effect with a more distinct color
-    return 'rounded-lg hover:bg-cyan-200 dark:hover:bg-cyan-600/70 transition-colors';
+    return 'rounded-lg hover:bg-cyan-500 transition-colors';
   };
 
   return (
@@ -193,7 +192,10 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
             />
           </div>
         </div>
-        <div className='w-[1px] h-7 mt-auto bg-gray-300 dark:bg-zinc-700' />
+        <div
+          className='w-[1px] h-7 bg-gray-300 dark:bg-zinc-700'
+          style={{ marginTop: '24px' }}
+        />
         <div className='2xl:w-[15%] w-[20%] flex gap-7 justify-center'>
           <div className='space-y-2'>
             <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
@@ -248,7 +250,10 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
             />
           </div>
         </div>
-        <div className='w-[1px] h-7 mt-auto bg-gray-300 dark:bg-zinc-700' />
+        <div
+          className='w-[1px] h-7 bg-gray-300 dark:bg-zinc-700'
+          style={{ marginTop: '24px' }}
+        />
         <div className='2xl:w-[40%] w-[50%] flex justify-between gap-7 px-16'>
           <div className='space-y-2'>
             {control === 'play' ? (
@@ -348,7 +353,10 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
             <VolumeBar volume={volume} setVolume={setVolume} />
           </div>
         </div>
-        <div className='w-[1px] h-7 mt-auto bg-gray-300 dark:bg-zinc-700' />
+        <div
+          className='w-[1px] h-7 bg-gray-300 dark:bg-zinc-700'
+          style={{ marginTop: '24px' }}
+        />
         <div className='2xl:w-[10%] w-[15%] flex flex-col gap-4 items-center'>
           <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
             Settings
