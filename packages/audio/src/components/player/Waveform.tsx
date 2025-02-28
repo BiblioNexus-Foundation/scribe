@@ -56,6 +56,7 @@ export const Waveform: React.FC<IWaveformProps> = ({
     });
 
     ws.load(url);
+    ws.setVolume(0);
     const sound = new Howl({
       src: [url],
       volume: volume,
@@ -88,7 +89,6 @@ export const Waveform: React.FC<IWaveformProps> = ({
         case 'play': {
           const newVolume = Math.min(Math.max(volume, 0), 1);
           howl.volume(newVolume);
-          waveSurfer.setVolume(newVolume);
           howl.play();
           break;
         }
@@ -116,7 +116,6 @@ export const Waveform: React.FC<IWaveformProps> = ({
     if (howl && waveSurfer) {
       const newVolume = Math.min(Math.max(volume, 0), 1);
       howl.volume(newVolume);
-      waveSurfer.setVolume(newVolume);
     }
   }, [volume]);
 
