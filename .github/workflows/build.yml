@@ -6,7 +6,6 @@ on:
       - development
       - QA
       - main
-      - fix/bundling-issue
   pull_request:
     branches:
       - development
@@ -157,44 +156,11 @@ jobs:
           node-version: ${{ matrix.node }}
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Cache Node.js modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Cache yarn dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.yarn/cache
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Install ripgrep via brew (If possible)
-        run: brew install ripgrep
-
-      # - name: Install ripgrep test (Isolate ripgrep install in correct workspace)
-      #   run: |
-      #     cd applications/electron # Replace with the correct workspace directory
-      #     yarn add @vscode/ripgrep --verbose
-
       - name: Verify memory setting (macOS)
         run: echo $NODE_OPTIONS
 
       - name: Install dependencies
-        run: |
-          retry_count=0
-          while ! yarn && [ $retry_count -lt 3 ]; do
-            echo "yarn install failed, retrying..."
-            sleep 10 # Wait for 10 seconds before retrying
-            retry_count=$((retry_count + 1))
-          done
-          if [ $retry_count -eq 3 ]; then
-            exit 1 # Fail the workflow if retries are exhausted
-          fi
+        run: yarn
 
       - name: Check installed Electron version
         run: yarn why electron
