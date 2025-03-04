@@ -16,6 +16,16 @@ import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { AnalysisData, TextAnalysis } from "../components/TextAnalysis";
 import { PythonService } from "../../common/python-protocol";
 
+const PLACEHOLDER_TEST_TEXT = `
+      This is a problematic text file designed to contain multiple issues for testing purposes:
+1. UTF-8 encoding violations:  (these should not appear properly).
+2. Control characters:  embedded within text.
+3. Zero-width characters: word​separator and ‍joiner.
+4. Mixed letters/numbers/punctuation/letter-modifiers from various scripts:
+   - Arabic: العربية.
+   - Greek: αβγ.
+`;
+
 @injectable()
 export class ChecksWidget extends ReactWidget {
   static readonly ID = "python-checks-widget";
@@ -38,23 +48,10 @@ export class ChecksWidget extends ReactWidget {
     this.title.closable = true;
     this.title.iconClass = codicon("checklist");
     this.update();
-
-    // this.getAnalysisData().then((data) => {
-    //   this.analysisData = data;
-    //   this.update();
-    // });
   }
 
   protected async getAnalysisData(): Promise<AnalysisData> {
-    const data = await this.pythonService.executeWildebeest(`
-      This is a problematic text file designed to contain multiple issues for testing purposes:
-1. UTF-8 encoding violations:  (these should not appear properly).
-2. Control characters:  embedded within text.
-3. Zero-width characters: word​separator and ‍joiner.
-4. Mixed letters/numbers/punctuation/letter-modifiers from various scripts:
-   - Arabic: العربية.
-   - Greek: αβγ.
-    `);
+    const data = await this.pythonService.executeWildebeest(PLACEHOLDER_TEST_TEXT);
     return JSON.parse(data);
   }
 
