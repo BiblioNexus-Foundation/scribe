@@ -7,7 +7,7 @@
   "scripts": {
     "clean": "lerna clean && rimraf node_modules",
     "build:browser": "lerna run build --ignore scribe-electron",
-    "build:electron": "lerna run build --ignore browser --ignore scribe-electron && yarn --cwd applications/electron build:highMemory",
+    "build:electron": "lerna run build --ignore scribe-browser && yarn --cwd applications/electron build:highMemory",
     "postinstall": "theia check:theia-version",
     "build:dev": "lerna run development",
     "build:production": "lerna run production --ignore scribe-browser --stream",
@@ -16,19 +16,22 @@
     "start:electron": "yarn --cwd applications/electron start",
     "watch:browser": "lerna run --parallel watch --ignore scribe-electron ",
     "watch:electron": "lerna run --parallel watch --ignore scribe-browser",
-    "electron:dist": "yarn --cwd applications/electron package:prod"
+    "electron:dist": "yarn --cwd applications/electron package:prod",
+    "syncpack": "syncpack list-mismatches",
+    "syncpack:fix": "syncpack fix-mismatches"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
     "lerna": "2.4.0",
-    "rimraf": "^6.0.1"
+    "rimraf": "*",
+    "syncpack": "^13.0.2"
   },
   "resolutions": {
     "@types/puppeteer": "^5.4.0",
     "@yarnpkg/parsers": "3.0.0-rc.44",
     "**/multer": "1.4.4-lts.1",
-    "**/nan": "2.18.0",
-    "**/cpu-features": "0.0.9",
+    "**/nan": "2.20.0",
+    "**/cpu-features": "0.0.10",
     "**/**/nsfw": "2.2.5"
   },
   "workspaces": [
