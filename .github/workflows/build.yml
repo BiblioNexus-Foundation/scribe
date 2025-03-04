@@ -174,12 +174,12 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install ripgrep via brew (If possible)
-        if: runner.os == 'macOS'
         run: brew install ripgrep
 
-      - name: Install ripgrep test (Isolate ripgrep install)
-        if: runner.os == 'macOS'
-        run: yarn add @vscode/ripgrep --verbose # add verbose for debugging.
+      - name: Install ripgrep test (Isolate ripgrep install in correct workspace)
+        run: |
+          cd applications/electron # Replace with the correct workspace directory
+          yarn add @vscode/ripgrep --verbose
 
       - name: Verify memory setting (macOS)
         run: echo $NODE_OPTIONS
