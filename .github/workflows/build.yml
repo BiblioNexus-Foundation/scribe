@@ -6,6 +6,7 @@ on:
       - development
       - QA
       - main
+      - fix/bundling-issue
   pull_request:
     branches:
       - development
