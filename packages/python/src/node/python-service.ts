@@ -166,7 +166,6 @@ export class PythonServiceImpl implements PythonService {
 
         const version = await versionPromise;
         if (version.includes("Python 3.13")) {
-          console.log("Found existing Python 3.13 installation");
           return PythonServiceImpl.pythonDir;
         }
       } catch (err) {
@@ -178,7 +177,6 @@ export class PythonServiceImpl implements PythonService {
     }
 
     // Existing code for downloading Python
-    console.log("Starting Python download...");
     const pythonDownloadUrl = this.getPythonDownloadUrl();
 
     const fileName = pythonDownloadUrl.split("/").pop();
@@ -209,13 +207,10 @@ export class PythonServiceImpl implements PythonService {
 
     // List contents for debugging
     const targetContents = await this.fileService.readdir(targetDir);
-    console.log("Contents of targetDir:", targetContents);
 
     const pythonContents = await this.fileService.readdir(
       PythonServiceImpl.pythonDir
     );
-    console.log("Contents of pythonDir:", pythonContents);
-
     // delete the download file
     await this.fileService.delete(
       URI.fromFilePath(downloadPath.path.toString()),
@@ -224,18 +219,12 @@ export class PythonServiceImpl implements PythonService {
         useTrash: false,
       }
     );
-    console.log("Python setup completed successfully");
-
     return PythonServiceImpl.pythonDir;
   }
 
   private getPythonDownloadUrl(): string {
     const architecture = machine();
     const currentPlatform = platform();
-    console.log(
-      `Detected platform: ${currentPlatform}, architecture: ${architecture}`
-    );
-
     const key = `${currentPlatform}-${
       architecture === "x86_64" ? "x64" : "arm64"
     }` as keyof typeof PYTHON_DOWNLOADS;
@@ -260,7 +249,6 @@ export class PythonServiceImpl implements PythonService {
       });
 
     if (venvExists) {
-      console.log("Virtual environment already exists, updating Python paths");
       // Update Python paths to use venv binaries
       PythonServiceImpl.pythonBinPath = PythonServiceImpl.venvDir.withPath(
         PythonServiceImpl.venvDir.path.join(
@@ -351,8 +339,6 @@ export class PythonServiceImpl implements PythonService {
           reject(new Error(`Failed to install wildebeest-nlp: ${err}`));
         });
       });
-
-      console.log("OUTPUT OF THE SPAWN", stdout);
     } catch (error) {
       throw error;
     }
@@ -372,14 +358,11 @@ export class PythonServiceImpl implements PythonService {
     );
 
     try {
-      console.log("Writing input text to file:", inputFile.path.toString());
       // Write the input text to a file
       await this.fileService.writeFile(inputFile, Buffer.from(text, "utf-8"), {
         create: true,
         overwrite: true,
       });
-
-      console.log("Executing wb-ana command...");
       // Execute wb-ana with input and json output files
       await new Promise<void>((resolve, reject) => {
         const wildebeestProcess = spawn(
@@ -421,11 +404,9 @@ export class PythonServiceImpl implements PythonService {
         });
       });
 
-      console.log("Reading output file:", outputFile.path.toString());
       // Read the output file
       const outputContent = await this.fileService.readFile(outputFile);
       const result = outputContent.toString();
-      console.log("Wildebeest analysis result:", result);
 
       // Clean up temporary files
       await Promise.all([
