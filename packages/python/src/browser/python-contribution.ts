@@ -7,6 +7,24 @@ import {
 } from "@theia/core/lib/common";
 import { PythonService } from "../common/python-protocol";
 
+const PLACEHOLDER_TEST_TEXT_WILDEBEEST = `
+          This is a problematic text file designed to contain multiple issues for testing purposes:
+1. UTF-8 encoding violations: ����� (these should not appear properly).
+2. Control characters:  embedded within text.
+3. Zero-width characters: word​separator and ‍joiner.
+4. Mixed letters/numbers/punctuation/letter-modifiers from various scripts:
+   - Arabic: العربية.
+   - Greek: αβγ.
+   - Cyrillic: АБВ.
+   - Latin: aͯ́b.
+   - Hebrew: אבג.
+5. Tokens with letters from different scripts: αБاא.
+6. XML tokens: <tag>Invalid</tag> & "special" <characters />.
+7. Tokens with certain punctuation: foo!bar?baz,hello;world.
+8. Orphan letter modifiers: áḅ̂.
+9. Non-canonical character combinations: áá (á should be normalized to á).
+  `;
+
 @injectable()
 export class PythonSetupContribution implements CommandContribution {
   static readonly SETUP_ENV: Command = {
@@ -57,23 +75,7 @@ export class PythonSetupContribution implements CommandContribution {
 
     registry.registerCommand(PythonSetupContribution.EXECUTE_WILDEBEEST, {
       execute: async () => {
-        await this.pythonService.executeWildebeest(`
-          This is a problematic text file designed to contain multiple issues for testing purposes:
-1. UTF-8 encoding violations: ����� (these should not appear properly).
-2. Control characters:  embedded within text.
-3. Zero-width characters: word​separator and ‍joiner.
-4. Mixed letters/numbers/punctuation/letter-modifiers from various scripts:
-   - Arabic: العربية.
-   - Greek: αβγ.
-   - Cyrillic: АБВ.
-   - Latin: aͯ́b.
-   - Hebrew: אבג.
-5. Tokens with letters from different scripts: αБاא.
-6. XML tokens: <tag>Invalid</tag> & "special" <characters />.
-7. Tokens with certain punctuation: foo!bar?baz,hello;world.
-8. Orphan letter modifiers: áḅ̂.
-9. Non-canonical character combinations: áá (á should be normalized to á).
-          `);
+        await this.pythonService.executeWildebeest(PLACEHOLDER_TEST_TEXT_WILDEBEEST);
       },
     });
   }
