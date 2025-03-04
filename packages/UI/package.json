@@ -64,7 +64,6 @@
   "scripts": {
     "development": "yarn build",
     "build": "yarn build:style && yarn build:ts",
-    "production": "yarn build:style && yarn build:ts",
     "clean": "rimraf lib node_modules *.tsbuildinfo",
     "build:ts": "tsc -b && tsconfig-replace-paths --project tsconfig.json ",
     "lint": "eslint --ext js,jsx,ts,tsx src",
@@ -72,8 +71,7 @@
     "update:theia": "ts-node ../../scripts/update-theia-version.ts",
     "update:next": "ts-node ../../scripts/update-theia-version.ts next",
     "build:style": "npx tailwindcss -i ./src/browser/styles/globals.css -o ./lib/browser/output-tailwind.css",
-    "watch": "npm-watch build",
-    "productionCICD": "yarn build"
+    "watch": "npm-watch build"
   },
   "watch": {
     "build": {

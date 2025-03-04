@@ -35,10 +35,8 @@
     "prepare": "yarn run clean && yarn run build",
     "clean": "rimraf lib",
     "build": "tsc && tsconfig-replace-paths --project tsconfig.json",
-    "production": "yarn run build",
     "watch": "tsc -w",
-    "test": "jest --config configs/jest.config.ts",
-    "productionCICD": "yarn run build"
+    "test": "jest --config configs/jest.config.ts"
   },
   "theiaExtensions": [
     {

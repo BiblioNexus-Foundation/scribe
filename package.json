@@ -7,16 +7,15 @@
   "scripts": {
     "clean": "lerna clean && rimraf node_modules",
     "build:browser": "lerna run build --ignore scribe-electron",
-    "build:electron": "lerna run build --ignore scribe-browser && yarn --cwd applications/electron build:highMemory",
+    "build:electron": "lerna run build --ignore scribe-browser && yarn --cwd applications/electron build:electron",
     "postinstall": "theia check:theia-version",
     "build:dev": "lerna run development",
-    "build:production": "lerna run production --ignore scribe-browser --stream",
-    "build:electronCICD": "lerna run productionCICD --ignore scribe-browser --stream",
+    "build:electronCICD": "lerna run build --ignore scribe-browser --stream",
     "start:browser": "yarn --cwd applications/browser start",
     "start:electron": "yarn --cwd applications/electron start",
     "watch:browser": "lerna run --parallel watch --ignore scribe-electron ",
     "watch:electron": "lerna run --parallel watch --ignore scribe-browser",
-    "electron:dist": "yarn --cwd applications/electron package:prod",
+    "electron:dist": "yarn --cwd applications/electron deploy:local",
     "syncpack": "syncpack list-mismatches",
     "syncpack:fix": "syncpack fix-mismatches"
   },
@@ -32,7 +31,8 @@
     "**/multer": "1.4.4-lts.1",
     "**/nan": "2.20.0",
     "**/cpu-features": "0.0.10",
-    "**/**/nsfw": "2.2.5"
+    "**/**/nsfw": "2.2.5",
+    "node-abi": "3.74.0"
   },
   "workspaces": [
     "applications/*",
