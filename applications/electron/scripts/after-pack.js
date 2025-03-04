@@ -6,7 +6,8 @@ const util = require('util');
 const child_process = require('child_process');
 const rimraf = require('rimraf');
 const sign_util = require('electron-osx-sign/util');
-const asyncRimraf = util.promisify(rimraf);
+const { promises: fsPromises } = require('fs');
+const asyncRimraf = (path) => fsPromises.rm(path, { recursive: true, force: true });
 
 const DELETE_PATHS = [
     'Contents/Resources/app/node_modules/unzip-stream/aa.zip',
