@@ -187,7 +187,7 @@ jobs:
       - name: Install dependencies
         run: |
           retry_count=0
-          while ! yarn install --verbose && [ $retry_count -lt 3 ]; do
+          while ! yarn && [ $retry_count -lt 3 ]; do
             echo "yarn install failed, retrying..."
             sleep 10 # Wait for 10 seconds before retrying
             retry_count=$((retry_count + 1))
