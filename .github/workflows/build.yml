@@ -6,7 +6,6 @@ on:
       - development
       - QA
       - main
-      - fix/bundling-issue
   pull_request:
     branches:
       - development
@@ -180,16 +179,7 @@ jobs:
         run: echo $NODE_OPTIONS
 
       - name: Install dependencies
-        run: |
-          retry_count=0
-          while ! yarn && [ $retry_count -lt 3 ]; do
-            echo "yarn install failed, retrying..."
-            sleep 10 # Wait for 10 seconds before retrying
-            retry_count=$((retry_count + 1))
-          done
-          if [ $retry_count -eq 3 ]; then
-            exit 1 # Fail the workflow if retries are exhausted
-          fi
+        run: yarn
 
       - name: Check installed Electron version
         run: yarn why electron
