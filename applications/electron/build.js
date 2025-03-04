@@ -21,8 +21,10 @@ if (!platforms[platform]) {
 console.log(`Platform: ${platform} (${platforms[platform]})`);
 console.log(`Architecture: ${arch}`);
 
-// build command - based on the platform and architecture
-const buildCommand = `electron-builder --${platforms[platform]} --${arch}`;
+// build command and disabling signing
+const buildCommand = platform === 'win32'
+  ? `electron-builder --win --${arch}`
+  : `electron-builder --${platforms[platform]} --${arch}`;
 
 try {
   console.log(`Starting build for ${platform} (${arch})...`);
