@@ -176,10 +176,10 @@ jobs:
       - name: Install ripgrep via brew (If possible)
         run: brew install ripgrep
 
-      - name: Install ripgrep test (Isolate ripgrep install in correct workspace)
-        run: |
-          cd applications/electron # Replace with the correct workspace directory
-          yarn add @vscode/ripgrep --verbose
+      # - name: Install ripgrep test (Isolate ripgrep install in correct workspace)
+      #   run: |
+      #     cd applications/electron # Replace with the correct workspace directory
+      #     yarn add @vscode/ripgrep --verbose
 
       - name: Verify memory setting (macOS)
         run: echo $NODE_OPTIONS
