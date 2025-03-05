@@ -31,6 +31,41 @@ export class FFmpegServerImpl implements FFmpegServer {
     }
   }
 
+  // async openAudioSettings(): Promise<void> {
+  //   if (os.platform() !== 'linux') {
+  //     throw new Error('This function is only supported on Linux systems');
+  //   }
+
+  //   try {
+  //     // Get the current session type
+  //     const sessionType = process.env.XDG_SESSION_TYPE || '';
+  //     console.log('Current session type:', sessionType);
+
+  //     const baseEnv = {
+  //       ...process.env,
+  //       XDG_CURRENT_DESKTOP: 'GNOME',
+  //     };
+
+  //     // Configure environment based on session type
+  //     const env =
+  //       sessionType.toLowerCase() === 'wayland'
+  //         ? baseEnv
+  //         : {
+  //             ...baseEnv,
+  //             DISPLAY: ':0',
+  //             XAUTHORITY:
+  //               process.env.XAUTHORITY || `${os.homedir()}/.Xauthority`,
+  //           };
+
+  //     console.log('Attempting to execute command: gnome-control-center sound');
+  //     await execAsync('gnome-control-center sound', { env });
+  //     console.log('Successfully opened audio settings');
+  //   } catch (error) {
+  //     console.error('Failed to open audio settings:', error);
+  //     throw error;
+  //   }
+  // }
+
   async openAudioSettings(): Promise<void> {
     if (os.platform() !== 'linux') {
       throw new Error('This function is only supported on Linux systems');
@@ -41,25 +76,58 @@ export class FFmpegServerImpl implements FFmpegServer {
       const sessionType = process.env.XDG_SESSION_TYPE || '';
       console.log('Current session type:', sessionType);
 
-      const baseEnv = {
-        ...process.env,
-        XDG_CURRENT_DESKTOP: 'GNOME',
-      };
+      let env: NodeJS.ProcessEnv;
 
-      // Configure environment based on session type
-      const env =
-        sessionType.toLowerCase() === 'wayland'
-          ? baseEnv
-          : {
-              ...baseEnv,
-              DISPLAY: ':0',
-              XAUTHORITY:
-                process.env.XAUTHORITY || `${os.homedir()}/.Xauthority`,
-            };
+      if (sessionType.toLowerCase() === 'wayland') {
+        env = {
+          ...process.env,
+          XDG_CURRENT_DESKTOP: 'GNOME',
+          DISPLAY: process.env.DISPLAY, // Keep existing DISPLAY
+          WAYLAND_DISPLAY: process.env.WAYLAND_DISPLAY,
+        };
+      } else if (
+        sessionType.toLowerCase() === 'x11' ||
+        sessionType.toLowerCase() === ''
+      ) {
+        env = {
+          ...process.env,
+          XDG_CURRENT_DESKTOP: 'GNOME',
+          DISPLAY: ':0', // Default display
+          XAUTHORITY: process.env.XAUTHORITY || `${os.homedir()}/.Xauthority`,
+        };
+      } else {
+        throw new Error(`Unsupported session type: ${sessionType}`);
+      }
 
       console.log('Attempting to execute command: gnome-control-center sound');
-      await execAsync('gnome-control-center sound', { env });
-      console.log('Successfully opened audio settings');
+
+      try {
+        // Attempt to run the command with the specified environment
+        await execAsync('gnome-control-center sound', { env });
+        console.log('Successfully opened audio settings');
+      } catch (error) {
+        const errMessage = `Failed to open audio settings: ${error.message}`;
+
+        // Check if the error is related to GTK or display issues
+        if (
+          error.stderr.includes('Gtk-CRITICAL') ||
+          error.stderr.includes('cannot open display')
+        ) {
+          console.error(
+            errMessage,
+            'GTK/Display Error detected. Attempting fallback method.'
+          );
+
+          // Fallback: Use xdg-open with a URL to the audio settings page
+          await execAsync(`xdg-open "gnome://settings/sound"`, { env });
+          console.log(
+            'Fallback method successful (opened sound settings via xdg-open).'
+          );
+        } else {
+          // Re-throw the error if it's not a GTK/Display issue
+          throw new Error(errMessage);
+        }
+      }
     } catch (error) {
       console.error('Failed to open audio settings:', error);
       throw error;
