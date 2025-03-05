@@ -132,7 +132,7 @@
     "build": "yarn -s rebuild && theia build --app-target=\"electron\"",
     "build:electron": "cross-env NODE_OPTIONS=--max-old-space-size=5120 yarn -s rebuild && cross-env NODE_OPTIONS=--max-old-space-size=5120 theia build --app-target=electron --mode development",
     "rebuild": "theia rebuild:electron --cacheRoot .",
-    "watch": "yarn run build:highMemory --watch && yarn start",
+    "watch": "yarn run build:electron --watch && yarn start",
     "start": "electron scripts/theia-electron-main.js --plugins=local-dir:../../plugins",
     "start:debug": "yarn start --log-level=debug",
     "package:cicdLinux": "yarn clean:dist && yarn rebuild && electron-builder --linux",
