@@ -2,36 +2,43 @@ import {
   FrontendApplicationContribution,
   WidgetFactory,
   bindViewContribution,
-} from "@theia/core/lib/browser";
-import { interfaces } from "@theia/core/shared/inversify";
-import { AiSidebar, AiSidebarContribution } from "./AiSidebar";
+} from '@theia/core/lib/browser';
+import { interfaces } from '@theia/core/shared/inversify';
+import { AiSidebar, AiSidebarContribution } from './AiSidebar';
 import {
   MainEditorLeftContribution,
   MainEditorLeftWidget,
-} from "./MainEditorLeft";
-import { AudioWidget, AudioContribution } from "./AudioWidget";
+} from './MainEditorLeft';
+import { AudioWidget, AudioContribution } from './AudioWidget';
 import {
   MainEditorRightContribution,
   MainEditorRightWidget,
-} from "./MainEditorRight";
+} from './MainEditorRight';
 import {
   BottomEditorLeft,
   BottomEditorLeftContribution,
-} from "./BottomEditorLeft";
+} from './BottomEditorLeft';
 import {
   BottomEditorRightContribution,
   BottomEditorRightWidget,
-} from "./BottomEditorRight";
-import { ChatContribution, ChatWidget } from "./ChatWidget";
-import { VideoContribution, VideoWidget } from "./Videowidget";
-import { AudioPlayContribution, AudioPlayWidget } from "./AudioplayWidget";
+} from './BottomEditorRight';
+import { ChatContribution, ChatWidget } from './ChatWidget';
+import { VideoContribution, VideoWidget } from './Videowidget';
+import { AudioPlayContribution, AudioPlayWidget } from './AudioplayWidget';
 import {
   CloudSyncCommandContribution,
   CloudSyncWidget,
   CloudSyncWidgetDialogProps,
-} from "./cloud-sync-widget";
-import { CommandContribution } from "@theia/core";
-import { CloudSyncUtils } from "../../utils/CloudSyncUtils";
+} from './cloud-sync-widget';
+import { CommandContribution } from '@theia/core';
+import { CloudSyncUtils } from '../../utils/CloudSyncUtils';
+import { ChapterContribution, ChapterWidget } from './ChapterWidget';
+import {
+  CreateNewProjectContribution,
+  CreateNewProjectWidget,
+} from './CreateNewProjectWidget';
+import { ProjectInitializer } from '../../functions/initializeNewProject';
+import { createVersificationUSFMClass } from '../../functions/createVersificationUSFM';
 
 export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   // sidebar widget binds
@@ -94,6 +101,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
     }))
     .inSingletonScope();
 
+  //Todo bind Project Initializer
   // Audio widget binds
   bindViewContribution(bind, AudioContribution);
   bind(FrontendApplicationContribution).toService(AudioContribution);
@@ -140,11 +148,36 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
     .inSingletonScope();
 
   bind(CloudSyncWidgetDialogProps).toConstantValue({
-    title: "Cloud Sync",
+    title: 'Cloud Sync',
   });
   bind(CloudSyncWidget).toSelf().inSingletonScope();
   bind(CloudSyncCommandContribution).toSelf().inSingletonScope();
   bind(CommandContribution).toService(CloudSyncCommandContribution);
 
   bind(CloudSyncUtils).toSelf().inSingletonScope();
+  // CHAPTER WIDGET BINDS
+  bindViewContribution(bind, ChapterContribution);
+  bind(FrontendApplicationContribution).toService(ChapterContribution);
+  bind(ChapterWidget).toSelf();
+  bind(WidgetFactory)
+    .toDynamicValue((context) => ({
+      id: ChapterWidget.ID,
+      createWidget: () => context.container.get<ChapterWidget>(ChapterWidget),
+    }))
+    .inSingletonScope();
+
+  // CHAPTER NEW PROJECT WIDGET
+  bindViewContribution(bind, CreateNewProjectContribution);
+  bind(FrontendApplicationContribution).toService(CreateNewProjectContribution);
+  bind(CreateNewProjectWidget).toSelf();
+  bind(WidgetFactory)
+    .toDynamicValue((context) => ({
+      id: CreateNewProjectWidget.ID,
+      createWidget: () =>
+        context.container.get<CreateNewProjectWidget>(CreateNewProjectWidget),
+    }))
+    .inSingletonScope();
+
+  bind(ProjectInitializer).toSelf().inSingletonScope();
+  bind(createVersificationUSFMClass).toSelf().inSingletonScope();
 };
