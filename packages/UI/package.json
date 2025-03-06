@@ -24,6 +24,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "inversify": "^6.0.1",
+    "font-detect-rhl": "^1.1.5",
     "lodash": "^4.17.21",
     "lucide-react": "^0.468.0",
     "npm-watch": "^0.13.0",
