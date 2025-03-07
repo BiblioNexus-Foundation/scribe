@@ -24,8 +24,7 @@
     "baseUrl": "./src/",
     "paths": {
       "@/*": ["./*"]
-    },
-    "typeRoots": ["./node_modules/@types", "./src/types"]
+    }
   },
   "include": ["src", "svg.d.ts", "src/**/*.json"]
 }
