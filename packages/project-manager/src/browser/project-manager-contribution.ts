@@ -1,69 +1,119 @@
-import { injectable } from '@theia/core/shared/inversify';
-import { MenuModelRegistry } from '@theia/core';
-import { ProjectManagerWidget } from './project-manager-widget';
+import { injectable, inject } from '@theia/core/shared/inversify';
+import { MenuModelRegistry } from '@theia/core/lib/common';
 import { AbstractViewContribution } from '@theia/core/lib/browser';
 import { Command, CommandRegistry } from '@theia/core/lib/common/command';
+import {
+  FrontendApplication,
+  FrontendApplicationContribution,
+  ApplicationShell
+} from '@theia/core/lib/browser';
+import { ProjectManagerWidget } from './project-manager-widget';
 
-export const ProjectManagerCommand: Command = { id: 'project-manager:command' };
+export const ProjectManagerCommand: Command = { id: 'project-manager:toggle' };
 
 @injectable()
-export class ProjectManagerContribution extends AbstractViewContribution<ProjectManagerWidget> {
+export class ProjectManagerContribution
+  extends AbstractViewContribution<ProjectManagerWidget>
+  implements FrontendApplicationContribution {
+  
+  @inject(ApplicationShell)
+  protected readonly shell: ApplicationShell;
 
-  /**
-   * `AbstractViewContribution` handles the creation and registering
-   *  of the widget including commands, menus, and keybindings.
-   * 
-   * We can pass `defaultWidgetOptions` which define widget properties such as 
-   * its location `area` (`main`, `left`, `right`, `bottom`), `mode`, and `ref`.
-   * 
-   */
+  @inject(FrontendApplication)
+  protected readonly app: FrontendApplication;
+
+  private overlayWidget: ProjectManagerWidget | undefined;
+
   constructor() {
     super({
       widgetId: ProjectManagerWidget.ID,
       widgetName: ProjectManagerWidget.LABEL,
-      defaultWidgetOptions: { area: 'left' },
-      toggleCommandId: ProjectManagerCommand.id
+      defaultWidgetOptions: {
+        area: 'main',
+      },
+      toggleCommandId: ProjectManagerCommand.id,
     });
   }
 
-  /**
-   * Example command registration to open the widget from the menu, and quick-open.
-   * For a simpler use case, it is possible to simply call:
-   ```ts
-      super.registerCommands(commands)
-   ```
-   *
-   * For more flexibility, we can pass `OpenViewArguments` which define 
-   * options on how to handle opening the widget:
-   * 
-   ```ts
-      toggle?: boolean
-      activate?: boolean;
-      reveal?: boolean;
-   ```
-   *
-   * @param commands
-   */
+  async onStart(app: FrontendApplication): Promise<void> {
+    // Wait for the application to be fully started
+    await app.start;
+    // Show the overlay
+    this.showOverlay();
+  }
+
+  async showOverlay(): Promise<void> {
+    // Create the widget if it doesn't exist
+    if (!this.overlayWidget || this.overlayWidget.isDisposed) {
+      const widget = await this.widgetManager.getOrCreateWidget(
+        ProjectManagerWidget.ID
+      );
+      this.overlayWidget = widget as ProjectManagerWidget;
+      this.styleOverlayWidget();
+      // Add directly to body
+      document.body.appendChild(this.overlayWidget.node);
+    } else if (!document.body.contains(this.overlayWidget.node)) {
+      // If widget exists but not in DOM, re-add it
+      document.body.appendChild(this.overlayWidget.node);
+    }
+
+    this.overlayWidget.node.style.display = 'flex';
+    this.overlayWidget.activate();
+  }
+
+  hideOverlay(): void {
+    if (this.overlayWidget && document.body.contains(this.overlayWidget.node)) {
+      document.body.removeChild(this.overlayWidget.node);
+    }
+  }
+
+  private styleOverlayWidget(): void {
+    if (!this.overlayWidget) return;
+
+    const style = this.overlayWidget.node.style;
+    style.position = 'fixed';
+    style.top = '0';
+    style.left = '0';
+    style.width = '100vw';
+    style.height = '100vh';
+    style.zIndex = '999999';
+    style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+    style.display = 'flex';
+
+    this.overlayWidget.node.classList.add('project-manager-overlay');
+
+    const styleId = 'project-manager-overlay-styles';
+    if (!document.getElementById(styleId)) {
+      const styleEl = document.createElement('style');
+      styleEl.id = styleId;
+      styleEl.textContent = `
+        .project-manager-overlay {
+          position: fixed !important;
+          z-index: 999999 !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+        }
+      `;
+      document.head.appendChild(styleEl);
+    }
+  }
+
+  toggleOverlay(): void {
+    if (this.overlayWidget && document.body.contains(this.overlayWidget.node)) {
+      this.hideOverlay();
+    } else {
+      this.showOverlay();
+    }
+  }
+
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(ProjectManagerCommand, {
-      execute: () => super.openView({ activate: false, reveal: true })
+      execute: () => this.toggleOverlay()
     });
   }
 
-  /**
-   * Example menu registration to contribute a menu item used to open the widget.
-   * Default location when extending the `AbstractViewContribution` is the `View` main-menu item.
-   * 
-   * We can however define new menu path locations in the following way:
-   ```ts
-      menus.registerMenuAction(CommonMenus.HELP, {
-          commandId: 'id',
-          label: 'label'
-      });
-   ```
-   * 
-   * @param menus
-   */
   registerMenus(menus: MenuModelRegistry): void {
     super.registerMenus(menus);
   }

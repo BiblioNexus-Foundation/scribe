@@ -1,9 +1,10 @@
+
 import { ContainerModule } from '@theia/core/shared/inversify';
-import { ProjectManagerWidget } from './project-manager-widget';
-import { ProjectManagerContribution } from './project-manager-contribution';
 import { bindViewContribution, FrontendApplicationContribution, WidgetFactory } from '@theia/core/lib/browser';
 
 import '../../src/browser/style/index.css';
+import { ProjectManagerWidget } from './project-manager-widget';
+import { ProjectManagerContribution } from './project-manager-contribution';
 
 export default new ContainerModule(bind => {
   bindViewContribution(bind, ProjectManagerContribution);
