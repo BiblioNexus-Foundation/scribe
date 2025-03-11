@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { Howl } from 'howler';
+
 interface IWaveformProps {
   url: string;
   control: string;
@@ -19,6 +20,10 @@ export const Waveform: React.FC<IWaveformProps> = ({
   speed,
 }) => {
   const waveformRef = useRef<HTMLDivElement | null>(null);
+  const howlRef = useRef<Howl | null>(null);
+  const isPlayingRef = useRef<boolean>(false);
+  const seekingRef = useRef<boolean>(false);
+  const lastPositionRef = useRef<number>(0);
   const [howl, setHowl] = useState<Howl | null>(null);
   const [waveSurfer, setWaveSurfer] = useState<WaveSurfer | null>(null);
 
@@ -27,10 +32,16 @@ export const Waveform: React.FC<IWaveformProps> = ({
     if (!url || !waveformRef.current) return;
 
     // Cleanup previous instances
+    if (howlRef.current) {
+      howlRef.current.stop();
+      howlRef.current.unload();
+    }
+
     if (howl) {
       howl.unload();
       setHowl(null);
     }
+
     if (waveSurfer) {
       waveSurfer.destroy();
       setWaveSurfer(null);
@@ -52,31 +63,98 @@ export const Waveform: React.FC<IWaveformProps> = ({
     });
 
     ws.on('finish', () => {
+      isPlayingRef.current = false;
       setControl('stop');
     });
 
+    ws.on('interaction', (position) => {
+      if (!howlRef.current) return;
+
+      lastPositionRef.current = position;
+
+      seekingRef.current = true;
+
+      const wasPlaying = isPlayingRef.current;
+
+      try {
+        const duration = howlRef.current.duration();
+        const seekTime = position * duration;
+
+        howlRef.current.seek(seekTime);
+
+        ws.seekTo(position);
+
+        if (wasPlaying) {
+          isPlayingRef.current = true;
+        }
+      } catch (error) {
+        console.error('Seeking error:', error);
+      } finally {
+        seekingRef.current = false;
+      }
+    });
+
+    ws.on('ready', () => {
+      ws.setVolume(0);
+    });
+
     ws.load(url);
-    ws.setVolume(0);
+
     const sound = new Howl({
       src: [url],
       volume: volume,
       rate: speed,
       format: ['mp3', 'wav'],
       html5: true,
-      onplay: () => ws.play(),
-      onpause: () => ws.pause(),
-      onstop: () => ws.stop(),
-      onend: () => ws.stop(),
+      onload: () => {
+        isPlayingRef.current = false;
+      },
+      onplay: () => {
+        if (!seekingRef.current) {
+          isPlayingRef.current = true;
+          ws.play();
+        }
+      },
+      onpause: () => {
+        if (!seekingRef.current) {
+          isPlayingRef.current = false;
+          ws.pause();
+        }
+      },
+      onstop: () => {
+        isPlayingRef.current = false;
+        ws.stop();
+        ws.seekTo(0);
+      },
+      onend: () => {
+        isPlayingRef.current = false;
+        ws.stop();
+        ws.seekTo(0);
+        setControl('stop');
+      },
       onloaderror: (id, error) => {
         console.error('Howl loading error:', error);
-        ws.stop();
+      },
+      onseek: () => {
+        if (!seekingRef.current && howlRef.current) {
+          const currentPos = howlRef.current.seek() as number;
+          const duration = howlRef.current.duration();
+          if (duration > 0) {
+            ws.seekTo(currentPos / duration);
+          }
+        }
       },
     });
 
     setWaveSurfer(ws);
     setHowl(sound);
+    howlRef.current = sound;
 
     return () => {
+      if (howlRef.current) {
+        howlRef.current.stop();
+        howlRef.current.unload();
+      }
       ws.destroy();
     };
   }, [url, theme]);
@@ -87,13 +165,21 @@ export const Waveform: React.FC<IWaveformProps> = ({
     try {
       switch (control) {
         case 'play': {
+          const currentHowlPos = howl.seek() as number;
+          const duration = howl.duration();
+          if (duration > 0) {
+            waveSurfer.seekTo(currentHowlPos / duration);
+          }
+
           const newVolume = Math.min(Math.max(volume, 0), 1);
           howl.volume(newVolume);
           howl.play();
+          isPlayingRef.current = true;
           break;
         }
         case 'pause': {
           howl.pause();
+          isPlayingRef.current = false;
           break;
         }
         case 'rewind': {
@@ -104,6 +190,8 @@ export const Waveform: React.FC<IWaveformProps> = ({
         }
         case 'stop': {
           howl.stop();
+          waveSurfer.seekTo(0);
+          isPlayingRef.current = false;
           break;
         }
       }
@@ -113,7 +201,7 @@ export const Waveform: React.FC<IWaveformProps> = ({
   }, [control]);
 
   useEffect(() => {
-    if (howl && waveSurfer) {
+    if (howl) {
       const newVolume = Math.min(Math.max(volume, 0), 1);
       howl.volume(newVolume);
     }

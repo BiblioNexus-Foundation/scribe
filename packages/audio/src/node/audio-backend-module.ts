@@ -30,104 +30,174 @@ export class FFmpegServerImpl implements FFmpegServer {
       this.initializeDefaultWinDevices();
     }
   }
-
-  // async openAudioSettings(): Promise<void> {
-  //   if (os.platform() !== 'linux') {
-  //     throw new Error('This function is only supported on Linux systems');
-  //   }
-
-  //   try {
-  //     // Get the current session type
-  //     const sessionType = process.env.XDG_SESSION_TYPE || '';
-  //     console.log('Current session type:', sessionType);
-
-  //     const baseEnv = {
-  //       ...process.env,
-  //       XDG_CURRENT_DESKTOP: 'GNOME',
-  //     };
-
-  //     // Configure environment based on session type
-  //     const env =
-  //       sessionType.toLowerCase() === 'wayland'
-  //         ? baseEnv
-  //         : {
-  //             ...baseEnv,
-  //             DISPLAY: ':0',
-  //             XAUTHORITY:
-  //               process.env.XAUTHORITY || `${os.homedir()}/.Xauthority`,
-  //           };
-
-  //     console.log('Attempting to execute command: gnome-control-center sound');
-  //     await execAsync('gnome-control-center sound', { env });
-  //     console.log('Successfully opened audio settings');
-  //   } catch (error) {
-  //     console.error('Failed to open audio settings:', error);
-  //     throw error;
-  //   }
-  // }
-
   async openAudioSettings(): Promise<void> {
     if (os.platform() !== 'linux') {
       throw new Error('This function is only supported on Linux systems');
     }
 
     try {
-      // Get the current session type
+      // Get the current session type and desktop environment
       const sessionType = process.env.XDG_SESSION_TYPE || '';
+      const desktopEnv = process.env.XDG_CURRENT_DESKTOP || '';
       console.log('Current session type:', sessionType);
+      console.log('Current desktop environment:', desktopEnv);
 
-      let env: NodeJS.ProcessEnv;
+      let env: NodeJS.ProcessEnv = { ...process.env };
+      let command = 'gnome-control-center sound';
+      let fallbackCommands: string[] = [];
 
+      // Determine if we're dealing with GNOME
+      const isGnome = desktopEnv.toLowerCase().includes('gnome');
+
+      // Handle different display servers and desktop environments
       if (sessionType.toLowerCase() === 'wayland') {
-        env = {
-          ...process.env,
-          XDG_CURRENT_DESKTOP: 'GNOME',
-          DISPLAY: process.env.DISPLAY, // Keep existing DISPLAY
-          WAYLAND_DISPLAY: process.env.WAYLAND_DISPLAY,
-        };
-      } else if (
-        sessionType.toLowerCase() === 'x11' ||
-        sessionType.toLowerCase() === ''
-      ) {
-        env = {
-          ...process.env,
-          XDG_CURRENT_DESKTOP: 'GNOME',
-          DISPLAY: ':0', // Default display
-          XAUTHORITY: process.env.XAUTHORITY || `${os.homedir()}/.Xauthority`,
-        };
+        // For Wayland sessions
+        env.XDG_CURRENT_DESKTOP = env.XDG_CURRENT_DESKTOP || 'GNOME';
+        // Make sure we're using the right Wayland display
+        if (!env.WAYLAND_DISPLAY) {
+          env.WAYLAND_DISPLAY = 'wayland-0';
+        }
+        // Add fallback commands
+        fallbackCommands = [
+          `xdg-open "gnome://settings/sound"`,
+          `dbus-send --session --dest=org.gnome.Settings --type=method_call /org/gnome/Settings org.gtk.Actions.Activate string:"launch-panel" string:"sound"`,
+          `gio launch org.gnome.Settings sound`,
+        ];
       } else {
-        throw new Error(`Unsupported session type: ${sessionType}`);
-      }
+        // Default to X11 or other display servers
+        env.XDG_CURRENT_DESKTOP = env.XDG_CURRENT_DESKTOP || 'GNOME';
 
-      console.log('Attempting to execute command: gnome-control-center sound');
+        // Try to determine the correct display
+        if (!env.DISPLAY) {
+          // Check common display values
+          for (const display of [':0', ':1', ':0.0']) {
+            try {
+              const { stdout } = await execAsync(
+                `xdpyinfo -display ${display} >/dev/null 2>&1 || echo "failed"`,
+                { env }
+              );
+              if (!stdout.includes('failed')) {
+                env.DISPLAY = display;
+                break;
+              }
+            } catch (e) {}
+          }
 
-      try {
-        // Attempt to run the command with the specified environment
-        await execAsync('gnome-control-center sound', { env });
-        console.log('Successfully opened audio settings');
-      } catch (error) {
-        const errMessage = `Failed to open audio settings: ${error.message}`;
+          if (!env.DISPLAY) {
+            env.DISPLAY = ':0';
+          }
+        }
 
-        // Check if the error is related to GTK or display issues
-        if (
-          error.stderr.includes('Gtk-CRITICAL') ||
-          error.stderr.includes('cannot open display')
-        ) {
-          console.error(
-            errMessage,
-            'GTK/Display Error detected. Attempting fallback method.'
-          );
+        if (!env.XAUTHORITY) {
+          const potentialXauthorityPaths = [
+            `${os.homedir()}/.Xauthority`,
+            '/run/user/1000/gdm/Xauthority',
+            '/var/run/lightdm/root/:0',
+            '/var/lib/gdm/:0.Xauth',
+            '/var/lib/gdm3/:0.Xauth',
+          ];
 
-          // Fallback: Use xdg-open with a URL to the audio settings page
-          await execAsync(`xdg-open "gnome://settings/sound"`, { env });
-          console.log(
-            'Fallback method successful (opened sound settings via xdg-open).'
-          );
-        } else {
-          // Re-throw the error if it's not a GTK/Display issue
-          throw new Error(errMessage);
+          for (const path of potentialXauthorityPaths) {
+            try {
+              await fs.stat(path);
+              env.XAUTHORITY = path;
+              break;
+            } catch (e) {}
+          }
+        }
+
+        // Fallback commands for X11
+        fallbackCommands = [
+          `xdg-open "gnome://settings/sound"`,
+          `dbus-send --session --dest=org.gnome.Settings --type=method_call /org/gnome/Settings org.gtk.Actions.Activate string:"launch-panel" string:"sound"`,
+          `gio launch org.gnome.Settings sound`,
+        ];
+
+        if (!isGnome) {
+          command = ''; // Will be determined in the next steps
+
+          // KDE Plasma
+          if (desktopEnv.toLowerCase().includes('kde')) {
+            command = 'kcmshell5 kcm_pulseaudio';
+            fallbackCommands = ['systemsettings5 --page=sound', 'pavucontrol'];
+          }
+          // XFCE
+          else if (desktopEnv.toLowerCase().includes('xfce')) {
+            command = 'xfce4-settings-manager --dialog=sound';
+            fallbackCommands = ['pavucontrol'];
+          }
+          // LXDE/LXQt
+          else if (desktopEnv.toLowerCase().includes('lx')) {
+            command = 'pavucontrol';
+          }
+          // Cinnamon
+          else if (desktopEnv.toLowerCase().includes('cinnamon')) {
+            command = 'cinnamon-settings sound';
+            fallbackCommands = ['pavucontrol'];
+          }
+          // MATE
+          else if (desktopEnv.toLowerCase().includes('mate')) {
+            command = 'mate-volume-control';
+            fallbackCommands = ['pavucontrol'];
+          }
+          // Default to GNOME if nothing else matched
+          else {
+            command = 'gnome-control-center sound';
+          }
         }
       }
+
+      // Fallbacks that should work on most systems as a last resort
+      fallbackCommands.push('pavucontrol', 'alsamixer');
+
+      console.log(
+        `Using DISPLAY=${env.DISPLAY}, XAUTHORITY=${
+          env.XAUTHORITY || 'not set'
+        }`
+      );
+      console.log(`Attempting to execute command: ${command}`);
+
+      // Primary command first
+      if (command) {
+        try {
+          await execAsync(command, { env });
+          console.log('Successfully opened audio settings');
+          return;
+        } catch (error) {
+          console.error(`Primary command failed: ${error.message}`);
+
+          if (
+            error.stderr &&
+            (error.stderr.includes('Gtk-CRITICAL') ||
+              error.stderr.includes('cannot open display'))
+          ) {
+            console.error(
+              'GTK/Display Error detected. Proceeding with fallback methods.'
+            );
+            // Continue to fallbacks
+          } else {
+            console.error('Unknown error detected. Trying fallback methods.');
+          }
+        }
+      }
+
+      // Try fallback commands in sequence
+      for (let i = 0; i < fallbackCommands.length; i++) {
+        try {
+          console.log(
+            `Trying fallback command (${i + 1}/${fallbackCommands.length}): ${
+              fallbackCommands[i]
+            }`
+          );
+          await execAsync(fallbackCommands[i], { env });
+          console.log(`Fallback command successful: ${fallbackCommands[i]}`);
+          return;
+        } catch (error) {
+          console.error(`Fallback command failed: ${error.message}`);
+        }
+      }
+
+      throw new Error('All attempts to open audio settings failed');
     } catch (error) {
       console.error('Failed to open audio settings:', error);
       throw error;
