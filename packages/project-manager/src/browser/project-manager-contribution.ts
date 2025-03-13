@@ -71,12 +71,12 @@ export class ProjectManagerContribution
     if (!this.overlayWidget) return;
 
     const style = this.overlayWidget.node.style;
-    style.position = 'fixed';
-    style.top = '0';
-    style.left = '0';
-    style.width = '100vw';
-    style.height = '100vh';
-    style.zIndex = '999999';
+    // style.position = 'fixed';
+    // style.top = '0';
+    // style.left = '0';
+    // style.width = '100vw';
+    // style.height = '100vh';
+    // style.zIndex = '999999';
     style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
     style.display = 'flex';
 

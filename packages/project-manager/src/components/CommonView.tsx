@@ -1,6 +1,16 @@
 import React = require("react");
 
-const CommonView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+interface CommonViewProps {
+  onClose: () => void;
+  onNewProject: () => void;
+  onOpenProject: () => void;
+}
+
+const CommonView: React.FC<CommonViewProps> = ({
+  onClose,
+  onNewProject,
+  onOpenProject
+}) => {
   return (
     <div
       style={{
@@ -27,7 +37,6 @@ const CommonView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <p className="text-cyan-300 text-center mt-5 tracking-wide text-xl leading-6 font-normal">
           Scripture editing made simple
         </p>
-
       </div>
       <div style={{ display: "flex", gap: "20px", marginBottom: "40px" }}>
         <div
@@ -68,6 +77,7 @@ const CommonView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             border: "2px solid #fff",
             color: "white",
           }}
+          onClick={onOpenProject}
           onMouseOver={(e) => (e.currentTarget.style.background = "#06b6d4")}
           onMouseOut={(e) => (e.currentTarget.style.background = "#222")}
         >
@@ -90,6 +100,7 @@ const CommonView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             border: "2px solid #fff",
             color: "white",
           }}
+          onClick={onNewProject}
           onMouseOver={(e) => (e.currentTarget.style.background = "#06b6d4")}
           onMouseOut={(e) => (e.currentTarget.style.background = "#222")}
         >
