@@ -1,25 +1,26 @@
-import * as React from "@theia/core/shared/react";
+import * as React from '@theia/core/shared/react';
 import {
   inject,
   injectable,
   postConstruct,
-} from "@theia/core/shared/inversify";
-import { ReactWidget } from "@theia/core/lib/browser/widgets/react-widget";
+} from '@theia/core/shared/inversify';
+import { ReactWidget } from '@theia/core/lib/browser/widgets/react-widget';
 import {
   AbstractViewContribution,
   FrontendApplicationContribution,
   FrontendApplication,
-} from "@theia/core/lib/browser";
-import { FrontendApplicationStateService } from "@theia/core/lib/browser/frontend-application-state";
-import { WorkspaceService } from "@theia/workspace/lib/browser";
-import DraftbodySection from "../../components/DraftbodySection";
-import Button from "../../components/Button";
-import { IconPlus, IconX } from "@tabler/icons-react";
+} from '@theia/core/lib/browser';
+import { FrontendApplicationStateService } from '@theia/core/lib/browser/frontend-application-state';
+import { WorkspaceService } from '@theia/workspace/lib/browser';
+import DraftbodySection from '../../components/DraftbodySection';
+import Button from '../../components/Button';
+import { IconPlus, IconX } from '@tabler/icons-react';
+import Toolbar from '../../components/Toolbar/Toolbar';
 
 @injectable()
 export class ChapterWidget extends ReactWidget {
-  static readonly ID = "Chapter-page-widget";
-  static readonly LABER = "main-chapter";
+  static readonly ID = 'Chapter-page-widget';
+  static readonly LABER = 'main-chapter';
 
   @postConstruct()
   protected init(): void {
@@ -37,7 +38,8 @@ export class ChapterWidget extends ReactWidget {
   render(): React.ReactNode {
     return (
       <div>
-        <div className="flex justify-between">
+        <Toolbar />
+        {/* <div className="flex justify-between">
           <div className="flex">
             <Button
               label="NIV"
@@ -68,7 +70,7 @@ export class ChapterWidget extends ReactWidget {
             icon={<IconX size={15} stroke={2} strokeLinejoin="miter" />}
           />
         </div>
-        <DraftbodySection />
+        <DraftbodySection /> */}
       </div>
     );
   }
@@ -90,13 +92,13 @@ export class ChapterContribution
       widgetId: ChapterWidget.ID,
       widgetName: ChapterWidget.LABER,
       defaultWidgetOptions: {
-        area: "main",
+        area: 'main',
       },
     });
   }
 
   async onStart(app: FrontendApplication): Promise<void> {
-    this.stateService.reachedState("ready").then(() => {
+    this.stateService.reachedState('ready').then(() => {
       this.openView({
         activate: true,
         reveal: true,

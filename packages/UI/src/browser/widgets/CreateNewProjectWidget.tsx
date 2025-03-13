@@ -23,6 +23,7 @@ import {
   FileDialogService,
   OpenFileDialogProps,
 } from '@theia/filesystem/lib/browser';
+import ProjectImportForm from '../../components/createProject/NewProjectComponents';
 
 interface ProjectDataType {
   ProjectName: string;
@@ -321,8 +322,8 @@ export class CreateNewProjectWidget extends ReactWidget {
             Create New Project
           </button>
         </DialogTrigger> */}
-          <DialogContent className="max-w-3xl mt-3 bg-neutral-800 border-none z-50">
-            <CreateProjectComponents
+          <DialogContent className="max-w-fit p-0 mt-3 bg-neutral-800 border-none z-50">
+            {/* <CreateProjectComponents
               activeDropdown={this.state.activeDropdown}
               activeBooks={this.state.activeBooks}
               settings={this.state.settings}
@@ -335,6 +336,12 @@ export class CreateNewProjectWidget extends ReactWidget {
               handleInputChange={this.handleInputChange}
               handleSubmit={this.handleSubmit}
               onFileSelect={this.handleFileSelect}
+            /> */}
+            <ProjectImportForm
+              onImport={() => {}}
+              onCancel={() => {}}
+              onCreateProject={() => {}}
+              defaultFolder={''}
             />
           </DialogContent>
         </Dialog>
