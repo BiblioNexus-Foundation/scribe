@@ -26,61 +26,53 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
   const [licence, setLicence] = React.useState<string>("MIT");
   const [showAdvancedOptions, setShowAdvancedOptions] = React.useState<boolean>(false);
   const [validation, setValidation] = React.useState<Validation>([]);
+  const [isLoadingLanguages, setIsLoadingLanguages] = React.useState<boolean>(false);
+  const languagesLoaded = React.useRef<boolean>(false);
 
-  // Fetching languages from JSON file
+  // Fetching languages
   React.useEffect(() => {
-    const fetchLanguages = async () => {
-      console.log("fetching lang");
-
-      try {
-        const response = await fetch('../../../../packages/project-manager/src/assets/languages.json');
-        if (!response.ok) {
-          throw new Error('Failed to fetch languages');
-        }
-        const data = await response.json();
-        setLanguages(data);
-      } catch (error) {
-        console.error("Failed to load languages:", error);
-        // Setting Fallback language
-        setLanguages([{
-          "lc": "hi",
-          "ld": "ltr",
-          "alt": ["Khadi Boli", "Khari Boli", "Dakhini", "Hindi-Urdu", "Khariboli"],
-          "hc": "IN",
-          "ln": "\u0939\u093f\u0928\u094d\u0926\u0940, \u0939\u093f\u0902\u0926\u0940",
-          "ang": "Hindi",
-          "lr": "Asia",
-          "pk": 2264,
-          "gw": true,
-          "cc": [
-            "BN",
-            "BR",
-            "BT",
-            "AR",
-            "FR",
-            "DE",
-            "KR",
-            "PA",
-            "ES",
-            "GB",
-            "MY",
-            "OM",
-            "NP",
-            "NZ",
-            "ZA",
-            "US",
-            "AU",
-            "CA",
-            "IN",
-            "SG",
-            "MM"
-          ]
-        }]);
-      }
-    };
-
-    fetchLanguages();
+    if (!languagesLoaded.current) {
+      fetchLanguages();
+    }
   }, []);
+
+  // Function to fetch languages
+  const fetchLanguages = async (): Promise<void> => {
+    if (languagesLoaded.current || isLoadingLanguages) {
+      return;
+    }
+    setIsLoadingLanguages(true);
+    try {
+      const response = await fetch('../../../../packages/project-manager/src/assets/languages.json');
+      if (!response.ok) {
+        throw new Error('Failed to fetch languages');
+      }
+      const data = await response.json();
+      setLanguages(data);
+      languagesLoaded.current = true;
+    } catch (error) {
+      console.error("Failed to load languages:", error);
+      // Setting Fallback language
+      setLanguages([{
+        "lc": "hi",
+        "ld": "ltr",
+        "alt": ["Khadi Boli", "Khari Boli", "Dakhini", "Hindi-Urdu", "Khariboli"],
+        "hc": "IN",
+        "ln": "\u0939\u093f\u0928\u094d\u0926\u0940, \u0939\u093f\u0902\u0926\u0940",
+        "ang": "Hindi",
+        "lr": "Asia",
+        "pk": 2264,
+        "gw": true,
+        "cc": [
+          "BN", "BR", "BT", "AR", "FR", "DE", "KR", "PA", "ES", "GB",
+          "MY", "OM", "NP", "NZ", "ZA", "US", "AU", "CA", "IN", "SG", "MM"
+        ]
+      }]);
+      languagesLoaded.current = true;
+    } finally {
+      setIsLoadingLanguages(false);
+    }
+  };
 
   const handleBrowseDirectory = async () => {
     if (!fileDialogService) {
@@ -318,6 +310,7 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
               }}
               placeholder="Select source language"
               label={"Source Language"}
+              isLoading={isLoadingLanguages}
             />
             {validation.find(item => item.field === 'sourceLanguage') && (
               <div style={{ color: '#ff4d4f', marginTop: '5px' }}>{validation.find(item => item.field === 'sourceLanguage')?.error}</div>
@@ -333,6 +326,7 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
               }}
               placeholder="Select target language"
               label={"Target Language"}
+              isLoading={isLoadingLanguages}
             />
             {validation.find(item => item.field === 'targetLanguage') && (
               <div style={{ color: '#ff4d4f', marginTop: '5px' }}>{validation.find(item => item.field === 'targetLanguage')?.error}</div>
