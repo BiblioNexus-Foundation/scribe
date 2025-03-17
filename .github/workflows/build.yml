@@ -10,9 +10,8 @@ on:
     branches:
       - development
       - QA
-      
-jobs:
 
+jobs:
   build-linux:
     name: Build on Linux - ${{ matrix.arch }}
     strategy:
@@ -84,7 +83,7 @@ jobs:
     timeout-minutes: 60
 
     env:
-      NODE_OPTIONS: --max_old_space_size=5120 
+      NODE_OPTIONS: --max_old_space_size=5120
 
     steps:
       - name: Checkout
@@ -138,7 +137,7 @@ jobs:
     timeout-minutes: 60
 
     env:
-      NODE_OPTIONS: --max_old_space_size=5120 
+      NODE_OPTIONS: --max_old_space_size=5120
 
     steps:
       - name: Checkout
@@ -150,12 +149,31 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.10'
-          
+
       - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
           registry-url: 'https://registry.npmjs.org'
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Cache yarn dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install ripgrep via brew (If possible)
+        run: brew install ripgrep
 
       - name: Verify memory setting (macOS)
         run: echo $NODE_OPTIONS

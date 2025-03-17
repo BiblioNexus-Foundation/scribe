@@ -7,9 +7,7 @@
   "scripts": {
     "build": "tsc -b",
     "watch": "npm-watch build",
-    "production": "yarn run build",
-    "clean": "rimraf lib && rimraf node_modules && rimraf *.tsbuildinfo",
-    "productionCICD": "yarn run build"
+    "clean": "rimraf lib && rimraf node_modules && rimraf *.tsbuildinfo"
   },
   "author": "",
   "license": "ISC",
@@ -19,8 +17,8 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
-    "@theia/core": "1.51.0",
-    "@theia/workspace": "1.51.0"
+    "@theia/core": "1.57.0",
+    "@theia/workspace": "1.57.0"
   },
   "theiaExtensions": [
     {
