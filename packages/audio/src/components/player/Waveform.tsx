@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { Howl } from 'howler';
 
@@ -21,29 +21,61 @@ export const Waveform: React.FC<IWaveformProps> = ({
 }) => {
   const waveformRef = useRef<HTMLDivElement | null>(null);
   const howlRef = useRef<Howl | null>(null);
-  const [howl, setHowl] = useState<Howl | null>(null);
-  const [waveSurfer, setWaveSurfer] = useState<WaveSurfer | null>(null);
+  const waveSurferRef = useRef<WaveSurfer | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const playingRef = useRef<boolean>(false);
 
-  // Initialize WaveSurfer and Howl
-  useEffect(() => {
-    if (!url || !waveformRef.current) return;
+  const updateWaveformPosition = () => {
+    if (howlRef.current && waveSurferRef.current && playingRef.current) {
+      try {
+        const currentTime = howlRef.current.seek() as number;
+        const duration = howlRef.current.duration();
 
-    // Cleanup previous instances
+        if (duration && duration > 0 && typeof currentTime === 'number') {
+          waveSurferRef.current.seekTo(currentTime / duration);
+        }
+      } catch (err) {
+        console.error('Error in animation frame:', err);
+      }
+
+      animationFrameRef.current = window.requestAnimationFrame(
+        updateWaveformPosition
+      );
+    }
+  };
+
+  const startProgressAnimation = () => {
+    stopProgressAnimation();
+    playingRef.current = true;
+    animationFrameRef.current = window.requestAnimationFrame(
+      updateWaveformPosition
+    );
+  };
+
+  const stopProgressAnimation = () => {
+    playingRef.current = false;
+    if (animationFrameRef.current) {
+      window.cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+  };
+
+  const cleanupAudio = () => {
+    stopProgressAnimation();
     if (howlRef.current) {
       howlRef.current.stop();
       howlRef.current.unload();
+      howlRef.current = null;
     }
-
-    if (howl) {
-      howl.unload();
-      setHowl(null);
+    if (waveSurferRef.current) {
+      waveSurferRef.current.destroy();
+      waveSurferRef.current = null;
     }
+  };
 
-    if (waveSurfer) {
-      waveSurfer.destroy();
-      setWaveSurfer(null);
-    }
-
+  useEffect(() => {
+    if (!url || !waveformRef.current) return;
+    cleanupAudio();
     // Create WaveSurfer instance
     const ws = WaveSurfer.create({
       container: waveformRef.current,
@@ -58,15 +90,23 @@ export const Waveform: React.FC<IWaveformProps> = ({
       barRadius: 2,
       backend: 'WebAudio',
     });
-
+    waveSurferRef.current = ws;
     ws.on('finish', () => {
       setControl('stop');
+      stopProgressAnimation();
     });
 
-    // Handle seeking when user clicks on waveform
-    ws.on('seeking', (position) => {
+    ws.on('click', (relativeX) => {
       if (howlRef.current) {
-        howlRef.current.seek(position * howlRef.current.duration());
+        const duration = howlRef.current.duration();
+        const newPos = duration * relativeX;
+        howlRef.current.seek(newPos);
+
+        if (playingRef.current) {
+          howlRef.current.play();
+        } else {
+          ws.seekTo(relativeX);
+        }
       }
     });
 
@@ -79,78 +119,75 @@ export const Waveform: React.FC<IWaveformProps> = ({
       rate: speed,
       format: ['mp3', 'wav'],
       html5: true,
-      onplay: () => ws.play(),
-      onpause: () => ws.pause(),
+      pool: 1,
+      onplay: startProgressAnimation,
+      onpause: stopProgressAnimation,
       onstop: () => {
-        ws.stop();
-        ws.seekTo(0);
+        if (ws) ws.seekTo(0);
+        stopProgressAnimation();
       },
       onend: () => {
-        ws.stop();
+        if (ws) ws.seekTo(0);
+        stopProgressAnimation();
         setControl('stop');
       },
       onloaderror: (id, error) => {
-        console.error('Howl loading error:', error);
-        ws.stop();
+        console.error('Howl load error:', error);
+      },
+      onplayerror: (id, error) => {
+        console.error('Howl play error:', error);
       },
     });
 
-    setWaveSurfer(ws);
-    setHowl(sound);
     howlRef.current = sound;
 
-    return () => {
-      if (howlRef.current) {
-        howlRef.current.stop();
-        howlRef.current.unload();
-      }
-      ws.destroy();
-    };
+    return cleanupAudio;
   }, [url, theme]);
 
   useEffect(() => {
-    if (!howl || !waveSurfer) return;
+    const sound = howlRef.current;
+    const ws = waveSurferRef.current;
+
+    if (!sound || !ws) return;
 
     try {
       switch (control) {
         case 'play': {
-          const newVolume = Math.min(Math.max(volume, 0), 1);
-          howl.volume(newVolume);
-          howl.play();
+          sound.volume(Math.min(Math.max(volume, 0), 1));
+          sound.play();
           break;
         }
         case 'pause': {
-          howl.pause();
+          sound.pause();
           break;
         }
         case 'rewind': {
-          howl.seek(0);
-          waveSurfer.seekTo(0);
+          sound.seek(0);
+          ws.seekTo(0);
           setControl('play');
           break;
         }
         case 'stop': {
-          howl.stop();
-          waveSurfer.seekTo(0);
+          sound.stop();
+          ws.seekTo(0);
           break;
         }
       }
     } catch (error) {
-      console.error('Playback control error:', error);
+      console.error('Control error:', error);
     }
   }, [control]);
 
   useEffect(() => {
-    if (howl) {
-      const newVolume = Math.min(Math.max(volume, 0), 1);
-      howl.volume(newVolume);
+    if (howlRef.current) {
+      howlRef.current.volume(Math.min(Math.max(volume, 0), 1));
     }
   }, [volume]);
 
   useEffect(() => {
-    if (howl && waveSurfer) {
-      howl.rate(speed);
-      waveSurfer.setPlaybackRate(speed);
+    if (howlRef.current && waveSurferRef.current) {
+      howlRef.current.rate(speed);
+      waveSurferRef.current.setPlaybackRate(speed);
     }
   }, [speed]);
 
