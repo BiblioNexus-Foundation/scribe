@@ -1,0 +1,40 @@
+{
+  "name": "bcv-navigator",
+  "keywords": [
+    "theia-extension"
+  ],
+  "version": "0.0.0",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "dependencies": {
+    "@theia/core": "1.57.0",
+    "tailwindcss-animate": "^1.0.7",
+    "@tailwindcss/typography": "^0.5.14",
+    "@tabler/icons-react": "^3.3.0"
+  },
+  "devDependencies": {
+    "rimraf": "*",
+    "typescript": "^5.6.2",
+    "@testing-library/react": "^11.2.7",
+    "tailwindcss": "^3.4.14",
+    "@types/jest": "^26.0.20",
+    "jest": "^26.6.3",
+    "ts-node": "^10.9.1",
+    "ts-jest": "^26.5.6"
+  },
+  "scripts": {
+    "prepare": "yarn run clean && yarn run build",
+    "build:style": "npx tailwindcss -i ./src/browser/style/globals.css -o ./lib/output-tailwind.css -c ./tailwind.config.js",
+    "clean": "rimraf lib",
+    "build": "tsc && yarn build:style",
+    "watch": "tsc -w",
+    "test": "jest --config configs/jest.config.ts"
+  },
+  "theiaExtensions": [
+    {
+      "frontend": "lib/browser/bcv-navigator-frontend-module"
+    }
+  ]
+}
