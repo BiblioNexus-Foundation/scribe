@@ -1,25 +1,26 @@
-import * as React from "@theia/core/shared/react";
+import * as React from '@theia/core/shared/react';
 import {
   inject,
   injectable,
   postConstruct,
-} from "@theia/core/shared/inversify";
-import { ReactWidget } from "@theia/core/lib/browser/widgets/react-widget";
+} from '@theia/core/shared/inversify';
+import { ReactWidget } from '@theia/core/lib/browser/widgets/react-widget';
 import {
   AbstractViewContribution,
   FrontendApplicationContribution,
   FrontendApplication,
-} from "@theia/core/lib/browser";
-import { FrontendApplicationStateService } from "@theia/core/lib/browser/frontend-application-state";
-import { WorkspaceService } from "@theia/workspace/lib/browser";
-import DraftbodySection from "../../components/DraftbodySection";
-import Button from "../../components/Button";
-import { IconPlus, IconX } from "@tabler/icons-react";
+} from '@theia/core/lib/browser';
+import { FrontendApplicationStateService } from '@theia/core/lib/browser/frontend-application-state';
+import { WorkspaceService } from '@theia/workspace/lib/browser';
+import DraftbodySection from '../../components/DraftbodySection';
+import Button from '../../components/Button';
+import { IconPlus, IconX } from '@tabler/icons-react';
+import Toolbar from '../../components/Toolbar/Toolbar';
 
 @injectable()
 export class ChapterWidget extends ReactWidget {
-  static readonly ID = "Chapter-page-widget";
-  static readonly LABER = "main-chapter";
+  static readonly ID = 'Chapter-page-widget';
+  static readonly LABER = 'main-chapter';
 
   @postConstruct()
   protected init(): void {
@@ -38,9 +39,10 @@ export class ChapterWidget extends ReactWidget {
     return (
       <div>
         <div className="flex justify-between">
+          <Toolbar />
           <div className="flex">
             <Button
-              label="NIV"
+              label="NIVV"
               className="flex-row-reverse border-none rounded-none  dark:bg-gray-900  gap-3  text-[10px] flex item-center justify-content-center dark:text-gray-300 text-gray-600"
             />
             <Button
@@ -90,13 +92,13 @@ export class ChapterContribution
       widgetId: ChapterWidget.ID,
       widgetName: ChapterWidget.LABER,
       defaultWidgetOptions: {
-        area: "main",
+        area: 'main',
       },
     });
   }
 
   async onStart(app: FrontendApplication): Promise<void> {
-    this.stateService.reachedState("ready").then(() => {
+    this.stateService.reachedState('ready').then(() => {
       this.openView({
         activate: true,
         reveal: true,

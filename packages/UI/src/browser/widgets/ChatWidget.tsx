@@ -51,12 +51,12 @@ export class ChatWidget extends ReactWidget {
       <div className="bg-[var(--theia-editor-background)]">
         <ScrollArea className="w-full h-full overflow-y-auto bg-[var(--theia-editor-background)] pb-2">
           <ScrollBar orientation="vertical" />
-
+          new changesdjsh
           <div className="flex items-center sticky bg-[var(--theia-editor-background)]  top-0 z-20 gap-[5px] border-b py-2.5 px-2 border-[rgb(250 250 250 / 0.1)] justify-center">
             <Button
               label="Discuss"
               className="dark:border-cyan-900 bg-cyan-100 hover:bg-cyan-200 dark:bg-cyan-950  border-cyan-300 text-cyan-700"
-              />
+            />
             <Button label="Suggest" />
             <Button label="Checks" />
           </div>
