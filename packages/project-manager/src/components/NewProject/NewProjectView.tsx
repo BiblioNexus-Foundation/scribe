@@ -2,6 +2,7 @@ import React = require("react");
 import { URI } from "@theia/core";
 import { FileDialogService, OpenFileDialogProps } from "@theia/filesystem/lib/browser";
 import LanguageSelector, { LanguageData } from "./LanguageSelector";
+import FileSelectionPanel, { FileInfo } from "./FileSelectionPanel";
 
 interface NewProjectViewProps {
   onBack: () => void;
@@ -13,6 +14,17 @@ interface ValidationItem {
   error: string;
 }
 type Validation = ValidationItem[];
+
+interface ValidationQueue {
+  isProcessing: boolean;
+  pendingFiles: string[];
+}
+
+interface FileValidationStatus {
+  isValid?: boolean;
+  isProcessing: boolean;
+  errorDescription?: string;
+}
 
 const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogService }) => {
   const [projectLocation, setProjectLocation] = React.useState<string>("");
@@ -27,7 +39,137 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
   const [showAdvancedOptions, setShowAdvancedOptions] = React.useState<boolean>(false);
   const [validation, setValidation] = React.useState<Validation>([]);
   const [isLoadingLanguages, setIsLoadingLanguages] = React.useState<boolean>(false);
+  const [activeFilesPanel, setActiveFilesPanel] = React.useState<"source" | "target" | null>(null);
   const languagesLoaded = React.useRef<boolean>(false);
+  const [fileValidationStatus, setFileValidationStatus] = React.useState<{ [key: string]: FileValidationStatus }>({});
+  const [validationQueue, setValidationQueue] = React.useState<ValidationQueue>({
+    isProcessing: false,
+    pendingFiles: []
+  });
+
+  const isMounted = React.useRef<boolean>(true);
+
+  const sourceFilesInfo: FileInfo[] = React.useMemo(() => {
+    return usfmFiles.map(path => {
+      const status = fileValidationStatus[path] || { isProcessing: true };
+      return {
+        path,
+        isValid: status.isValid,
+        isProcessing: status.isProcessing,
+        description: status.isValid === false ? status.errorDescription : undefined
+      };
+    });
+  }, [usfmFiles, fileValidationStatus]);
+
+  const targetFilesInfo: FileInfo[] = React.useMemo(() => {
+    return targetUsfmFiles.map(path => {
+      const status = fileValidationStatus[path] || { isProcessing: true };
+      return {
+        path,
+        isValid: status.isValid,
+        isProcessing: status.isProcessing,
+        description: status.isValid === false ? status.errorDescription : undefined
+      };
+    });
+  }, [targetUsfmFiles, fileValidationStatus]);
+
+  React.useEffect(() => {
+    const processQueue = async () => {
+      if (!validationQueue.isProcessing && validationQueue.pendingFiles.length > 0) {
+        setValidationQueue(prev => ({
+          ...prev,
+          isProcessing: true
+        }));
+
+        const nextFile = validationQueue.pendingFiles[0];
+
+        setFileValidationStatus(prev => ({
+          ...prev,
+          [nextFile]: { isProcessing: true }
+        }));
+
+        setTimeout(() => {
+          if (isMounted.current) {
+            const ext = nextFile.split('.').pop()?.toLowerCase();
+            const isValid = ext === 'usfm' || ext === 'sfm';
+            setFileValidationStatus(prev => ({
+              ...prev,
+              [nextFile]: isValid
+                ? { isValid: true, isProcessing: false }
+                : {
+                  isValid: false,
+                  isProcessing: false,
+                  errorDescription: simulateValidatorErrorMessage(nextFile)
+                }
+            }));
+          }
+        }, 10000);
+      }
+    };
+
+    processQueue();
+  }, [validationQueue]);
+
+  React.useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  function queueFileValidation(path: string): void {
+    setFileValidationStatus(prev => ({
+      ...prev,
+      [path]: { isProcessing: true }
+    }));
+
+    setValidationQueue(prev => ({
+      ...prev,
+      pendingFiles: [...prev.pendingFiles, path]
+    }));
+  }
+
+  function simulateValidatorErrorMessage(path: string): string {
+    const fileName = path.split('/').pop() || path;
+    const ext = fileName.split('.').pop()?.toLowerCase();
+
+    if (ext !== 'usfm' && ext !== 'sfm') {
+      return `File type "${ext}" is not supported. Only USFM (.usfm) or SFM (.sfm) files are valid.`;
+    }
+
+    return `File failed validation. Please check the file format and content.`;
+  }
+
+  const handleRemoveSourceFile = (index: number) => {
+    const pathToRemove = usfmFiles[index];
+    const newFiles = [...usfmFiles];
+    newFiles.splice(index, 1);
+    setUsfmFiles(newFiles);
+
+    const newValidationStatus = { ...fileValidationStatus };
+    delete newValidationStatus[pathToRemove];
+    setFileValidationStatus(newValidationStatus);
+
+    setValidationQueue(prev => ({
+      ...prev,
+      pendingFiles: prev.pendingFiles.filter(path => path !== pathToRemove)
+    }));
+  };
+
+  const handleRemoveTargetFile = (index: number) => {
+    const pathToRemove = targetUsfmFiles[index];
+    const newFiles = [...targetUsfmFiles];
+    newFiles.splice(index, 1);
+    setTargetUsfmFiles(newFiles);
+
+    const newValidationStatus = { ...fileValidationStatus };
+    delete newValidationStatus[pathToRemove];
+    setFileValidationStatus(newValidationStatus);
+
+    setValidationQueue(prev => ({
+      ...prev,
+      pendingFiles: prev.pendingFiles.filter(path => path !== pathToRemove)
+    }));
+  };
 
   // Fetching languages
   React.useEffect(() => {
@@ -35,6 +177,20 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
       fetchLanguages();
     }
   }, []);
+
+  React.useEffect(() => {
+    usfmFiles.forEach(path => {
+      if (fileValidationStatus[path] === undefined) {
+        queueFileValidation(path);
+      }
+    });
+
+    targetUsfmFiles.forEach(path => {
+      if (fileValidationStatus[path] === undefined) {
+        queueFileValidation(path);
+      }
+    });
+  }, [usfmFiles, targetUsfmFiles]);
 
   // Function to fetch languages
   const fetchLanguages = async (): Promise<void> => {
@@ -116,10 +272,16 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
       };
 
       const uri = await fileDialogService.showOpenDialog(props);
+      console.log(uri);
+
       if (uri) {
-        const locationPath = new URI(uri.toString()).path.toString();
-        setUsfmFiles([...usfmFiles, locationPath]);
-        // Clear validation error if files are selected
+        const locationPath = uri
+          .toString()
+          .split(',')
+          .map((path) => new URI(path.trim()).path.toString());
+        console.log(locationPath);
+        setUsfmFiles([...usfmFiles, ...locationPath]);
+        setActiveFilesPanel("source");
         setValidation(validation.filter(item => item.field !== 'sourceFiles'));
       }
     } catch (error) {
@@ -146,8 +308,12 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
 
       const uri = await fileDialogService.showOpenDialog(props);
       if (uri) {
-        const locationPath = new URI(uri.toString()).path.toString();
-        setTargetUsfmFiles([...targetUsfmFiles, locationPath]);
+        const locationPaths = uri
+          .toString()
+          .split(',')
+          .map((path) => new URI(path.trim()).path.toString());
+        setTargetUsfmFiles([...targetUsfmFiles, ...locationPaths]);
+        setActiveFilesPanel("target");
       }
     } catch (error) {
       console.error("Target file selection failed:", error);
@@ -173,6 +339,24 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
 
     if (!usfmFiles.length) {
       errors.push({ field: 'sourceFiles', error: 'Source files are required' });
+    }
+
+    const hasInvalidSourceFiles = usfmFiles.some(path => {
+      const status = fileValidationStatus[path];
+      return status && (status.isProcessing || status.isValid === false);
+    });
+
+    if (hasInvalidSourceFiles) {
+      errors.push({ field: 'sourceFiles', error: 'Some source files are invalid or still being validated' });
+    }
+
+    const hasInvalidTargetFiles = targetUsfmFiles.some(path => {
+      const status = fileValidationStatus[path];
+      return status && (status.isProcessing || status.isValid === false);
+    });
+
+    if (hasInvalidTargetFiles) {
+      errors.push({ field: 'targetFiles', error: 'Some target files are invalid or still being validated' });
     }
 
     setValidation(errors);
@@ -238,278 +422,333 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
         <h1 style={{ color: "#06b6d4", fontSize: "32px", marginBottom: "30px" }}>Create Project</h1>
       </div>
 
-      <div
-        style={{
-          width: "70%",
-          maxWidth: "800px",
-          margin: "0 auto",
-          backgroundColor: "#222",
-          padding: "30px",
-          borderRadius: "10px",
-          border: "2px solid #333",
-          overflowY: "auto",
-          maxHeight: "70vh"
-        }}
-      >
-        <div style={{ marginBottom: "20px" }}>
-          <label style={{ display: "block", color: "white", marginBottom: "8px", fontWeight: "bold" }}>
-            Project Name*
-          </label>
-          <input
-            type="text"
-            value={projectName}
-            onChange={(e) => {
-              setProjectName(e.target.value);
-              setValidation(validation.filter(item => item.field !== 'projectName'));
-            }}
-            style={{
-              width: "100%",
-              padding: "12px",
-              backgroundColor: "#333",
-              border: validation.some(item => item.field === 'projectName') ? "1px solid #ff4d4f" : "1px solid #444",
-              borderRadius: "5px",
-              color: "white",
-              fontSize: "16px"
-            }}
-            placeholder="Enter project name"
-          />
-          {validation.find(item => item.field === 'projectName') && (
-            <div style={{ color: '#ff4d4f', marginTop: '5px' }}>{validation.find(item => item.field === 'projectName')?.error}</div>
-          )}
-        </div>
-
-        <div style={{ marginBottom: "20px" }}>
-          <label style={{ display: "block", color: "white", marginBottom: "8px", fontWeight: "bold" }}>
-            Description
-          </label>
-          <input
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "12px",
-              backgroundColor: "#333",
-              border: "1px solid #444",
-              borderRadius: "5px",
-              color: "white",
-              fontSize: "16px"
-            }}
-            placeholder="Enter description"
-          />
-        </div>
-
-        <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
-          <div style={{ flex: 1 }}>
-            <LanguageSelector
-              languages={languages}
-              selectedLanguage={sourceLanguage}
-              onSelectLanguage={(lang) => {
-                setSourceLanguage(lang);
-                setValidation(validation.filter(item => item.field !== 'sourceLanguage'));
-              }}
-              placeholder="Select source language"
-              label={"Source Language"}
-              isLoading={isLoadingLanguages}
-            />
-            {validation.find(item => item.field === 'sourceLanguage') && (
-              <div style={{ color: '#ff4d4f', marginTop: '5px' }}>{validation.find(item => item.field === 'sourceLanguage')?.error}</div>
-            )}
-          </div>
-          <div style={{ flex: 1 }}>
-            <LanguageSelector
-              languages={languages}
-              selectedLanguage={targetLanguage}
-              onSelectLanguage={(lang) => {
-                setTargetLanguage(lang);
-                setValidation(validation.filter(item => item.field !== 'targetLanguage'));
-              }}
-              placeholder="Select target language"
-              label={"Target Language"}
-              isLoading={isLoadingLanguages}
-            />
-            {validation.find(item => item.field === 'targetLanguage') && (
-              <div style={{ color: '#ff4d4f', marginTop: '5px' }}>{validation.find(item => item.field === 'targetLanguage')?.error}</div>
-            )}
-          </div>
-        </div>
-
-        <div style={{ marginBottom: "20px" }}>
-          <label style={{ display: "block", color: "white", marginBottom: "8px", fontWeight: "bold" }}>
-            Source Files*
-          </label>
-          <div style={{ display: "flex" }}>
+      <div style={{
+        display: "flex",
+        width: "90%",
+        maxWidth: "1200px",
+        margin: "0 auto",
+        gap: "20px"
+      }}>
+        <div
+          style={{
+            flex: "1",
+            backgroundColor: "#222",
+            padding: "30px",
+            borderRadius: "10px",
+            border: "2px solid #333",
+            overflowY: "auto",
+            maxHeight: "70vh",
+          }}
+        >
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", color: "white", marginBottom: "8px", fontWeight: "bold" }}>
+              Project Name*
+            </label>
             <input
               type="text"
-              value={usfmFiles.join(", ")}
-              readOnly
+              value={projectName}
+              onChange={(e) => {
+                setProjectName(e.target.value);
+                setValidation(validation.filter(item => item.field !== 'projectName'));
+              }}
               style={{
-                flex: 1,
+                width: "100%",
                 padding: "12px",
                 backgroundColor: "#333",
-                border: validation.some(item => item.field === 'sourceFiles') ? "1px solid #ff4d4f" : "1px solid #444",
-                borderRadius: "5px 0 0 5px",
+                border: validation.some(item => item.field === 'projectName') ? "1px solid #ff4d4f" : "1px solid #444",
+                borderRadius: "5px",
                 color: "white",
                 fontSize: "16px"
               }}
-              placeholder="Select source USFM files"
+              placeholder="Enter project name"
             />
-            <button
-              onClick={handleBrowseSourceFiles}
-              style={{
-                padding: "12px 20px",
-                backgroundColor: "#06b6d4",
-                color: "white",
-                border: "none",
-                borderRadius: "0 5px 5px 0",
-                cursor: "pointer",
-                fontWeight: "bold",
-              }}
-            >
-              Browse
-            </button>
+            {validation.find(item => item.field === 'projectName') && (
+              <div style={{ color: '#ff4d4f', marginTop: '5px' }}>{validation.find(item => item.field === 'projectName')?.error}</div>
+            )}
           </div>
-          {validation.find(item => item.field === 'sourceFiles') && (
-            <div style={{ color: '#ff4d4f', marginTop: '5px' }}>{validation.find(item => item.field === 'sourceFiles')?.error}</div>
-          )}
-        </div>
 
-        <div style={{ marginBottom: "20px" }}>
-          <label style={{ display: "block", color: "white", marginBottom: "8px", fontWeight: "bold" }}>
-            Target Files (Optional)
-          </label>
-          <div style={{ display: "flex" }}>
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", color: "white", marginBottom: "8px", fontWeight: "bold" }}>
+              Description
+            </label>
             <input
               type="text"
-              value={targetUsfmFiles.join(", ")}
-              readOnly
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               style={{
-                flex: 1,
+                width: "100%",
                 padding: "12px",
                 backgroundColor: "#333",
                 border: "1px solid #444",
-                borderRadius: "5px 0 0 5px",
+                borderRadius: "5px",
                 color: "white",
                 fontSize: "16px"
               }}
-              placeholder="Import target USFM files"
+              placeholder="Enter description"
             />
-            <button
-              onClick={handleBrowseTargetFiles}
+          </div>
+
+          <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
+            <div style={{ flex: 1 }}>
+              <LanguageSelector
+                languages={languages}
+                selectedLanguage={sourceLanguage}
+                onSelectLanguage={(lang) => {
+                  setSourceLanguage(lang);
+                  setValidation(validation.filter(item => item.field !== 'sourceLanguage'));
+                }}
+                placeholder="Select source language"
+                label={"Source Language"}
+                isLoading={isLoadingLanguages}
+              />
+              {validation.find(item => item.field === 'sourceLanguage') && (
+                <div style={{ color: '#ff4d4f', marginTop: '5px' }}>{validation.find(item => item.field === 'sourceLanguage')?.error}</div>
+              )}
+            </div>
+            <div style={{ flex: 1 }}>
+              <LanguageSelector
+                languages={languages}
+                selectedLanguage={targetLanguage}
+                onSelectLanguage={(lang) => {
+                  setTargetLanguage(lang);
+                  setValidation(validation.filter(item => item.field !== 'targetLanguage'));
+                }}
+                placeholder="Select target language"
+                label={"Target Language"}
+                isLoading={isLoadingLanguages}
+              />
+              {validation.find(item => item.field === 'targetLanguage') && (
+                <div style={{ color: '#ff4d4f', marginTop: '5px' }}>{validation.find(item => item.field === 'targetLanguage')?.error}</div>
+              )}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: "20px" }}>
+            <label
               style={{
-                padding: "12px 20px",
+                display: "block",
+                color: "white",
+                marginBottom: "8px",
+                fontWeight: "bold",
+                cursor: "pointer"
+              }}
+              onClick={() => setActiveFilesPanel(activeFilesPanel === "source" ? null : "source")}
+            >
+              Source Files* <span style={{ color: "#06b6d4", fontSize: "12px" }}>(Click to view details)</span>
+            </label>
+            <div style={{ display: "flex" }}>
+              <input
+                type="text"
+                value={usfmFiles.join(", ")}
+                readOnly
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  backgroundColor: "#333",
+                  border: validation.some(item => item.field === 'sourceFiles') ? "1px solid #ff4d4f" : "1px solid #444",
+                  borderRadius: "5px 0 0 5px",
+                  color: "white",
+                  fontSize: "16px",
+                  cursor: "pointer"
+                }}
+                placeholder="Select source USFM files"
+                onClick={() => setActiveFilesPanel(activeFilesPanel === "source" ? null : "source")}
+              />
+              <button
+                onClick={handleBrowseSourceFiles}
+                style={{
+                  padding: "12px 20px",
+                  backgroundColor: "#06b6d4",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "0 5px 5px 0",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                }}
+              >
+                Browse
+              </button>
+            </div>
+            {validation.find(item => item.field === 'sourceFiles') && (
+              <div style={{ color: '#ff4d4f', marginTop: '5px' }}>{validation.find(item => item.field === 'sourceFiles')?.error}</div>
+            )}
+          </div>
+
+          <div style={{ marginBottom: "20px" }}>
+            <label
+              style={{
+                display: "block",
+                color: "white",
+                marginBottom: "8px",
+                fontWeight: "bold",
+                cursor: "pointer"
+              }}
+              onClick={() => setActiveFilesPanel(activeFilesPanel === "target" ? null : "target")}
+            >
+              Target Files (Optional) <span style={{ color: "#06b6d4", fontSize: "12px" }}>(Click to view details)</span>
+            </label>
+            <div style={{ display: "flex" }}>
+              <input
+                type="text"
+                value={targetUsfmFiles.join(", ")}
+                readOnly
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  backgroundColor: "#333",
+                  border: validation.some(item => item.field === 'targetFiles') ? "1px solid #ff4d4f" : "1px solid #444",
+                  borderRadius: "5px 0 0 5px",
+                  color: "white",
+                  fontSize: "16px",
+                  cursor: "pointer"
+                }}
+                placeholder="Import target USFM files"
+                onClick={() => setActiveFilesPanel(activeFilesPanel === "target" ? null : "target")}
+              />
+              <button
+                onClick={handleBrowseTargetFiles}
+                style={{
+                  padding: "12px 20px",
+                  backgroundColor: "#06b6d4",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "0 5px 5px 0",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                }}
+              >
+                Browse
+              </button>
+            </div>
+            {validation.find(item => item.field === 'targetFiles') && (
+              <div style={{ color: '#ff4d4f', marginTop: '5px' }}>{validation.find(item => item.field === 'targetFiles')?.error}</div>
+            )}
+          </div>
+
+          <div
+            style={{
+              marginBottom: "20px",
+              color: "#06b6d4",
+              fontWeight: "bold",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center"
+            }}
+            onClick={toggleAdvancedOptions}
+          >
+            <span style={{ marginRight: "10px" }}>{showAdvancedOptions ? "▼" : "►"}</span>
+            Advanced Options
+          </div>
+
+          {showAdvancedOptions && (
+            <div style={{ marginBottom: "20px", padding: "15px", backgroundColor: "#2a2a2a", borderRadius: "5px" }}>
+              <div style={{ marginBottom: "20px" }}>
+                <label style={{ display: "block", color: "white", marginBottom: "8px", fontWeight: "bold" }}>
+                  Location
+                </label>
+                <div style={{ display: "flex" }}>
+                  <input
+                    type="text"
+                    value={projectLocation}
+                    onChange={(e) => setProjectLocation(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: "12px",
+                      backgroundColor: "#333",
+                      border: "1px solid #444",
+                      borderRadius: "5px 0 0 5px",
+                      color: "white",
+                      fontSize: "16px"
+                    }}
+                    placeholder="Select project location"
+                  />
+                  <button
+                    onClick={handleBrowseDirectory}
+                    style={{
+                      padding: "12px 20px",
+                      backgroundColor: "#06b6d4",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "0 5px 5px 0",
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Browse
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", color: "white", marginBottom: "8px", fontWeight: "bold" }}>
+                  License
+                </label>
+                <select
+                  value={licence}
+                  onChange={(e) => setLicence(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    backgroundColor: "#333",
+                    border: "1px solid #444",
+                    borderRadius: "5px",
+                    color: "white",
+                    fontSize: "16px"
+                  }}
+                >
+                  <option value="MIT">MIT</option>
+                  <option value="CCSA">CCSA</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          <div style={{ marginTop: "30px", display: "flex", justifyContent: "flex-end" }}>
+            <button
+              onClick={handleCreateProject}
+              style={{
+                padding: "12px 24px",
                 backgroundColor: "#06b6d4",
                 color: "white",
                 border: "none",
-                borderRadius: "0 5px 5px 0",
+                borderRadius: "5px",
                 cursor: "pointer",
                 fontWeight: "bold",
+                fontSize: "16px"
               }}
             >
-              Browse
+              Create Project
             </button>
           </div>
         </div>
 
-        {/* Advanced Options Toggle */}
-        <div
-          style={{
-            marginBottom: "20px",
-            color: "#06b6d4",
-            fontWeight: "bold",
-            cursor: "pointer",
+        {activeFilesPanel && (
+          <div style={{
+            width: "300px",
+            backgroundColor: "#222",
+            borderRadius: "10px",
+            border: "2px solid #333",
+            overflow: "hidden",
             display: "flex",
-            alignItems: "center"
-          }}
-          onClick={toggleAdvancedOptions}
-        >
-          <span style={{ marginRight: "10px" }}>{showAdvancedOptions ? "▼" : "►"}</span>
-          Advanced Options
-        </div>
-
-        {/* Advanced Options Section */}
-        {showAdvancedOptions && (
-          <div style={{ marginBottom: "20px", padding: "15px", backgroundColor: "#2a2a2a", borderRadius: "5px" }}>
-            {/* Location */}
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", color: "white", marginBottom: "8px", fontWeight: "bold" }}>
-                Location
-              </label>
-              <div style={{ display: "flex" }}>
-                <input
-                  type="text"
-                  value={projectLocation}
-                  onChange={(e) => setProjectLocation(e.target.value)}
-                  style={{
-                    flex: 1,
-                    padding: "12px",
-                    backgroundColor: "#333",
-                    border: "1px solid #444",
-                    borderRadius: "5px 0 0 5px",
-                    color: "white",
-                    fontSize: "16px"
-                  }}
-                  placeholder="Select project location"
-                />
-                <button
-                  onClick={handleBrowseDirectory}
-                  style={{
-                    padding: "12px 20px",
-                    backgroundColor: "#06b6d4",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "0 5px 5px 0",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Browse
-                </button>
-              </div>
-            </div>
-
-            {/* License */}
-            <div>
-              <label style={{ display: "block", color: "white", marginBottom: "8px", fontWeight: "bold" }}>
-                License
-              </label>
-              <select
-                value={licence}
-                onChange={(e) => setLicence(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  backgroundColor: "#333",
-                  border: "1px solid #444",
-                  borderRadius: "5px",
-                  color: "white",
-                  fontSize: "16px"
-                }}
-              >
-                <option value="MIT">MIT</option>
-                <option value="CCSA">CCSA</option>
-              </select>
-            </div>
+            flexDirection: "column"
+          }}>
+            {activeFilesPanel === "source" ? (
+              <FileSelectionPanel
+                files={sourceFilesInfo}
+                onRemoveFile={handleRemoveSourceFile}
+                onClose={() => setActiveFilesPanel(null)}
+                title="Source Files"
+              />
+            ) : (
+              <FileSelectionPanel
+                files={targetFilesInfo}
+                onRemoveFile={handleRemoveTargetFile}
+                onClose={() => setActiveFilesPanel(null)}
+                title="Target Files"
+              />
+            )}
           </div>
         )}
-
-        <div style={{ marginTop: "30px", display: "flex", justifyContent: "flex-end" }}>
-          <button
-            onClick={handleCreateProject}
-            style={{
-              padding: "12px 24px",
-              backgroundColor: "#06b6d4",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-              fontWeight: "bold",
-              fontSize: "16px"
-            }}
-          >
-            Create Project
-          </button>
-        </div>
       </div>
     </div>
   );
