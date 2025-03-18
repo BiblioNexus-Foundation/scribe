@@ -17,11 +17,11 @@ const AudioComponents: React.FC = () => {
     const savedState = localStorage.getItem('bibleNavState');
     return savedState ? JSON.parse(savedState) : null;
   });
-  const myScope = {
-    EXO: [],
-    PSA: [],
-    JHN: []
-  };
+  // const myScope = {
+  //   EXO: [],
+  //   PSA: [],
+  //   JHN: []
+  // };
   useEffect(() => {
     // Function to handle updates to localStorage
     const handleStorageChange = () => {
@@ -51,7 +51,12 @@ const AudioComponents: React.FC = () => {
 
   return (
     <>
-      <BibleNavigation showPrevChapter={true} showBookChapter={true} showNextChapter={true} scope={myScope} />
+      <BibleNavigation
+        showPrevChapter={true}
+        showBookChapter={true}
+        showNextChapter={true}
+      // scope={myScope} 
+      />
 
       <div className="bg-[var(--theia-editor-background)]">
         {currentNav &&
