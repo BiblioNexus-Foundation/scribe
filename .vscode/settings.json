@@ -11,6 +11,7 @@
     "typescriptreact"
   ],
   "prettier.singleQuote": true,
+  "prettier.jsxSingleQuote": true,
   "prettier.tabWidth": 2,
   "prettier.useTabs": false
 }
