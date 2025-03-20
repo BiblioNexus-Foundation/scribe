@@ -99,7 +99,8 @@
     "scribe-resources-manager": "0.0.1",
     "scribe-ui": "0.0.1",
     "scribe-usfm-editor": "0.0.0",
-    "audio":"0.0.0"
+    "bcv-navigator": "0.0.0",
+    "audio": "0.0.0"
   },
   "devDependencies": {
     "@theia/cli": "1.57.0",
