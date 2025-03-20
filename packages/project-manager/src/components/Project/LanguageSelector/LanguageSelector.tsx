@@ -72,7 +72,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     if (selectedLanguage && languages.length > 0) {
       const selectedLang = languages.find(lang => lang.lc === selectedLanguage);
       if (selectedLang) {
-        setSelectedLanguageDisplay(selectedLang.ang + ` (${selectedLang.ln})`);
+        setSelectedLanguageDisplay(selectedLang.ang + ` (${selectedLang.ln}); ${selectedLang.lc}`);
       }
     }
   }, [selectedLanguage, languages]);
@@ -187,7 +187,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                       key={lang.lc}
                       onClick={() => {
                         onSelectLanguage(lang.lc);
-                        setSelectedLanguageDisplay(lang.ang + ` (${lang.ln})`);
+                        setSelectedLanguageDisplay(lang.ang + ` (${lang.ln}); ${lang.lc}`);
                         setShowDropdown(false);
                         setSearchTerm("");
                       }}

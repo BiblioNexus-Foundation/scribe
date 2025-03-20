@@ -1,12 +1,13 @@
 import React = require("react");
 import { URI } from "@theia/core";
 import { FileDialogService, OpenFileDialogProps } from "@theia/filesystem/lib/browser";
-import LanguageSelector, { LanguageData } from "./LanguageSelector";
-import FileSelectionPanel, { FileInfo } from "./FileSelectionPanel";
+import LanguageSelector, { LanguageData } from "./LanguageSelector/LanguageSelector";
+import FileSelectionPanel, { FileInfo } from "./FileSelector/FileSelectionPanel";
 
 interface NewProjectViewProps {
   onBack: () => void;
   fileDialogService?: FileDialogService;
+  projectServer?: any;
 }
 
 interface ValidationItem {
@@ -26,7 +27,7 @@ interface FileValidationStatus {
   errorDescription?: string;
 }
 
-const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogService }) => {
+const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogService, projectServer }) => {
   const [projectLocation, setProjectLocation] = React.useState<string>("");
   const [usfmFiles, setUsfmFiles] = React.useState<string[]>([]);
   const [targetUsfmFiles, setTargetUsfmFiles] = React.useState<string[]>([]);
@@ -88,22 +89,35 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
           [nextFile]: { isProcessing: true }
         }));
 
-        setTimeout(() => {
-          if (isMounted.current) {
-            const ext = nextFile.split('.').pop()?.toLowerCase();
-            const isValid = ext === 'usfm' || ext === 'sfm';
+        if (isMounted.current) {
+          const ext = nextFile.split('.').pop()?.toLowerCase();
+          const isValid = ext === 'usfm' || ext === 'sfm';
+          if (isValid) {
+            // console.log("next file", nextFile, projectServer.sayHelloTo("xyz"));
+            const result = await projectServer.validateUSFM(nextFile)
+            console.log("result", result);
+
             setFileValidationStatus(prev => ({
               ...prev,
-              [nextFile]: isValid
-                ? { isValid: true, isProcessing: false }
-                : {
-                  isValid: false,
-                  isProcessing: false,
-                  errorDescription: simulateValidatorErrorMessage(nextFile)
-                }
+              [nextFile]:
+              {
+                isValid: result.success,
+                isProcessing: false,
+                errorDescription: `${(result.success === false) && result.message}`
+              }
+            }));
+          } else {
+            setFileValidationStatus(prev => ({
+              ...prev,
+              [nextFile]:
+              {
+                isValid: false,
+                isProcessing: false,
+                errorDescription: `File type "${ext}" is not supported. Only USFM (.usfm) or SFM (.sfm) files are valid.`
+              }
             }));
           }
-        }, 10000);
+        }
       }
     };
 
@@ -126,17 +140,6 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
       ...prev,
       pendingFiles: [...prev.pendingFiles, path]
     }));
-  }
-
-  function simulateValidatorErrorMessage(path: string): string {
-    const fileName = path.split('/').pop() || path;
-    const ext = fileName.split('.').pop()?.toLowerCase();
-
-    if (ext !== 'usfm' && ext !== 'sfm') {
-      return `File type "${ext}" is not supported. Only USFM (.usfm) or SFM (.sfm) files are valid.`;
-    }
-
-    return `File failed validation. Please check the file format and content.`;
   }
 
   const handleRemoveSourceFile = (index: number) => {

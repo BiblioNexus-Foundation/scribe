@@ -8,9 +8,10 @@ import { ReactWidget } from '@theia/core/lib/browser/widgets/react-widget';
 import { MessageService } from '@theia/core/lib/common';
 import { Message } from '@theia/core/lib/browser';
 import CommonView from '../components/CommonView';
-import NewProjectView from '../components/NewProject/NewProjectView';
+import NewProjectView from '../components/Project/NewProjectView';
 import { FileDialogService } from "@theia/filesystem/lib/browser";
 import { WorkspaceService } from "@theia/workspace/lib/browser/workspace-service";
+import { ProjectServer } from '../common/project-protocol';
 
 @injectable()
 export class ProjectManagerWidget extends ReactWidget {
@@ -25,6 +26,9 @@ export class ProjectManagerWidget extends ReactWidget {
 
   @inject(WorkspaceService)
   protected readonly workspaceService!: WorkspaceService;
+
+  @inject(ProjectServer)
+  protected readonly projectServer!: ProjectServer;
 
   private currentView: 'welcome' | 'newProject' | 'openProject' = 'welcome';
 
@@ -71,6 +75,7 @@ export class ProjectManagerWidget extends ReactWidget {
         return <NewProjectView
           onBack={this.goBackToWelcome}
           fileDialogService={this.fileDialogService}
+          projectServer={this.projectServer}
         />;
 
       case 'openProject':

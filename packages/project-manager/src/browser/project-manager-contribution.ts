@@ -8,6 +8,7 @@ import {
   ApplicationShell
 } from '@theia/core/lib/browser';
 import { ProjectManagerWidget } from './project-manager-widget';
+import { ProjectServer } from '../common/project-protocol';
 
 export const ProjectManagerCommand: Command = { id: 'project-manager:toggle' };
 
@@ -15,12 +16,15 @@ export const ProjectManagerCommand: Command = { id: 'project-manager:toggle' };
 export class ProjectManagerContribution
   extends AbstractViewContribution<ProjectManagerWidget>
   implements FrontendApplicationContribution {
-  
+
   @inject(ApplicationShell)
   protected readonly shell: ApplicationShell;
 
   @inject(FrontendApplication)
   protected readonly app: FrontendApplication;
+
+  @inject(ProjectServer)
+  protected readonly ProjectServer: ProjectServer;
 
   private overlayWidget: ProjectManagerWidget | undefined;
 

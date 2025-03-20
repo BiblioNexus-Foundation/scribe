@@ -3,7 +3,9 @@
     "skipLibCheck": true,
     "declaration": true,
     "declarationMap": true,
+    "esModuleInterop": true,
     "noImplicitAny": true,
+    "allowSyntheticDefaultImports": true,
     "noEmitOnError": false,
     "noImplicitThis": true,
     "noUnusedLocals": true,
@@ -21,5 +23,6 @@
     "rootDir": "src",
     "outDir": "lib"
   },
-  "include": ["src"]
+  "include": ["src", "types/**/*"],
+  "typeRoots": ["./node_modules/@types", "./src/types"]
 }
