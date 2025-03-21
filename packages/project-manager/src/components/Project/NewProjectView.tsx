@@ -74,6 +74,7 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
     });
   }, [targetUsfmFiles, fileValidationStatus]);
 
+  // useEffect for processing the validation queue
   React.useEffect(() => {
     const processQueue = async () => {
       if (!validationQueue.isProcessing && validationQueue.pendingFiles.length > 0) {
@@ -93,28 +94,60 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
           const ext = nextFile.split('.').pop()?.toLowerCase();
           const isValid = ext === 'usfm' || ext === 'sfm';
           if (isValid) {
-            // console.log("next file", nextFile, projectServer.sayHelloTo("xyz"));
-            const result = await projectServer.validateUSFM(nextFile)
-            console.log("result", result);
+            try {
+              const result = await projectServer.validateUSFM(nextFile);
+              console.log("result", result);
 
-            setFileValidationStatus(prev => ({
-              ...prev,
-              [nextFile]:
-              {
-                isValid: result.success,
-                isProcessing: false,
-                errorDescription: `${(result.success === false) && result.message}`
+              if (isMounted.current) {
+                setFileValidationStatus(prev => ({
+                  ...prev,
+                  [nextFile]: {
+                    isValid: result.success,
+                    isProcessing: false,
+                    errorDescription: `${(result.success === false) && result.message}`
+                  }
+                }));
+
+                // Remove the processed file from the queue and update the queue status
+                setValidationQueue(prev => ({
+                  isProcessing: false,
+                  pendingFiles: prev.pendingFiles.filter(file => file !== nextFile)
+                }));
               }
-            }));
+            } catch (error) {
+              console.error("USFM validation error:", error);
+
+              if (isMounted.current) {
+                setFileValidationStatus(prev => ({
+                  ...prev,
+                  [nextFile]: {
+                    isValid: false,
+                    isProcessing: false,
+                    errorDescription: `Validation error: ${error.message || "Unknown error"}`
+                  }
+                }));
+
+                // Remove the processed file from the queue and update the queue status
+                setValidationQueue(prev => ({
+                  isProcessing: false,
+                  pendingFiles: prev.pendingFiles.filter(file => file !== nextFile)
+                }));
+              }
+            }
           } else {
             setFileValidationStatus(prev => ({
               ...prev,
-              [nextFile]:
-              {
+              [nextFile]: {
                 isValid: false,
                 isProcessing: false,
                 errorDescription: `File type "${ext}" is not supported. Only USFM (.usfm) or SFM (.sfm) files are valid.`
               }
+            }));
+
+            // Remove the processed file from the queue and update the queue status
+            setValidationQueue(prev => ({
+              isProcessing: false,
+              pendingFiles: prev.pendingFiles.filter(file => file !== nextFile)
             }));
           }
         }
@@ -122,7 +155,7 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
     };
 
     processQueue();
-  }, [validationQueue]);
+  }, [validationQueue, projectServer]);
 
   React.useEffect(() => {
     return () => {

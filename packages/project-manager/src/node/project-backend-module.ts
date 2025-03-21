@@ -37,12 +37,8 @@ export class ProjectServiceBackend implements ProjectServer {
       await Validator.init("https://cdn.jsdelivr.net/npm/usfm-grammar-web@3.0.0/tree-sitter-usfm.wasm",
         "https://cdn.jsdelivr.net/npm/usfm-grammar-web@3.0.0/tree-sitter.wasm");
       const usfm = fs.readFileSync(data, 'utf8');
-      // console.log("usfm", usfm);
-
       const checker = new Validator();
       const resp = checker.isValidUSFM(usfm);
-      // console.log("resp UI", resp, checker.message);
-
       return {
         success: resp,
         message: checker.message
