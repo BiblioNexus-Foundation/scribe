@@ -413,6 +413,18 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
       location: projectLocation,
       licence
     });
+    const data = {
+      name: projectName,
+      description,
+      sourceLanguage,
+      targetLanguage,
+      sourceFiles: usfmFiles,
+      targetFiles: targetUsfmFiles,
+      location: projectLocation,
+      licence
+    };
+    projectServer.saveToFile(data, `${projectName}.json`)
+    alert("Project Created Successfully!!")
   };
 
   const toggleAdvancedOptions = () => {
