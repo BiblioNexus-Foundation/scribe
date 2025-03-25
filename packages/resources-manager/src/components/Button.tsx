@@ -13,13 +13,7 @@ export default function Button({
   size?: "default" | "sm" | "lg" | "icon";
 } & ButtonProps) {
   return (
-    <Buttons
-      {...rest}
-      onClick={onClick}
-      size={size}
-      className={className}
-      variant="outline"
-    >
+    <Buttons {...rest} onClick={onClick} size={size} className={className} variant="outline">
       {icon}
       {label}
     </Buttons>

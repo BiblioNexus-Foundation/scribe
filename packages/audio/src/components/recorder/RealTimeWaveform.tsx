@@ -1,16 +1,13 @@
-import React, { useEffect, useRef } from 'react';
-import WaveSurfer from 'wavesurfer.js';
-import RecordPlugin from 'wavesurfer.js/dist/plugins/record';
+import React, { useEffect, useRef } from "react";
+import WaveSurfer from "wavesurfer.js";
+import RecordPlugin from "wavesurfer.js/dist/plugins/record";
 
 interface IRealTimeWaveform {
   waveformState: string;
   theme: string;
 }
 
-const RealTimeWaveform: React.FC<IRealTimeWaveform> = ({
-  waveformState,
-  theme,
-}) => {
+const RealTimeWaveform: React.FC<IRealTimeWaveform> = ({ waveformState, theme }) => {
   const waveformRef = useRef<HTMLDivElement | null>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const recorderRef = useRef<RecordPlugin | null>(null);
@@ -25,17 +22,17 @@ const RealTimeWaveform: React.FC<IRealTimeWaveform> = ({
 
         const wavesurfer = WaveSurfer.create({
           container: waveformRef.current,
-          waveColor: theme === 'dark' ? '#22D3EE' : '#0891B2',
-          progressColor: theme === 'dark' ? '#FFFFFF' : '#000000',
-          cursorColor: '#22D3EE',
-          height: 'auto',
+          waveColor: theme === "dark" ? "#22D3EE" : "#0891B2",
+          progressColor: theme === "dark" ? "#FFFFFF" : "#000000",
+          cursorColor: "#22D3EE",
+          height: "auto",
           normalize: true,
           hideScrollbar: true,
           interact: false,
           barWidth: 2,
           barGap: 2,
           barRadius: 2,
-          backend: 'WebAudio',
+          backend: "WebAudio",
         });
 
         // Initialize record plugin
@@ -50,12 +47,12 @@ const RealTimeWaveform: React.FC<IRealTimeWaveform> = ({
         recorderRef.current = recorder;
 
         // Set up event listeners
-        recorder.on('record-start', () => console.log('Recording started'));
-        recorder.on('record-pause', () => console.log('Recording paused'));
-        recorder.on('record-resume', () => console.log('Recording resumed'));
-        recorder.on('record-end', () => console.log('Recording stopped'));
+        recorder.on("record-start", () => console.log("Recording started"));
+        recorder.on("record-pause", () => console.log("Recording paused"));
+        recorder.on("record-resume", () => console.log("Recording resumed"));
+        recorder.on("record-end", () => console.log("Recording stopped"));
       } catch (error) {
-        console.error('Error initializing WaveSurfer:', error);
+        console.error("Error initializing WaveSurfer:", error);
       }
     };
 
@@ -79,12 +76,12 @@ const RealTimeWaveform: React.FC<IRealTimeWaveform> = ({
 
       try {
         switch (waveformState) {
-          case 'start':
+          case "start":
             if (!recorderRef.current.isRecording()) {
               await recorderRef.current.startRecording();
             }
             break;
-          case 'stop':
+          case "stop":
             if (recorderRef.current.isRecording()) {
               await recorderRef.current.stopRecording();
               if (wavesurferRef.current) {
@@ -92,31 +89,27 @@ const RealTimeWaveform: React.FC<IRealTimeWaveform> = ({
               }
             }
             break;
-          case 'pause':
+          case "pause":
             if (recorderRef.current.isRecording()) {
               await recorderRef.current.pauseRecording();
             }
             break;
-          case 'resume':
+          case "resume":
             if (recorderRef.current.isPaused()) {
               await recorderRef.current.resumeRecording();
             }
             break;
         }
       } catch (error) {
-        console.error('Recording operation error:', error);
+        console.error("Recording operation error:", error);
       }
     };
     handleRecording();
   }, [waveformState]);
 
   return (
-    <div className='flex items-center justify-between w-full gap-3'>
-      <div
-        ref={waveformRef}
-        className='flex-1 relative h-16'
-        id='realtime-waveform'
-      ></div>
+    <div className="flex w-full items-center justify-between gap-3">
+      <div ref={waveformRef} className="relative h-16 flex-1" id="realtime-waveform"></div>
     </div>
   );
 };

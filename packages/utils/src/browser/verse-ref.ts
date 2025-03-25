@@ -1,8 +1,4 @@
-import {
-  inject,
-  injectable,
-  postConstruct,
-} from "@theia/core/shared/inversify";
+import { inject, injectable, postConstruct } from "@theia/core/shared/inversify";
 import { GlobalStateStorage } from "./global-state-storage";
 import { URI } from "@theia/core";
 
@@ -38,20 +34,14 @@ export class VerseRefUtils {
       .then((verseRefString) => {
         if (!verseRefString) {
           this.value = DEFAULT_VERSE_REF_URI;
-          this.globalStateStorage.setData(
-            VerseRefUtils.VerseRefKey,
-            this.value.toString()
-          );
+          this.globalStateStorage.setData(VerseRefUtils.VerseRefKey, this.value.toString());
         } else {
           this.value = new URI(verseRefString as string);
         }
       })
       .catch(() => {
         this.value = DEFAULT_VERSE_REF_URI;
-        this.globalStateStorage.setData(
-          VerseRefUtils.VerseRefKey,
-          this.value.toString()
-        );
+        this.globalStateStorage.setData(VerseRefUtils.VerseRefKey, this.value.toString());
       });
   }
 
@@ -78,29 +68,19 @@ export class VerseRefUtils {
   async setVerseRef(verseRef: VerseRefValue): Promise<void> {
     const path = this._verseRefToPath(verseRef);
     this.value = this.value.withPath(path);
-    await this.globalStateStorage.setData(
-      VerseRefUtils.VerseRefKey,
-      this.value.toString()
-    );
+    await this.globalStateStorage.setData(VerseRefUtils.VerseRefKey, this.value.toString());
   }
 
-  private _listenForVerseRefChanges(
-    callback?: (verseRef: VerseRefValue) => void
-  ): void {
-    return this.globalStateStorage.onUpdate(
-      VerseRefUtils.VerseRefKey,
-      (data) => {
-        this.value = new URI(data as string);
-        if (callback) {
-          callback(this._pathToVerseRef(this.value.path.toString()));
-        }
+  private _listenForVerseRefChanges(callback?: (verseRef: VerseRefValue) => void): void {
+    return this.globalStateStorage.onUpdate(VerseRefUtils.VerseRefKey, (data) => {
+      this.value = new URI(data as string);
+      if (callback) {
+        callback(this._pathToVerseRef(this.value.path.toString()));
       }
-    );
+    });
   }
 
-  async onVerseRefChange(
-    callback: (verseRef: VerseRefValue) => void
-  ): Promise<void> {
+  async onVerseRefChange(callback: (verseRef: VerseRefValue) => void): Promise<void> {
     this._listenForVerseRefChanges(callback);
   }
 

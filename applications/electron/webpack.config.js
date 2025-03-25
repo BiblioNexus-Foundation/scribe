@@ -3,8 +3,8 @@
  * To reset delete this file and rerun theia build again.
  */
 // @ts-check
-const configs = require('./gen-webpack.config.js');
-const nodeConfig = require('./gen-webpack.node.config.js');
+const configs = require("./gen-webpack.config.js");
+const nodeConfig = require("./gen-webpack.node.config.js");
 
 /**
  * Expose bundled modules on window.theia.moduleName namespace, e.g.
@@ -15,7 +15,4 @@ configs[0].module.rules.push({
     loader: require.resolve('@theia/application-manager/lib/expose-loader')
 }); */
 
-module.exports = [
-    ...configs,
-    nodeConfig.config
-];
+module.exports = [...configs, nodeConfig.config];

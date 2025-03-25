@@ -1,8 +1,4 @@
-import {
-  inject,
-  injectable,
-  postConstruct,
-} from "@theia/core/shared/inversify";
+import { inject, injectable, postConstruct } from "@theia/core/shared/inversify";
 import { Git, GitFileStatus, type Remote } from "@theia/git/lib/common";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { PreferenceService } from "@theia/core/lib/browser";
@@ -42,10 +38,13 @@ export class CloudSyncUtils {
         autoSyncInterval?: number;
       };
       if (settings?.autoCommit) {
-        setInterval(async () => {
-          console.log("Committing changes");
-          await this.commitChanges();
-        }, (settings?.autoCommitInterval ?? 2 * 60) * 1000);
+        setInterval(
+          async () => {
+            console.log("Committing changes");
+            await this.commitChanges();
+          },
+          (settings?.autoCommitInterval ?? 2 * 60) * 1000
+        );
       }
     });
   }

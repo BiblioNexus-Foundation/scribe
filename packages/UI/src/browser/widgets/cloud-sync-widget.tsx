@@ -1,10 +1,6 @@
 import * as React from "@theia/core/shared/react";
 import { ReactDialog } from "@theia/core/lib/browser/dialogs/react-dialog";
-import {
-  inject,
-  injectable,
-  postConstruct,
-} from "@theia/core/shared/inversify";
+import { inject, injectable, postConstruct } from "@theia/core/shared/inversify";
 import { DialogProps, PreferenceService } from "@theia/core/lib/browser";
 
 import { type CommandContribution, type CommandRegistry } from "@theia/core";
@@ -83,8 +79,7 @@ export class CloudSyncWidget extends ReactDialog<void> {
       this.setState({ lastCommit: commit });
     });
     this.preferenceService.ready.finally(() => {
-      const settings =
-        this.preferenceService?.get<string>("cloudSync.settings");
+      const settings = this.preferenceService?.get<string>("cloudSync.settings");
 
       console.log("settings:: after get", settings);
       this.setState({
@@ -128,13 +123,7 @@ export class CloudSyncWidget extends ReactDialog<void> {
     //   },
     // ];
 
-    const handleAddRemote = async ({
-      name,
-      url,
-    }: {
-      name: string;
-      url: string;
-    }) => {
+    const handleAddRemote = async ({ name, url }: { name: string; url: string }) => {
       await this.cloudSyncUtils.handleAddRemote({ name, url });
       await this.cloudSyncUtils.getRemotes();
       await this.cloudSyncUtils.getLastCommit().then((commit) => {
@@ -159,10 +148,7 @@ export class CloudSyncWidget extends ReactDialog<void> {
 
     const handleSettingsChange = (settings: State["settings"]) => {
       this.setState({ settings });
-      this.preferenceService.set(
-        "cloudSync.settings",
-        JSON.stringify(settings)
-      );
+      this.preferenceService.set("cloudSync.settings", JSON.stringify(settings));
     };
 
     return (

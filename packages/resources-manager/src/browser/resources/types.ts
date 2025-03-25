@@ -39,10 +39,7 @@ export type DownloadResourceUtils = {
   resourceFolderUri: URI;
 };
 
-export type ScribeResource<
-  FullResource extends {} = {},
-  TData extends {} = {}
-> = {
+export type ScribeResource<FullResource extends {} = {}, TData extends {} = {}> = {
   id: string;
   displayLabel: string;
   icon: React.ReactNode;
@@ -53,9 +50,7 @@ export type ScribeResource<
     utils: DownloadResourceUtils
   ) => Promise<ConfigResourceValues>;
 
-  getTableDisplayData: (
-    search?: string
-  ) => Promise<ResourceDisplay<FullResource>[]>;
+  getTableDisplayData: (search?: string) => Promise<ResourceDisplay<FullResource>[]>;
 
   openHandlers: Omit<ResourceViewerWidgetHandlers<TData>, "id">;
 };

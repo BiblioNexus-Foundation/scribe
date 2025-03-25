@@ -11,10 +11,7 @@ const ResizablePanelGroup = ({
   ...props
 }: React.ComponentProps<typeof ResizablePrimitive.PanelGroup>) => (
   <ResizablePrimitive.PanelGroup
-    className={cn(
-      "flex h-full w-full data-[panel-group-direction=vertical]:flex-col",
-      className
-    )}
+    className={cn("flex h-full w-full data-[panel-group-direction=vertical]:flex-col", className)}
     {...props}
   />
 );
@@ -30,13 +27,12 @@ const ResizableHandle = ({
 }) => (
   <ResizablePrimitive.PanelResizeHandle
     className={cn(
-      "relative flex w-px items-center justify-center bg-border border border-[rgb(250 250 250 / 0.1)] after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 data-[panel-group-direction=vertical]:h-px data-[panel-group-direction=vertical]:w-full data-[panel-group-direction=vertical]:after:left-0 data-[panel-group-direction=vertical]:after:h-1 data-[panel-group-direction=vertical]:after:w-full data-[panel-group-direction=vertical]:after:-translate-y-1/2 data-[panel-group-direction=vertical]:after:translate-x-0 [&[data-panel-group-direction=vertical]>div]:rotate-90",
+      "bg-border border-[rgb(250 250 250 / 0.1)] focus-visible:ring-ring relative flex w-px items-center justify-center border after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-offset-1 data-[panel-group-direction=vertical]:h-px data-[panel-group-direction=vertical]:w-full data-[panel-group-direction=vertical]:after:left-0 data-[panel-group-direction=vertical]:after:h-1 data-[panel-group-direction=vertical]:after:w-full data-[panel-group-direction=vertical]:after:-translate-y-1/2 data-[panel-group-direction=vertical]:after:translate-x-0 [&[data-panel-group-direction=vertical]>div]:rotate-90",
       className
     )}
-    {...props}
-  >
+    {...props}>
     {withHandle && (
-      <div className="z-10 flex py-[6px] text-zinc-700 dark:text-zinc-50  px-1 items-center justify-center rounded-lg border border-[rgb(250 250 250 / 0.1)] bg-zinc-50 dark:bg-zinc-900">
+      <div className="border-[rgb(250 250 250 / 0.1)] z-10 flex items-center justify-center rounded-lg border bg-zinc-50 px-1 py-[6px] text-zinc-700 dark:bg-zinc-900 dark:text-zinc-50">
         <GripVertical className="h-4 w-4" />
       </div>
     )}

@@ -39,16 +39,11 @@ const ResourceTypeDisplay = ({
   // FILTER THE DATA BASED ON THE ACTIVE BUTTON
 
   const filteredData = resourceTableData.filter((resource) => {
-    const isDownloaded = downloadedResources.some(
-      (item) => item.id === resource.id
-    );
+    const isDownloaded = downloadedResources.some((item) => item.id === resource.id);
     return activeButton === "download" ? isDownloaded : !isDownloaded;
   });
 
-  const paginatedData = filteredData.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
   const nextPage = () => {
     if (startIndex + itemsPerPage < resourceTableData.length) {
@@ -64,39 +59,37 @@ const ResourceTypeDisplay = ({
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   return (
-    <div className="flex flex-col w-full ">
-      <div className="flex p-2 gap-2 mb-3 justify-between mx-2">
-        <div className="flex gap-1 p-1 rounded-lg">
+    <div className="flex w-full flex-col">
+      <div className="mx-2 mb-3 flex justify-between gap-2 p-2">
+        <div className="flex gap-1 rounded-lg p-1">
           <VSCodeButton
             title="Download"
-            className={`rounded-lg duration-200 downloadButton font-extrabold border ${
+            className={`downloadButton rounded-lg border font-extrabold duration-200 ${
               activeButton === "download"
-                ? "text-white border-accent bg-primary"
+                ? "border-accent bg-primary text-white"
                 : "bg-transparent text-[var(--theia-settings-textInputForeground)]"
             }`}
             onClick={() => {
               setActiveButton("download"), setCurrentPage(0);
-            }}
-          >
+            }}>
             DOWNLOAD
           </VSCodeButton>
           <VSCodeButton
             title="Online"
-            className={`rounded-lg duration-200 downloadButton font-extrabold border ${
+            className={`downloadButton rounded-lg border font-extrabold duration-200 ${
               activeButton === "online"
-                ? "text-white border-accent bg-primary"
+                ? "border-accent bg-primary text-white"
                 : "bg-transparent text-[var(--theia-settings-textInputForeground)]"
             }`}
             onClick={() => {
               setActiveButton("online"), setCurrentPage(0);
-            }}
-          >
+            }}>
             ONLINE
           </VSCodeButton>
         </div>
-        <div className="w-1/3 text-right items-center">
+        <div className="w-1/3 items-center text-right">
           <Search
-            className="border border-muted"
+            className="border-muted border"
             placeHolder="Search sjsjdhsj"
             HandleChange={(event) => {
               setSearchTerm(event.target.value);
@@ -104,17 +97,16 @@ const ResourceTypeDisplay = ({
           />
         </div>
       </div>
-      <div className="flex flex-1 justify-between flex-col gap-2 mx-3 border rounded-md border-muted pb-3 min-h-[55vh]">
+      <div className="border-muted mx-3 flex min-h-[55vh] flex-1 flex-col justify-between gap-2 rounded-md border pb-3">
         <div className="max-h-[50vh] overflow-scroll">
-          <table className="table-auto w-full border-b border-muted p-10">
-            <thead className="font-semibold pb-4">
+          <table className="border-muted w-full table-auto border-b p-10">
+            <thead className="pb-4 font-semibold">
               <tr
-                className="py-3 border-b border-muted sticky"
-                style={{ padding: "10px", paddingBottom: "10px" }}
-              >
-                <td className="px-4 py-2 w-1/4">Words</td>
-                <td className="px-4 py-2 w-1/4">Owner</td>
-                <td className="px-4 py-2 w-1/4">Versions</td>
+                className="border-muted sticky border-b py-3"
+                style={{ padding: "10px", paddingBottom: "10px" }}>
+                <td className="w-1/4 px-4 py-2">Words</td>
+                <td className="w-1/4 px-4 py-2">Owner</td>
+                <td className="w-1/4 px-4 py-2">Versions</td>
                 <td className="w-1/4"></td>
               </tr>
             </thead>
@@ -122,14 +114,14 @@ const ResourceTypeDisplay = ({
             <tbody className="gap-3">
               {paginatedData.length > 0 ? (
                 paginatedData?.map((resource) => (
-                  <tr className="border-b border-muted py-2">
+                  <tr className="border-muted border-b py-2">
                     <td className="px-3">{resource.name}</td>
-                    <td className="px-4 py-2 w-1/4">
+                    <td className="w-1/4 px-4 py-2">
                       {resource.owner.avatarUrl ? (
                         <img
                           src={resource.owner.avatarUrl}
                           alt={resource.owner.name}
-                          className="w-8 h-8 rounded-lg object-contain"
+                          className="h-8 w-8 rounded-lg object-contain"
                         />
                       ) : (
                         resource.owner.name
@@ -139,35 +131,28 @@ const ResourceTypeDisplay = ({
                       title={`Released on : ${new Date(
                         resource.version.releaseDate
                       ).toLocaleDateString()}`}
-                      className="px-4 py-2 w-1/4"
-                    >
+                      className="w-1/4 px-4 py-2">
                       {resource.version.tag}
                     </td>
-                    <td className="flex items-center justify-center px-4 py-2 w-1/4">
-                      {!downloadedResources.find(
-                        (item) => item.id === resource.id
-                      ) ? (
+                    <td className="flex w-1/4 items-center justify-center px-4 py-2">
+                      {!downloadedResources.find((item) => item.id === resource.id) ? (
                         <VSCodeButton
                           title="Download Resource"
                           appearance="secondary"
-                          className="w-full flex justify-center"
-                          onClick={() => handleDownload(resource)}
-                        >
+                          className="flex w-full justify-center"
+                          onClick={() => handleDownload(resource)}>
                           <i className="codicon codicon-cloud-download"></i>
                         </VSCodeButton>
                       ) : (
                         <VSCodeButton
                           title="Open Resource"
                           appearance="primary"
-                          className="w-full bg-primary flex justify-center"
+                          className="bg-primary flex w-full justify-center"
                           onClick={() =>
                             openResource(
-                              downloadedResources.find(
-                                (item) => item.id === resource.id
-                              )!
+                              downloadedResources.find((item) => item.id === resource.id)!
                             )
-                          }
-                        >
+                          }>
                           <i className="codicon codicon-eye"></i>
                         </VSCodeButton>
                       )}
@@ -176,7 +161,7 @@ const ResourceTypeDisplay = ({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="text-center py-4">
+                  <td colSpan={4} className="py-4 text-center">
                     No Resources available
                   </td>
                 </tr>
@@ -184,8 +169,8 @@ const ResourceTypeDisplay = ({
             </tbody>
           </table>
         </div>
-        <div className="flex justify-end gap-2 items-center pt-3 w-full px-2 border-t border-muted">
-          <div className="flex items-center justify-center gap-1 mr-7">
+        <div className="border-muted flex w-full items-center justify-end gap-2 border-t px-2 pt-3">
+          <div className="mr-7 flex items-center justify-center gap-1">
             <h1 className="font-semibold">Rows per page</h1>
             <select
               name="select"
@@ -194,8 +179,7 @@ const ResourceTypeDisplay = ({
                 setCurrentPage(0);
               }}
               id="2"
-              className="rounded-md flex items-center text-center justify-center bg-background border p-1"
-            >
+              className="bg-background flex items-center justify-center rounded-md border p-1 text-center">
               <option>7</option>
               <option>10</option>
               <option>20</option>
@@ -212,8 +196,7 @@ const ResourceTypeDisplay = ({
               appearance="secondary"
               className="rounded-md border"
               onClick={prevPage}
-              disabled={currentPage === 0}
-            >
+              disabled={currentPage === 0}>
               &#10094;{" "}
             </VSCodeButton>
             <VSCodeButton
@@ -221,8 +204,7 @@ const ResourceTypeDisplay = ({
               appearance="secondary"
               className="rounded-md border"
               onClick={nextPage}
-              disabled={startIndex + itemsPerPage >= filteredData.length}
-            >
+              disabled={startIndex + itemsPerPage >= filteredData.length}>
               &#10095;
             </VSCodeButton>
           </div>

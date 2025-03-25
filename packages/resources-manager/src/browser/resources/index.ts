@@ -21,14 +21,7 @@ export const resourcesGroups = [
   {
     id: "bible-group",
     name: "Bible",
-    resources: [
-      usfmBibleResource,
-      twResource,
-      tnResource,
-      twlResource,
-      taResource,
-      tqResource,
-    ],
+    resources: [usfmBibleResource, twResource, tnResource, twlResource, taResource, tqResource],
   },
   {
     id: "obs-group",

@@ -61,9 +61,7 @@ export const tsvStringToFlatArray: (tsv: string) => TsvObject[] = (tsv) => {
  * @param flatTsvArray The array of TSV rows to convert.
  * @returns A ScriptureTSV object.
  */
-export const tsvFlatArrayToScriptureTSV = (
-  flatTsvArray: TSVRow[]
-): ScriptureTSV => {
+export const tsvFlatArrayToScriptureTSV = (flatTsvArray: TSVRow[]): ScriptureTSV => {
   const tsvItems: TSVRow[] = Array.isArray(flatTsvArray) ? flatTsvArray : [];
   return tsvItems.reduce((scriptureTsv, note) => {
     const referenceList = note.Reference

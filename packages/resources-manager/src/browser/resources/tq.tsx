@@ -18,10 +18,7 @@ import TranslationQuestions from "@/components/TranslationQuestions";
 import { IconHelpHexagon } from "@tabler/icons-react";
 import type { VerseRefValue } from "@scribe/theia-utils/lib/browser";
 
-export const tqResource: ScribeResource<
-  Door43RepoResponse,
-  Record<string, string>[]
-> = {
+export const tqResource: ScribeResource<Door43RepoResponse, Record<string, string>[]> = {
   id: "codex.tq",
   displayLabel: "Questions",
   icon: <IconHelpHexagon />,
@@ -84,9 +81,7 @@ export const getVerseTranslationQuestions = async (
   const chapter = verseRef.chapter ?? 1;
   const verse = verseRef.verse ?? 1;
 
-  const bookUri = resourceDirUri.withPath(
-    resourceDirUri.path.join(`tq_${bookID}.tsv`)
-  );
+  const bookUri = resourceDirUri.withPath(resourceDirUri.path.join(`tq_${bookID}.tsv`));
   const bookContent = await fs.readFile(bookUri);
 
   const bookContentString = bookContent.value.toString();

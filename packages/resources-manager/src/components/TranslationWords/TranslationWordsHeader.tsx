@@ -23,38 +23,25 @@ const TranslationWordsHeader = ({
 
   return (
     <div
-      className="flex items-center gap-3  border-b py-2.5 px-2 dark:border-zinc-900 border-zinc-200 justify-between"
-      ref={panelRef}
-    >
+      className="flex items-center justify-between gap-3 border-b border-zinc-200 px-2 py-2.5 dark:border-zinc-900"
+      ref={panelRef}>
       <div className="flex items-center gap-2">
-        <Badge
-          variant={category === "all" ? "destructive" : "destructive-clear-bg"}
-        >
+        <Badge variant={category === "all" ? "destructive" : "destructive-clear-bg"}>
           <button className="outline-none" onClick={() => setCategory("all")}>
             All
           </button>
         </Badge>
-        <Badge
-          variant={category === "kt" ? "destructive" : "destructive-clear-bg"}
-        >
+        <Badge variant={category === "kt" ? "destructive" : "destructive-clear-bg"}>
           <button className="outline-none" onClick={() => setCategory("kt")}>
             KT
           </button>
         </Badge>
-        <Badge
-          variant={
-            category === "names" ? "destructive" : "destructive-clear-bg"
-          }
-        >
+        <Badge variant={category === "names" ? "destructive" : "destructive-clear-bg"}>
           <button className="outline-none" onClick={() => setCategory("names")}>
             NAMES
           </button>
         </Badge>
-        <Badge
-          variant={
-            category === "other" ? "destructive" : "destructive-clear-bg"
-          }
-        >
+        <Badge variant={category === "other" ? "destructive" : "destructive-clear-bg"}>
           <button className="outline-none" onClick={() => setCategory("other")}>
             OTHER
           </button>
@@ -111,9 +98,7 @@ const TranslationWordSearch = ({
 };
 
 const useListWidth = (panelRef: React.RefObject<HTMLDivElement>) => {
-  const [listWidth, setListWidth] = useState<number>(
-    panelRef.current?.offsetWidth ?? 300
-  );
+  const [listWidth, setListWidth] = useState<number>(panelRef.current?.offsetWidth ?? 300);
 
   useEffect(() => {
     if (panelRef.current) {

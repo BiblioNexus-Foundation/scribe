@@ -1,12 +1,5 @@
-import {
-  inject,
-  injectable,
-  postConstruct,
-} from "@theia/core/shared/inversify";
-import {
-  CommandContribution,
-  CommandRegistry,
-} from "@theia/core/lib/common/command";
+import { inject, injectable, postConstruct } from "@theia/core/shared/inversify";
+import { CommandContribution, CommandRegistry } from "@theia/core/lib/common/command";
 import { GlobalStateStorage } from "./global-state-storage";
 
 @injectable()
@@ -30,10 +23,7 @@ export class GlobalStateCommandContribution implements CommandContribution {
       {
         execute: () => {
           console.log("Set Global State executed!");
-          this.globalStateStorage.setData(
-            "test",
-            "test -> " + new Date().toLocaleTimeString()
-          );
+          this.globalStateStorage.setData("test", "test -> " + new Date().toLocaleTimeString());
         },
       }
     );

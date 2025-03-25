@@ -1,21 +1,17 @@
-import { injectable } from '@theia/core/shared/inversify';
-import {
-  FFmpegServer,
-  RecordingOptions,
-  FileNode,
-} from '../common/audio-protocol';
-import { spawn, execSync, ChildProcess, exec } from 'child_process';
-import * as path from 'path';
-import * as os from 'os';
-import * as fs from 'fs/promises';
-import { promisify } from 'util';
+import { injectable } from "@theia/core/shared/inversify";
+import { FFmpegServer, RecordingOptions, FileNode } from "../common/audio-protocol";
+import { spawn, execSync, ChildProcess, exec } from "child_process";
+import * as path from "path";
+import * as os from "os";
+import * as fs from "fs/promises";
+import { promisify } from "util";
 const execAsync = promisify(exec);
 @injectable()
 export class FFmpegServerImpl implements FFmpegServer {
   private recordingProcess: ChildProcess | null = null;
   private playbackProcess: ChildProcess | null = null;
   private currentOutputFile: string | null = null;
-  private outputDir: string = '';
+  private outputDir: string = "";
   private readonly ffmpegPath = this.getPlatformSpecificFFmpegPath();
   private tempRecordings: string[] = [];
   private isRecordingPaused: boolean = false;
@@ -26,36 +22,36 @@ export class FFmpegServerImpl implements FFmpegServer {
 
   constructor() {
     this.checkFFmpegInstallation();
-    if (os.platform() === 'win32') {
+    if (os.platform() === "win32") {
       this.initializeDefaultWinDevices();
     }
   }
   async openAudioSettings(): Promise<void> {
-    if (os.platform() !== 'linux') {
-      throw new Error('This function is only supported on Linux systems');
+    if (os.platform() !== "linux") {
+      throw new Error("This function is only supported on Linux systems");
     }
 
     try {
       // Get the current session type and desktop environment
-      const sessionType = process.env.XDG_SESSION_TYPE || '';
-      const desktopEnv = process.env.XDG_CURRENT_DESKTOP || '';
-      console.log('Current session type:', sessionType);
-      console.log('Current desktop environment:', desktopEnv);
+      const sessionType = process.env.XDG_SESSION_TYPE || "";
+      const desktopEnv = process.env.XDG_CURRENT_DESKTOP || "";
+      console.log("Current session type:", sessionType);
+      console.log("Current desktop environment:", desktopEnv);
 
       let env: NodeJS.ProcessEnv = { ...process.env };
-      let command = 'gnome-control-center sound';
+      let command = "gnome-control-center sound";
       let fallbackCommands: string[] = [];
 
       // Determine if we're dealing with GNOME
-      const isGnome = desktopEnv.toLowerCase().includes('gnome');
+      const isGnome = desktopEnv.toLowerCase().includes("gnome");
 
       // Handle different display servers and desktop environments
-      if (sessionType.toLowerCase() === 'wayland') {
+      if (sessionType.toLowerCase() === "wayland") {
         // For Wayland sessions
-        env.XDG_CURRENT_DESKTOP = env.XDG_CURRENT_DESKTOP || 'GNOME';
+        env.XDG_CURRENT_DESKTOP = env.XDG_CURRENT_DESKTOP || "GNOME";
         // Make sure we're using the right Wayland display
         if (!env.WAYLAND_DISPLAY) {
-          env.WAYLAND_DISPLAY = 'wayland-0';
+          env.WAYLAND_DISPLAY = "wayland-0";
         }
         // Add fallback commands
         fallbackCommands = [
@@ -65,18 +61,18 @@ export class FFmpegServerImpl implements FFmpegServer {
         ];
       } else {
         // Default to X11 or other display servers
-        env.XDG_CURRENT_DESKTOP = env.XDG_CURRENT_DESKTOP || 'GNOME';
+        env.XDG_CURRENT_DESKTOP = env.XDG_CURRENT_DESKTOP || "GNOME";
 
         // Try to determine the correct display
         if (!env.DISPLAY) {
           // Check common display values
-          for (const display of [':0', ':1', ':0.0']) {
+          for (const display of [":0", ":1", ":0.0"]) {
             try {
               const { stdout } = await execAsync(
                 `xdpyinfo -display ${display} >/dev/null 2>&1 || echo "failed"`,
                 { env }
               );
-              if (!stdout.includes('failed')) {
+              if (!stdout.includes("failed")) {
                 env.DISPLAY = display;
                 break;
               }
@@ -84,17 +80,17 @@ export class FFmpegServerImpl implements FFmpegServer {
           }
 
           if (!env.DISPLAY) {
-            env.DISPLAY = ':0';
+            env.DISPLAY = ":0";
           }
         }
 
         if (!env.XAUTHORITY) {
           const potentialXauthorityPaths = [
             `${os.homedir()}/.Xauthority`,
-            '/run/user/1000/gdm/Xauthority',
-            '/var/run/lightdm/root/:0',
-            '/var/lib/gdm/:0.Xauth',
-            '/var/lib/gdm3/:0.Xauth',
+            "/run/user/1000/gdm/Xauthority",
+            "/var/run/lightdm/root/:0",
+            "/var/lib/gdm/:0.Xauth",
+            "/var/lib/gdm3/:0.Xauth",
           ];
 
           for (const path of potentialXauthorityPaths) {
@@ -114,69 +110,62 @@ export class FFmpegServerImpl implements FFmpegServer {
         ];
 
         if (!isGnome) {
-          command = ''; // Will be determined in the next steps
+          command = ""; // Will be determined in the next steps
 
           // KDE Plasma
-          if (desktopEnv.toLowerCase().includes('kde')) {
-            command = 'kcmshell5 kcm_pulseaudio';
-            fallbackCommands = ['systemsettings5 --page=sound', 'pavucontrol'];
+          if (desktopEnv.toLowerCase().includes("kde")) {
+            command = "kcmshell5 kcm_pulseaudio";
+            fallbackCommands = ["systemsettings5 --page=sound", "pavucontrol"];
           }
           // XFCE
-          else if (desktopEnv.toLowerCase().includes('xfce')) {
-            command = 'xfce4-settings-manager --dialog=sound';
-            fallbackCommands = ['pavucontrol'];
+          else if (desktopEnv.toLowerCase().includes("xfce")) {
+            command = "xfce4-settings-manager --dialog=sound";
+            fallbackCommands = ["pavucontrol"];
           }
           // LXDE/LXQt
-          else if (desktopEnv.toLowerCase().includes('lx')) {
-            command = 'pavucontrol';
+          else if (desktopEnv.toLowerCase().includes("lx")) {
+            command = "pavucontrol";
           }
           // Cinnamon
-          else if (desktopEnv.toLowerCase().includes('cinnamon')) {
-            command = 'cinnamon-settings sound';
-            fallbackCommands = ['pavucontrol'];
+          else if (desktopEnv.toLowerCase().includes("cinnamon")) {
+            command = "cinnamon-settings sound";
+            fallbackCommands = ["pavucontrol"];
           }
           // MATE
-          else if (desktopEnv.toLowerCase().includes('mate')) {
-            command = 'mate-volume-control';
-            fallbackCommands = ['pavucontrol'];
+          else if (desktopEnv.toLowerCase().includes("mate")) {
+            command = "mate-volume-control";
+            fallbackCommands = ["pavucontrol"];
           }
           // Default to GNOME if nothing else matched
           else {
-            command = 'gnome-control-center sound';
+            command = "gnome-control-center sound";
           }
         }
       }
 
       // Fallbacks that should work on most systems as a last resort
-      fallbackCommands.push('pavucontrol', 'alsamixer');
+      fallbackCommands.push("pavucontrol", "alsamixer");
 
-      console.log(
-        `Using DISPLAY=${env.DISPLAY}, XAUTHORITY=${
-          env.XAUTHORITY || 'not set'
-        }`
-      );
+      console.log(`Using DISPLAY=${env.DISPLAY}, XAUTHORITY=${env.XAUTHORITY || "not set"}`);
       console.log(`Attempting to execute command: ${command}`);
 
       // Primary command first
       if (command) {
         try {
           await execAsync(command, { env });
-          console.log('Successfully opened audio settings');
+          console.log("Successfully opened audio settings");
           return;
         } catch (error) {
           console.error(`Primary command failed: ${error.message}`);
 
           if (
             error.stderr &&
-            (error.stderr.includes('Gtk-CRITICAL') ||
-              error.stderr.includes('cannot open display'))
+            (error.stderr.includes("Gtk-CRITICAL") || error.stderr.includes("cannot open display"))
           ) {
-            console.error(
-              'GTK/Display Error detected. Proceeding with fallback methods.'
-            );
+            console.error("GTK/Display Error detected. Proceeding with fallback methods.");
             // Continue to fallbacks
           } else {
-            console.error('Unknown error detected. Trying fallback methods.');
+            console.error("Unknown error detected. Trying fallback methods.");
           }
         }
       }
@@ -185,9 +174,7 @@ export class FFmpegServerImpl implements FFmpegServer {
       for (let i = 0; i < fallbackCommands.length; i++) {
         try {
           console.log(
-            `Trying fallback command (${i + 1}/${fallbackCommands.length}): ${
-              fallbackCommands[i]
-            }`
+            `Trying fallback command (${i + 1}/${fallbackCommands.length}): ${fallbackCommands[i]}`
           );
           await execAsync(fallbackCommands[i], { env });
           console.log(`Fallback command successful: ${fallbackCommands[i]}`);
@@ -197,9 +184,9 @@ export class FFmpegServerImpl implements FFmpegServer {
         }
       }
 
-      throw new Error('All attempts to open audio settings failed');
+      throw new Error("All attempts to open audio settings failed");
     } catch (error) {
-      console.error('Failed to open audio settings:', error);
+      console.error("Failed to open audio settings:", error);
       throw error;
     }
   }
@@ -208,7 +195,7 @@ export class FFmpegServerImpl implements FFmpegServer {
       const devices = await this.getAudioDevices();
       this.defaultWinDevices = devices[0]?.alternativeName || null;
     } catch (error) {
-      console.error('Failed to initialize default Windows devices:', error);
+      console.error("Failed to initialize default Windows devices:", error);
     }
   }
   async setSelectedDevice(device: string): Promise<void> {
@@ -216,11 +203,11 @@ export class FFmpegServerImpl implements FFmpegServer {
   }
   async setWorkspacePath(workspacePath: string): Promise<void> {
     try {
-      this.outputDir = path.join(workspacePath, 'audio-recordings');
+      this.outputDir = path.join(workspacePath, "audio-recordings");
       await fs.mkdir(this.outputDir, { recursive: true });
-      console.log('Audio recordings directory set to:', this.outputDir);
+      console.log("Audio recordings directory set to:", this.outputDir);
     } catch (error) {
-      console.error('Failed to set workspace path:', error);
+      console.error("Failed to set workspace path:", error);
       throw error;
     }
   }
@@ -235,14 +222,14 @@ export class FFmpegServerImpl implements FFmpegServer {
               const children = await buildTree(fullPath);
               return {
                 name: entry.name,
-                type: 'folder' as const,
+                type: "folder" as const,
                 path: fullPath,
                 children,
               };
             } else {
               return {
                 name: entry.name,
-                type: 'file' as const,
+                type: "file" as const,
                 path: fullPath,
               };
             }
@@ -250,22 +237,22 @@ export class FFmpegServerImpl implements FFmpegServer {
         );
         return items;
       } catch (error) {
-        console.error('Error reading directory:', dirPath, error);
+        console.error("Error reading directory:", dirPath, error);
         return [];
       }
     };
     try {
-      const audioFolder = path.join(rootPath, 'audio-recordings');
+      const audioFolder = path.join(rootPath, "audio-recordings");
       await fs.access(audioFolder);
       const children = await buildTree(audioFolder);
       return {
-        name: 'audio-recordings',
-        type: 'folder',
+        name: "audio-recordings",
+        type: "folder",
         path: audioFolder,
         children,
       };
     } catch (error) {
-      console.error('Failed to get file tree:', error);
+      console.error("Failed to get file tree:", error);
       throw error;
     }
   }
@@ -273,62 +260,60 @@ export class FFmpegServerImpl implements FFmpegServer {
     try {
       const files = await fs.readdir(this.outputDir);
       return files
-        .filter((file) => file.endsWith('.wav'))
+        .filter((file) => file.endsWith(".wav"))
         .map((file) => path.join(this.outputDir, file));
     } catch (error) {
-      console.error('Error reading audio files:', error);
+      console.error("Error reading audio files:", error);
       return [];
     }
   }
   async startRecording(options: RecordingOptions = {}): Promise<string> {
     this.validateOutputDir();
     if (this.recordingProcess && !this.isRecordingPaused) {
-      throw new Error('Recording already in progress');
+      throw new Error("Recording already in progress");
     }
     const audioInput = this.getAudioInputFormat();
-    console.log(audioInput, 'audioInput');
-    this.currentStoryId = options.storyId?.toString() ?? 'default';
+    console.log(audioInput, "audioInput");
+    this.currentStoryId = options.storyId?.toString() ?? "default";
     if (!this.isRecordingPaused && this.tempRecordings.length === 0) {
       this.segmentCounter = 1;
     }
     if (!this.isRecordingPaused) {
       this.currentOutputFile = path.join(
         this.outputDir,
-        `temp_${this.segmentCounter.toString().padStart(3, '0')}_story-${
-          this.currentStoryId
-        }.wav`
+        `temp_${this.segmentCounter.toString().padStart(3, "0")}_story-${this.currentStoryId}.wav`
       );
     }
     const command = [
-      '-f',
+      "-f",
       audioInput.format,
-      '-i',
+      "-i",
       audioInput.device,
-      '-thread_queue_size',
-      '4096',
-      '-acodec',
-      'pcm_s24le',
-      '-ar',
-      '48000',
-      '-ac',
-      '1',
-      '-avoid_negative_ts',
-      'make_zero',
-      '-y',
+      "-thread_queue_size",
+      "4096",
+      "-acodec",
+      "pcm_s24le",
+      "-ar",
+      "48000",
+      "-ac",
+      "1",
+      "-avoid_negative_ts",
+      "make_zero",
+      "-y",
       this.currentOutputFile!,
     ];
-    if (os.platform() === 'win32') {
-      command.splice(2, 0, '-audio_buffer_size', '50');
+    if (os.platform() === "win32") {
+      command.splice(2, 0, "-audio_buffer_size", "50");
     }
     return new Promise((resolve, reject) => {
       try {
         this.recordingProcess = spawn(this.ffmpegPath, command);
         this.isRecordingPaused = false;
-        this.recordingProcess.stderr?.on('data', (data) => {
-          console.log('FFmpeg stderr:', data.toString());
+        this.recordingProcess.stderr?.on("data", (data) => {
+          console.log("FFmpeg stderr:", data.toString());
         });
-        this.recordingProcess.on('error', (err) => {
-          console.error('Recording process error:', err);
+        this.recordingProcess.on("error", (err) => {
+          console.error("Recording process error:", err);
           this.recordingProcess = null;
           this.currentOutputFile = null;
           reject(new Error(`Recording failed: ${err.message}`));
@@ -336,10 +321,10 @@ export class FFmpegServerImpl implements FFmpegServer {
         if (this.currentOutputFile) {
           resolve(this.currentOutputFile);
         } else {
-          reject(new Error('Output file path is null'));
+          reject(new Error("Output file path is null"));
         }
       } catch (error) {
-        console.error('Failed to start recording:', error);
+        console.error("Failed to start recording:", error);
         this.recordingProcess = null;
         this.currentOutputFile = null;
         reject(error);
@@ -349,7 +334,7 @@ export class FFmpegServerImpl implements FFmpegServer {
 
   async stopRecording(): Promise<string> {
     if (!this.recordingProcess) {
-      throw new Error('No recording in progress');
+      throw new Error("No recording in progress");
     }
 
     const currentProcess = this.recordingProcess;
@@ -367,26 +352,26 @@ export class FFmpegServerImpl implements FFmpegServer {
           resolve();
         };
 
-        currentProcess.on('exit', handleExit);
-        currentProcess.on('error', (err) => {
+        currentProcess.on("exit", handleExit);
+        currentProcess.on("error", (err) => {
           if (!exitHandled) {
             exitHandled = true;
             reject(new Error(`Process error: ${err.message}`));
           }
         });
 
-        if (os.platform() === 'win32') {
+        if (os.platform() === "win32") {
           try {
             execSync(`taskkill /pid ${currentProcess.pid} /T /F`);
           } catch (err) {
             if (!processExited) {
-              currentProcess.kill('SIGKILL');
+              currentProcess.kill("SIGKILL");
             }
           }
         } else {
           // On Unix-like systems, try graceful shutdown first
           try {
-            currentProcess.stdin?.write('q');
+            currentProcess.stdin?.write("q");
           } catch (err) {
             // Continue with force termination if writing to stdin fails
           }
@@ -395,11 +380,11 @@ export class FFmpegServerImpl implements FFmpegServer {
             if (processExited) return;
 
             try {
-              currentProcess.kill('SIGTERM');
+              currentProcess.kill("SIGTERM");
               await new Promise((resolve) => setTimeout(resolve, 500));
 
               if (!processExited) {
-                currentProcess.kill('SIGKILL');
+                currentProcess.kill("SIGKILL");
               }
             } catch (err) {
               // If process is already terminated, ignore errors
@@ -413,7 +398,7 @@ export class FFmpegServerImpl implements FFmpegServer {
         setTimeout(() => {
           if (!exitHandled) {
             exitHandled = true;
-            reject(new Error('Process termination timed out'));
+            reject(new Error("Process termination timed out"));
           }
         }, 2000);
       });
@@ -422,12 +407,10 @@ export class FFmpegServerImpl implements FFmpegServer {
     try {
       await killProcess();
       // Wait for filesystem to release handles
-      await new Promise((resolve) =>
-        setTimeout(resolve, os.platform() === 'win32' ? 1000 : 500)
-      );
+      await new Promise((resolve) => setTimeout(resolve, os.platform() === "win32" ? 1000 : 500));
 
       if (!this.currentOutputFile) {
-        throw new Error('No output file available');
+        throw new Error("No output file available");
       }
 
       // Verify the current output file exists
@@ -436,46 +419,40 @@ export class FFmpegServerImpl implements FFmpegServer {
       this.currentOutputFile = null;
 
       if (this.tempRecordings.length === 0) {
-        throw new Error('No recordings to process');
+        throw new Error("No recordings to process");
       }
 
       const finalOutputFile = path.join(
         this.outputDir,
-        `story-${this.currentStoryId || 'default'}.wav`
+        `story-${this.currentStoryId || "default"}.wav`
       );
 
       const sortedRecordings = [...this.tempRecordings].sort((a, b) => {
-        const segmentA = parseInt(path.basename(a).split('_')[1]) || 0;
-        const segmentB = parseInt(path.basename(b).split('_')[1]) || 0;
+        const segmentA = parseInt(path.basename(a).split("_")[1]) || 0;
+        const segmentB = parseInt(path.basename(b).split("_")[1]) || 0;
         return segmentA - segmentB;
       });
 
-      const fileListPath = path.join(
-        this.outputDir,
-        `filelist_${Date.now()}.txt`
-      );
-      await fs.writeFile(
-        fileListPath,
-        sortedRecordings.map((f) => `file '${f}'`).join('\n')
-      );
+      const fileListPath = path.join(this.outputDir, `filelist_${Date.now()}.txt`);
+      await fs.writeFile(fileListPath, sortedRecordings.map((f) => `file '${f}'`).join("\n"));
 
       await new Promise<void>((resolve, reject) => {
         const mergeProcess = spawn(this.ffmpegPath, [
-          '-f',
-          'concat',
-          '-safe',
-          '0',
-          '-i',
+          "-f",
+          "concat",
+          "-safe",
+          "0",
+          "-i",
           fileListPath,
-          '-y',
+          "-y",
           finalOutputFile,
         ]);
 
-        mergeProcess.stderr?.on('data', () => {
+        mergeProcess.stderr?.on("data", () => {
           // Log stderr if needed for debugging
         });
 
-        mergeProcess.on('close', async (code) => {
+        mergeProcess.on("close", async (code) => {
           try {
             if (code === 0) {
               await Promise.all([
@@ -500,14 +477,14 @@ export class FFmpegServerImpl implements FFmpegServer {
 
       return finalOutputFile;
     } catch (error) {
-      console.error('Error in stopRecording:', error);
+      console.error("Error in stopRecording:", error);
       throw error;
     }
   }
 
   async pauseRecording(): Promise<string> {
     if (!this.recordingProcess || this.isRecordingPaused) {
-      throw new Error('No active recording to pause');
+      throw new Error("No active recording to pause");
     }
 
     const currentProcess = this.recordingProcess;
@@ -525,33 +502,33 @@ export class FFmpegServerImpl implements FFmpegServer {
           resolve();
         };
 
-        currentProcess.on('exit', handleExit);
-        currentProcess.on('error', (err) => {
+        currentProcess.on("exit", handleExit);
+        currentProcess.on("error", (err) => {
           if (!exitHandled) {
             exitHandled = true;
             reject(new Error(`Process error: ${err.message}`));
           }
         });
 
-        if (os.platform() === 'win32') {
+        if (os.platform() === "win32") {
           try {
             execSync(`taskkill /pid ${currentProcess.pid} /T /F`);
           } catch (err) {
             if (!processExited) {
-              currentProcess.kill('SIGKILL');
+              currentProcess.kill("SIGKILL");
             }
           }
         } else {
           try {
-            currentProcess.kill('SIGINT');
+            currentProcess.kill("SIGINT");
 
             setTimeout(() => {
               if (!processExited) {
-                currentProcess.kill('SIGTERM');
+                currentProcess.kill("SIGTERM");
 
                 setTimeout(() => {
                   if (!processExited) {
-                    currentProcess.kill('SIGKILL');
+                    currentProcess.kill("SIGKILL");
                   }
                 }, 500);
               }
@@ -564,7 +541,7 @@ export class FFmpegServerImpl implements FFmpegServer {
         setTimeout(() => {
           if (!exitHandled) {
             exitHandled = true;
-            reject(new Error('Process termination timed out'));
+            reject(new Error("Process termination timed out"));
           }
         }, 2000);
       });
@@ -572,12 +549,10 @@ export class FFmpegServerImpl implements FFmpegServer {
 
     try {
       await killProcess();
-      await new Promise((resolve) =>
-        setTimeout(resolve, os.platform() === 'win32' ? 1000 : 500)
-      );
+      await new Promise((resolve) => setTimeout(resolve, os.platform() === "win32" ? 1000 : 500));
 
       if (!this.currentOutputFile) {
-        throw new Error('No output file available');
+        throw new Error("No output file available");
       }
 
       await fs.stat(this.currentOutputFile);
@@ -589,44 +564,42 @@ export class FFmpegServerImpl implements FFmpegServer {
       this.currentOutputFile = null;
       return currentFile;
     } catch (error) {
-      console.error('Error in pauseRecording:', error);
+      console.error("Error in pauseRecording:", error);
       throw error;
     }
   }
   async resumeRecording(): Promise<string> {
     if (!this.isRecordingPaused) {
-      throw new Error('No paused recording to resume');
+      throw new Error("No paused recording to resume");
     }
     this.currentOutputFile = path.join(
       this.outputDir,
-      `temp_${this.segmentCounter.toString().padStart(3, '0')}_story-${
-        this.currentStoryId
-      }.wav`
+      `temp_${this.segmentCounter.toString().padStart(3, "0")}_story-${this.currentStoryId}.wav`
     );
     return this.startRecording({
       storyId: this.currentStoryId ? parseInt(this.currentStoryId) : undefined,
     });
   }
   getFFmpegPath(): Promise<string> {
-    throw new Error('Method not implemented.');
+    throw new Error("Method not implemented.");
   }
   setClient(client: void | undefined): void {
-    throw new Error('Method not implemented.');
+    throw new Error("Method not implemented.");
   }
   getClient?(): void | undefined {
-    throw new Error('Method not implemented.');
+    throw new Error("Method not implemented.");
   }
   private getPlatformSpecificFFmpegPath(): string {
-    const ffmpegDir = path.resolve(__dirname, '../../../../ffmpeg');
+    const ffmpegDir = path.resolve(__dirname, "../../../../ffmpeg");
     switch (os.platform()) {
-      case 'win32':
-        return path.join(ffmpegDir, 'win', 'ffmpeg.exe');
-      case 'darwin':
-        return path.join(ffmpegDir, 'mac', 'ffmpeg');
-      case 'linux':
-        return path.join(ffmpegDir, 'linux', 'ffmpeg');
+      case "win32":
+        return path.join(ffmpegDir, "win", "ffmpeg.exe");
+      case "darwin":
+        return path.join(ffmpegDir, "mac", "ffmpeg");
+      case "linux":
+        return path.join(ffmpegDir, "linux", "ffmpeg");
       default:
-        throw new Error('Unsupported OS platform for FFmpeg');
+        throw new Error("Unsupported OS platform for FFmpeg");
     }
   }
   async getSystemOS() {
@@ -636,82 +609,68 @@ export class FFmpegServerImpl implements FFmpegServer {
   private async checkFFmpegInstallation(): Promise<void> {
     try {
       await fs.access(this.ffmpegPath, fs.constants.F_OK);
-      if (os.platform() !== 'win32') {
+      if (os.platform() !== "win32") {
         try {
           await fs.chmod(this.ffmpegPath, 0o755);
         } catch (chmodErr) {
-          console.warn(
-            'Warning: Failed to set executable permissions:',
-            chmodErr
-          );
+          console.warn("Warning: Failed to set executable permissions:", chmodErr);
         }
       }
       await fs.access(this.ffmpegPath, fs.constants.X_OK);
       execSync(`${this.ffmpegPath} -version`);
     } catch (err) {
-      console.error('FFmpeg installation check failed:', err);
-      throw new Error('FFmpeg is not installed or not functioning correctly');
+      console.error("FFmpeg installation check failed:", err);
+      throw new Error("FFmpeg is not installed or not functioning correctly");
     }
   }
 
   private getAudioInputFormat(): { format: string; device: string } {
     switch (os.platform()) {
-      case 'win32':
-        console.log('selectedDevice', this.selectedDevice);
+      case "win32":
+        console.log("selectedDevice", this.selectedDevice);
         return {
-          format: 'dshow',
-          device:
-            'audio=' +
-            (this.selectedDevice || this.defaultWinDevices || 'default'),
+          format: "dshow",
+          device: "audio=" + (this.selectedDevice || this.defaultWinDevices || "default"),
         };
-      case 'linux':
-        return { format: 'alsa', device: this.selectedDevice || 'default' };
-      case 'darwin':
-        return { format: 'avfoundation', device: this.selectedDevice || '0' };
+      case "linux":
+        return { format: "alsa", device: this.selectedDevice || "default" };
+      case "darwin":
+        return { format: "avfoundation", device: this.selectedDevice || "0" };
       default:
-        throw new Error('Unsupported OS platform for FFmpeg');
+        throw new Error("Unsupported OS platform for FFmpeg");
     }
   }
   private validateOutputDir(): void {
     if (!this.outputDir) {
-      throw new Error(
-        'Workspace path not set. Please call setWorkspacePath first.'
-      );
+      throw new Error("Workspace path not set. Please call setWorkspacePath first.");
     }
   }
 
-  async getAudioDevices(): Promise<
-    Array<{ name: string; alternativeName: string }>
-  > {
+  async getAudioDevices(): Promise<Array<{ name: string; alternativeName: string }>> {
     return new Promise((resolve, reject) => {
       try {
         const platform = os.platform();
         const command = [
-          '-list_devices',
-          'true',
-          '-f',
-          platform === 'darwin'
-            ? 'avfoundation'
-            : platform === 'win32'
-            ? 'dshow'
-            : 'alsa',
-          '-i',
-          platform === 'darwin' ? '' : 'dummy',
+          "-list_devices",
+          "true",
+          "-f",
+          platform === "darwin" ? "avfoundation" : platform === "win32" ? "dshow" : "alsa",
+          "-i",
+          platform === "darwin" ? "" : "dummy",
         ];
 
         const process = spawn(this.ffmpegPath, command);
-        let output = '';
+        let output = "";
 
-        process.stderr?.on('data', (data) => {
+        process.stderr?.on("data", (data) => {
           output += data.toString();
         });
 
-        process.on('close', (code) => {
+        process.on("close", (code) => {
           if (code === 0 || code === 1) {
             // FFmpeg may exit with code 1 for device listing
-            const devices: Array<{ name: string; alternativeName: string }> =
-              [];
-            const lines = output.split('\n');
+            const devices: Array<{ name: string; alternativeName: string }> = [];
+            const lines = output.split("\n");
 
             let currentDevice: {
               name: string;
@@ -726,7 +685,7 @@ export class FFmpegServerImpl implements FFmpegServer {
               if (deviceMatch) {
                 currentDevice = {
                   name: deviceMatch[1],
-                  alternativeName: '',
+                  alternativeName: "",
                 };
                 continue;
               }
@@ -736,26 +695,25 @@ export class FFmpegServerImpl implements FFmpegServer {
                 /Alternative name "([^"]+)"|Alternative name (@[^"]+)/
               );
               if (alternativeMatch && currentDevice) {
-                currentDevice.alternativeName =
-                  alternativeMatch[1] || alternativeMatch[2];
+                currentDevice.alternativeName = alternativeMatch[1] || alternativeMatch[2];
                 devices.push(currentDevice);
                 currentDevice = null;
               }
             }
 
-            console.log('Found audio devices:', devices);
+            console.log("Found audio devices:", devices);
             resolve(devices);
           } else {
-            reject(new Error('Failed to get audio devices'));
+            reject(new Error("Failed to get audio devices"));
           }
         });
 
-        process.on('error', (error) => {
-          console.error('Error in FFmpeg process:', error);
+        process.on("error", (error) => {
+          console.error("Error in FFmpeg process:", error);
           reject(error);
         });
       } catch (error) {
-        console.error('Error getting audio devices:', error);
+        console.error("Error getting audio devices:", error);
         reject(error);
       }
     });
@@ -764,7 +722,7 @@ export class FFmpegServerImpl implements FFmpegServer {
     try {
       await fs.unlink(path);
     } catch (error) {
-      console.error('Failed to delete file:', error);
+      console.error("Failed to delete file:", error);
       throw error;
     }
   }
@@ -773,7 +731,7 @@ export class FFmpegServerImpl implements FFmpegServer {
     try {
       await fs.mkdir(path, { recursive: true });
     } catch (error) {
-      console.error('Failed to create folder:', error);
+      console.error("Failed to create folder:", error);
       throw error;
     }
   }

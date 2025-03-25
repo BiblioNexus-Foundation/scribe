@@ -30,7 +30,6 @@ This is an example of how to list things you need to use the software and how to
 - [YARN ^1.7.0 <2](https://yarnpkg.com/getting-started)
 - [More](https://github.com/eclipse-theia/theia/blob/master/doc/Developing.md)
 
-
 ### Installation
 
 NB: If you are cloning the repository on linux you might need to do the following:
@@ -50,7 +49,6 @@ To run the electron application:
 3. Install dependencies and Build the app run `yarn build:electron`
 4. Start the application run `yarn start:electron`
 5. To bundle the application run `yarn electron:dist`
-
 
 To run the browser application:
 

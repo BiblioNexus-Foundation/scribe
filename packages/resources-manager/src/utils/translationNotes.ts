@@ -9,9 +9,7 @@ export const getDocumentAsScriptureTSV = async (
   resourceUri: URI,
   fs: FileService
 ): Promise<ScriptureTSV> => {
-  const docUri = resourceUri.withPath(
-    resourceUri.path.join(`tn_${verseRef.book}.tsv`)
-  );
+  const docUri = resourceUri.withPath(resourceUri.path.join(`tn_${verseRef.book}.tsv`));
 
   const doc = await fs.readFile(docUri);
 
@@ -24,8 +22,6 @@ export const getDocumentAsScriptureTSV = async (
   try {
     return tsvStringToScriptureTSV(text);
   } catch {
-    throw new Error(
-      "Could not get document as json. Content is not valid scripture TSV"
-    );
+    throw new Error("Could not get document as json. Content is not valid scripture TSV");
   }
 };

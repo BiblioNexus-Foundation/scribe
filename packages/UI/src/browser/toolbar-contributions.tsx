@@ -1,8 +1,4 @@
-import {
-  CommandContribution,
-  CommandRegistry,
-  MessageService,
-} from "@theia/core";
+import { CommandContribution, CommandRegistry, MessageService } from "@theia/core";
 import { inject, injectable, interfaces } from "@theia/core/shared/inversify";
 import * as React from "@theia/core/shared/react";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
@@ -78,9 +74,8 @@ export class LayoutsToolbarContribution
     this.doHandleSaveClick(e);
   protected handleOpenClick = (e: ReactInteraction<HTMLSpanElement>): void =>
     this.doHandleOpenClick(e);
-  protected handleNotificationClick = (
-    e: ReactInteraction<HTMLSpanElement>
-  ): void => this.doHandleNotificationClick(e);
+  protected handleNotificationClick = (e: ReactInteraction<HTMLSpanElement>): void =>
+    this.doHandleNotificationClick(e);
   protected handleLockClick = (e: ReactInteraction<HTMLSpanElement>): void =>
     this.doHandleNotificationClick(e);
   protected doHandleLayoutClick(e: ReactInteraction<HTMLSpanElement>): void {
@@ -100,9 +95,7 @@ export class LayoutsToolbarContribution
     e.stopPropagation();
     this.commandService.executeCommand(OPEN_COMMAND.id);
   }
-  protected doHandleNotificationClick(
-    e: ReactInteraction<HTMLSpanElement>
-  ): void {
+  protected doHandleNotificationClick(e: ReactInteraction<HTMLSpanElement>): void {
     e.stopPropagation();
     this.commandService.executeCommand(NOTIFICATION_COMMAND.id);
   }
@@ -118,8 +111,7 @@ export class LayoutsToolbarContribution
             console.log("Cloud Sync clicked 0---------------------");
             this.commandService.executeCommand(CLOUD_OPEN_DIALOG.id);
           }}
-          title="Cloud Sync"
-        >
+          title="Cloud Sync">
           <IconCloud stroke={2} />
           <span>Cloud Sync</span>
         </div>
@@ -131,8 +123,7 @@ export class LayoutsToolbarContribution
           onClick={() => {
             this.commandService.executeCommand(RESOURCE_PICKER_OPEN_DIALOG.id);
           }}
-          title="Open Resources"
-        >
+          title="Open Resources">
           <IconFolders stroke={2} />
           <span>Resources</span>
         </div>
@@ -142,8 +133,7 @@ export class LayoutsToolbarContribution
           className="item enabled toolbar-item action-label"
           id="easy-save-item-icon"
           onClick={this.handleSaveClick}
-          title="Save File"
-        >
+          title="Save File">
           <div className="codicon codicon-cloud-upload" />
           <span>Save</span>
         </div>
@@ -153,8 +143,7 @@ export class LayoutsToolbarContribution
           className="item enabled toolbar-item action-label"
           id="easy-layout-item-icon"
           onClick={this.handleLayoutClick}
-          title="Change Layout"
-        >
+          title="Change Layout">
           <div className="codicon codicon-layout" />
           <span>Reset to Default Layout</span>
         </div>
@@ -165,8 +154,7 @@ export class LayoutsToolbarContribution
           className="item enabled toolbar-item action-label"
           id="easy-open-item-icon"
           onClick={this.handleOpenClick}
-          title="Change Font"
-        >
+          title="Change Font">
           <div className="codicon codicon-text-size" />
           <span>Font Size</span>
         </div>
@@ -176,8 +164,7 @@ export class LayoutsToolbarContribution
           className="item enabled toolbar-item action-label"
           id="easy-open-item-icon"
           onClick={this.handleLockClick}
-          title="Lock File"
-        >
+          title="Lock File">
           <div className="codicon codicon-lock" />
         </div>
         <div
@@ -186,8 +173,7 @@ export class LayoutsToolbarContribution
           className="item enabled toolbar-item action-label"
           id="easy-open-item-icon"
           onClick={this.handleNotificationClick}
-          title="Notifications"
-        >
+          title="Notifications">
           <div className="codicon codicon-bell" />
         </div>
       </div>
@@ -197,39 +183,29 @@ export class LayoutsToolbarContribution
   registerCommands(registry: CommandRegistry): void {
     registry.registerCommand(LAYOUT_COMMAND, {
       execute: async () => {
-        this.messageService.info(
-          "Change Layout - to be implemented, in command contribution"
-        );
+        this.messageService.info("Change Layout - to be implemented, in command contribution");
       },
     });
 
     registry.registerCommand(SAVE_COMMAND, {
       execute: async () => {
-        this.messageService.info(
-          "Save File - to be implemented, in command contribution"
-        );
+        this.messageService.info("Save File - to be implemented, in command contribution");
       },
     });
 
     registry.registerCommand(OPEN_COMMAND, {
       execute: async () => {
-        this.messageService.info(
-          "Open File - to be implemented, in command contribution"
-        );
+        this.messageService.info("Open File - to be implemented, in command contribution");
       },
     });
     registry.registerCommand(NOTIFICATION_COMMAND, {
       execute: async () => {
-        this.messageService.info(
-          "Notifications - to be implemented, in command contribution"
-        );
+        this.messageService.info("Notifications - to be implemented, in command contribution");
       },
     });
     registry.registerCommand(LOCK_COMMAND, {
       execute: async () => {
-        this.messageService.info(
-          "Lock file - to be implemented, in command contribution"
-        );
+        this.messageService.info("Lock file - to be implemented, in command contribution");
       },
     });
   }
