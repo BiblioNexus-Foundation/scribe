@@ -30,8 +30,9 @@ import {
   CloudSyncWidget,
   CloudSyncWidgetDialogProps,
 } from "./cloud-sync-widget";
-import { CommandContribution } from "@theia/core";
-import { CloudSyncUtils } from "../../utils/CloudSyncUtils";
+import { CommandContribution } from '@theia/core';
+import { CloudSyncUtils } from '../../utils/CloudSyncUtils';
+ './CreateProject';
 
 export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   // sidebar widget binds
@@ -39,7 +40,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   bind(FrontendApplicationContribution).toService(AiSidebarContribution);
   bind(AiSidebar).toSelf();
   bind(WidgetFactory)
-    .toDynamicValue((context) => ({
+    .toDynamicValue((context: { container: { get: <T>(arg0: any) => T } }) => ({
       id: AiSidebar.ID,
       createWidget: () => context.container.get<AiSidebar>(AiSidebar),
     }))
@@ -50,7 +51,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   bind(FrontendApplicationContribution).toService(MainEditorLeftContribution);
   bind(MainEditorLeftWidget).toSelf();
   bind(WidgetFactory)
-    .toDynamicValue((context) => ({
+    .toDynamicValue((context: { container: { get: <T>(arg0: any) => T } }) => ({
       id: MainEditorLeftWidget.ID,
       createWidget: () =>
         context.container.get<MainEditorLeftWidget>(MainEditorLeftWidget),
@@ -62,7 +63,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   bind(FrontendApplicationContribution).toService(MainEditorRightContribution);
   bind(MainEditorRightWidget).toSelf();
   bind(WidgetFactory)
-    .toDynamicValue((context) => ({
+    .toDynamicValue((context: { container: { get: <T>(arg0: any) => T } }) => ({
       id: MainEditorRightWidget.ID,
       createWidget: () =>
         context.container.get<MainEditorRightWidget>(MainEditorRightWidget),
@@ -73,7 +74,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   bind(FrontendApplicationContribution).toService(BottomEditorLeftContribution);
   bind(BottomEditorLeft).toSelf();
   bind(WidgetFactory)
-    .toDynamicValue((context) => ({
+    .toDynamicValue((context: { container: { get: <T>(arg0: any) => T } }) => ({
       id: BottomEditorLeft.ID,
       createWidget: () =>
         context.container.get<BottomEditorLeft>(BottomEditorLeft),
@@ -87,7 +88,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   );
   bind(BottomEditorRightWidget).toSelf();
   bind(WidgetFactory)
-    .toDynamicValue((context) => ({
+    .toDynamicValue((context: { container: { get: <T>(arg0: any) => T } }) => ({
       id: BottomEditorRightWidget.ID,
       createWidget: () =>
         context.container.get<BottomEditorRightWidget>(BottomEditorRightWidget),
@@ -99,7 +100,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   bind(FrontendApplicationContribution).toService(AudioContribution);
   bind(AudioWidget).toSelf();
   bind(WidgetFactory)
-    .toDynamicValue((context) => ({
+    .toDynamicValue((context: { container: { get: <T>(arg0: any) => T } }) => ({
       id: AudioWidget.ID,
       createWidget: () => context.container.get<AudioWidget>(AudioWidget),
     }))
@@ -110,7 +111,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   bind(FrontendApplicationContribution).toService(ChatContribution);
   bind(ChatWidget).toSelf();
   bind(WidgetFactory)
-    .toDynamicValue((context) => ({
+    .toDynamicValue((context: { container: { get: <T>(arg0: any) => T } }) => ({
       id: ChatWidget.ID,
       createWidget: () => context.container.get<ChatWidget>(ChatWidget),
     }))
@@ -121,7 +122,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   bind(FrontendApplicationContribution).toService(VideoContribution);
   bind(VideoWidget).toSelf();
   bind(WidgetFactory)
-    .toDynamicValue((context) => ({
+    .toDynamicValue((context: { container: { get: <T>(arg0: any) => T } }) => ({
       id: VideoWidget.ID,
       createWidget: () => context.container.get<VideoWidget>(VideoWidget),
     }))
@@ -132,7 +133,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   bind(FrontendApplicationContribution).toService(AudioPlayContribution);
   bind(AudioPlayWidget).toSelf();
   bind(WidgetFactory)
-    .toDynamicValue((context) => ({
+    .toDynamicValue((context: { container: { get: <T>(arg0: any) => T } }) => ({
       id: AudioPlayWidget.ID,
       createWidget: () =>
         context.container.get<AudioPlayWidget>(AudioPlayWidget),
@@ -147,4 +148,44 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   bind(CommandContribution).toService(CloudSyncCommandContribution);
 
   bind(CloudSyncUtils).toSelf().inSingletonScope();
+<<<<<<< Updated upstream
+=======
+  // CHAPTER WIDGET BINDS
+  bindViewContribution(bind, ChapterContribution);
+  bind(FrontendApplicationContribution).toService(ChapterContribution);
+  bind(ChapterWidget).toSelf();
+  bind(WidgetFactory)
+    .toDynamicValue((context: { container: { get: <T>(arg0: any) => T } }) => ({
+      id: ChapterWidget.ID,
+      createWidget: () => context.container.get<ChapterWidget>(ChapterWidget),
+    }))
+    .inSingletonScope();
+
+  // CHAPTER NEW PROJECT WIDGET
+  bindViewContribution(bind, CreateNewProjectContribution);
+  bind(FrontendApplicationContribution).toService(CreateNewProjectContribution);
+  bind(CreateNewProjectWidget).toSelf();
+  bind(WidgetFactory)
+    .toDynamicValue((context: { container: { get: <T>(arg0: any) => T } }) => ({
+      id: CreateNewProjectWidget.ID,
+      createWidget: () =>
+        context.container.get<CreateNewProjectWidget>(CreateNewProjectWidget),
+    }))
+    .inSingletonScope();
+
+  bind(ProjectInitializer).toSelf().inSingletonScope();
+  bind(createVersificationUSFMClass).toSelf().inSingletonScope();
+
+  // CREATE PROJECT WIDGET
+  bindViewContribution(bind, CreateProjectContribution);
+  bind(FrontendApplicationContribution).toService(CreateProjectContribution);
+  bind(CreateProjectWidgetUI).toSelf();
+  bind(WidgetFactory)
+    .toDynamicValue((context: { container: { get: <T>(arg0: any) => T } }) => ({
+      id: CreateProjectWidgetUI.ID,
+      createWidget: () =>
+        context.container.get<CreateProjectWidgetUI>(CreateProjectWidgetUI),
+    }))
+    .inSingletonScope();
+>>>>>>> Stashed changes
 };
