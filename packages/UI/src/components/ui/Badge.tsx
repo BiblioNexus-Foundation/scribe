@@ -16,7 +16,7 @@ const badgeVariants = cva(
           "border-transparent bg-cyan-100  border  text-cyan-700 rounded-lg px-[6px] py-1 text-[10px]",
         outline: "text-foreground border",
         rounded:
-        "h-[22px] w-[22px] border border-[rgb(250 250 250 / 0.1)] bg-[var(--theia-editor-background)]  hover:bg-cyan-800   text-cyan-700 rounded-full",
+          "h-[22px] w-[22px] border border-[rgb(250 250 250 / 0.1)] bg-[var(--theia-editor-background)]  hover:bg-cyan-800   text-cyan-700 rounded-full",
       },
     },
     defaultVariants: {
@@ -30,9 +30,7 @@ export interface BadgeProps
     VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {
-  return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
-  );
+  return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
 }
 
 export { Badge, badgeVariants };

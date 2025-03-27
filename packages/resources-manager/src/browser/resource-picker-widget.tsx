@@ -9,11 +9,7 @@ import ResourceTypeDisplay from "../components/ResourcesManager/ResourcesDisplay
 import { Message } from "@theia/core/lib/browser";
 
 import { MessageService } from "@theia/core";
-import {
-  ConfigResourceValues,
-  DownloadResourceUtils,
-  ScribeResource,
-} from "./resources/types";
+import { ConfigResourceValues, DownloadResourceUtils, ScribeResource } from "./resources/types";
 import { registeredResources } from "./resources";
 import { WorkspaceService } from "@theia/workspace/lib/browser/workspace-service";
 import { FileService } from "@theia/filesystem/lib/browser/file-service";
@@ -72,12 +68,10 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
 
   protected onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
-    this.resourcesManagerUtils
-      .getDownloadedResourcesFromProjectConfig()
-      .then((resources) => {
-        this.downloadedResources = resources ?? [];
-        this.update();
-      });
+    this.resourcesManagerUtils.getDownloadedResourcesFromProjectConfig().then((resources) => {
+      this.downloadedResources = resources ?? [];
+      this.update();
+    });
   }
 
   get value(): any {
@@ -85,14 +79,9 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
   }
 
   render(): React.ReactNode {
-    const allUngroupedResources = resourcesGroups.flatMap(
-      (group) => group.resources
-    );
+    const allUngroupedResources = resourcesGroups.flatMap((group) => group.resources);
 
-    const openHandler = async (
-      resourceInfo: ConfigResourceValues,
-      resource: ScribeResource
-    ) => {
+    const openHandler = async (resourceInfo: ConfigResourceValues, resource: ScribeResource) => {
       if (!resource) {
         await this.messageService.error("Resource type not found");
         return;
@@ -106,25 +95,21 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
       });
     };
     return (
-      <div className="w-[90vw] h-[80vh] top-0   flex relative gap-3 justify-between">
+      <div className="relative top-0 flex h-[80vh] w-[90vw] justify-between gap-3">
         {/* <VerseRefInput
           setVerseRef={(verseRef) => this.verseRefUtils.setVerseRef(verseRef)}
         /> */}
 
-        <Tabs
-          defaultValue={allUngroupedResources[0].id}
-          className="w-full flex "
-        >
-          <TabsList className="flex flex-col w-1/6 h-fit mr-3  ">
+        <Tabs defaultValue={allUngroupedResources[0].id} className="flex w-full">
+          <TabsList className="mr-3 flex h-fit w-1/6 flex-col">
             {resourcesGroups.map((group) => (
-              <div key={group.id} className="flex flex-col gap-2 w-full mb-5">
-                <h1 className="uppercase text-xxs">{group.name}</h1>
+              <div key={group.id} className="mb-5 flex w-full flex-col gap-2">
+                <h1 className="text-xxs uppercase">{group.name}</h1>
                 {group.resources.map((resource) => (
                   <TabsTrigger
                     value={resource.id}
                     asChild
-                    className="text-white font-medium px-2 mx-0  flex items-center m-0 py-0.5"
-                  >
+                    className="m-0 mx-0 flex items-center px-2 py-0.5 font-medium text-white">
                     <button className="flex gap-2 text-sm">
                       {resource.icon}
                       <span>{resource.displayLabel}</span>
@@ -134,7 +119,7 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
               </div>
             ))}
           </TabsList>
-          <div className="border-l border-gray-300 min-h-full  px-10 flex-1">
+          <div className="min-h-full flex-1 border-l border-gray-300 px-10">
             {allUngroupedResources.map((resource) => (
               <TabsContent value={resource.id}>
                 <ResourceTypeDisplay
@@ -142,18 +127,11 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
                     value: resource.id,
                     label: resource.displayLabel,
                     getTableDisplayData: resource.getTableDisplayData,
-                    downloadHandler: <ResourceInfo extends {}>(
-                      resourceInfo: ResourceInfo
-                    ) =>
-                      this._downloadResource(
-                        resourceInfo,
-                        resource.downloadResource
-                      ),
+                    downloadHandler: <ResourceInfo extends {}>(resourceInfo: ResourceInfo) =>
+                      this._downloadResource(resourceInfo, resource.downloadResource),
                   }}
                   downloadedResources={this.downloadedResources}
-                  openResource={(resourceInfo) =>
-                    openHandler(resourceInfo, resource)
-                  }
+                  openResource={(resourceInfo) => openHandler(resourceInfo, resource)}
                 />
               </TabsContent>
             ))}
@@ -171,13 +149,10 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
     ) => Promise<ConfigResourceValues>
   ) {
     try {
-      const currentFolderURI = (await this.workspaceService.roots)?.[0]
-        .resource;
+      const currentFolderURI = (await this.workspaceService.roots)?.[0].resource;
 
       if (!currentFolderURI) {
-        await this.messageService.error(
-          "Please open a workspace folder to download resources"
-        );
+        await this.messageService.error("Please open a workspace folder to download resources");
         return;
       }
 
@@ -200,13 +175,8 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
 
       const updatedDownloadedResourcePath = {
         ...downloadedResource,
-        localPath: downloadedResource.localPath.includes(
-          currentFolderURI.path.fsPath()
-        )
-          ? downloadedResource.localPath.replace(
-              currentFolderURI.path.fsPath(),
-              ""
-            )
+        localPath: downloadedResource.localPath.includes(currentFolderURI.path.fsPath())
+          ? downloadedResource.localPath.replace(currentFolderURI.path.fsPath(), "")
           : downloadedResource.localPath,
       };
 

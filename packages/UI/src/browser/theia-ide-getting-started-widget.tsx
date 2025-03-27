@@ -55,9 +55,7 @@ export class TheiaIDEGettingStartedWidget extends GettingStartedWidget {
           {this.renderHeader()}
           <hr className="gs-hr" />
         </div>
-        <div className="gs-preference-container">
-          {this.renderPreferences()}
-        </div>
+        <div className="gs-preference-container">{this.renderPreferences()}</div>
       </div>
     );
   }
@@ -96,14 +94,10 @@ export class TheiaIDEGettingStartedWidget extends GettingStartedWidget {
     return (
       <div>
         <p className="gs-sub-header">
-          {this.applicationInfo
-            ? "Version " + this.applicationInfo.version
-            : "-"}
+          {this.applicationInfo ? "Version " + this.applicationInfo.version : "-"}
         </p>
 
-        <p className="gs-sub-header">
-          {"VS Code API Version: " + this.vscodeApiVersion}
-        </p>
+        <p className="gs-sub-header">{"VS Code API Version: " + this.vscodeApiVersion}</p>
       </div>
     );
   }

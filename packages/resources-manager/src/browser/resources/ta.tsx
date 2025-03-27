@@ -1,9 +1,6 @@
 import * as React from "@theia/core/shared/react";
 import { ScribeResource, Door43ApiResponse, Door43RepoResponse } from "./types";
-import {
-  downloadDoor43Resource,
-  fetchDoor43ResourceDisplayData,
-} from "./utils";
+import { downloadDoor43Resource, fetchDoor43ResourceDisplayData } from "./utils";
 import { Context } from "../resource-viewer/resource-viewer-widget";
 import { TranslationAcademy } from "@/components/TranslationAcademy";
 import { IconLibrary } from "@tabler/icons-react";
@@ -49,9 +46,7 @@ export const taResource: ScribeResource<Door43RepoResponse, string[]> = {
       return (
         <TranslationAcademy
           getTaContent={async (params) => await getTaContent(params, ctx)}
-          getTaFolderContent={async (directory) =>
-            (await getTaFolderContent(directory, ctx)) ?? []
-          }
+          getTaFolderContent={async (directory) => (await getTaFolderContent(directory, ctx)) ?? []}
           taDirectories={data}
         />
       );
@@ -60,9 +55,7 @@ export const taResource: ScribeResource<Door43RepoResponse, string[]> = {
 };
 
 const getTaFolderContent = async (directory: string, ctx: Context) => {
-  const folderUri = ctx.resourceUri.withPath(
-    ctx.resourceUri.path.join(directory)
-  );
+  const folderUri = ctx.resourceUri.withPath(ctx.resourceUri.path.join(directory));
 
   const folderInfo = await ctx.fs.resolve(folderUri);
   const content = folderInfo?.children

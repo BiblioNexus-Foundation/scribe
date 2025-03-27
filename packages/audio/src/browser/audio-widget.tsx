@@ -1,32 +1,24 @@
-import * as React from 'react';
-import {
-  injectable,
-  postConstruct,
-  inject,
-} from '@theia/core/shared/inversify';
-import { ReactWidget } from '@theia/core/lib/browser/widgets/react-widget';
-import { AudioPanel } from '../components/AudioPanel';
-import { ThemeService } from '@theia/core/lib/browser/theming';
-import { FFmpegServer } from '../common/audio-protocol';
-import { WorkspaceService } from '@theia/workspace/lib/browser/workspace-service';
+import * as React from "react";
+import { injectable, postConstruct, inject } from "@theia/core/shared/inversify";
+import { ReactWidget } from "@theia/core/lib/browser/widgets/react-widget";
+import { AudioPanel } from "../components/AudioPanel";
+import { ThemeService } from "@theia/core/lib/browser/theming";
+import { FFmpegServer } from "../common/audio-protocol";
+import { WorkspaceService } from "@theia/workspace/lib/browser/workspace-service";
 
 @injectable()
 export class AudioWidget extends ReactWidget {
-  static readonly ID = 'audio:widget';
-  static readonly LABEL = 'Audio Widget';
+  static readonly ID = "audio:widget";
+  static readonly LABEL = "Audio Widget";
 
   @inject(FFmpegServer)
-  protected readonly server:FFmpegServer;
-
+  protected readonly server: FFmpegServer;
 
   @inject(ThemeService)
   protected readonly themeService: ThemeService;
 
-
   @inject(WorkspaceService)
   protected readonly workspaceService: WorkspaceService;
-  
-
 
   private currentTheme: string;
 
@@ -40,17 +32,16 @@ export class AudioWidget extends ReactWidget {
     this.title.label = AudioWidget.LABEL;
     this.title.caption = AudioWidget.LABEL;
     this.title.closable = true;
-    this.title.iconClass = 'fa fa-window-maximize'; // example widget icon.
+    this.title.iconClass = "fa fa-window-maximize"; // example widget icon.
 
     // Set initial theme
     this.currentTheme = this.themeService.getCurrentTheme().type;
 
-    console.log(this.server, 'server');
+    console.log(this.server, "server");
     // Subscribe to theme changes
     this.themeService.onDidColorThemeChange(() => {
       this.handleThemeChange();
     });
-
 
     await this.initializeWorkspace();
 
@@ -65,7 +56,6 @@ export class AudioWidget extends ReactWidget {
       this.update(); // Trigger re-render
     }
   }
-
 
   private async getWorkspaceDetails(): Promise<{
     fsPath?: string;
@@ -86,7 +76,7 @@ export class AudioWidget extends ReactWidget {
         isWorkspaceOpen: true,
       };
     } catch (error) {
-      console.error('Error retrieving workspace details:', error);
+      console.error("Error retrieving workspace details:", error);
       return {
         isWorkspaceOpen: false,
       };
@@ -96,17 +86,17 @@ export class AudioWidget extends ReactWidget {
   private async initializeWorkspace(): Promise<void> {
     // Initialize workspace
     const workspaceDetails = await this.getWorkspaceDetails();
-    console.log('Workspace details:', workspaceDetails);
+    console.log("Workspace details:", workspaceDetails);
 
     if (workspaceDetails.isWorkspaceOpen && workspaceDetails.fsPath) {
       try {
         await this.server.setWorkspacePath(workspaceDetails.fsPath);
-        console.log('Workspace path set in backend:', workspaceDetails.fsPath);
+        console.log("Workspace path set in backend:", workspaceDetails.fsPath);
       } catch (error) {
-        console.error('Failed to set workspace path:', error);
+        console.error("Failed to set workspace path:", error);
       }
     } else {
-      console.log('No workspace is currently open');
+      console.log("No workspace is currently open");
     }
 
     this.update();

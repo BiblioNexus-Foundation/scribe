@@ -1,9 +1,6 @@
 import * as React from "react";
 
-import {
-  VSCodeButton,
-  VSCodeTextField,
-} from "@vscode/webview-ui-toolkit/react";
+import { VSCodeButton, VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
 // import { List } from "react-virtualized";
 import { useEffect, useRef, useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
@@ -21,19 +18,15 @@ const TranslationWordsDropdown = ({
   initialTranslationWords: TranslationWord[];
   setTranslationWord: (language: TranslationWord) => void;
   selectedTranslationWord: TranslationWord | null;
-  searchTranslationWords: (
-    category: TWCategory,
-    query: string
-  ) => Promise<TranslationWord[]>;
+  searchTranslationWords: (category: TWCategory, query: string) => Promise<TranslationWord[]>;
 }) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [twCategory, setTwCategory] = useState<TWCategory>("all");
 
   const [query, setQuery] = useState("");
 
-  const [translationWords, setTranslationWords] = useState<TranslationWord[]>(
-    initialTranslationWords
-  );
+  const [translationWords, setTranslationWords] =
+    useState<TranslationWord[]>(initialTranslationWords);
 
   useEffect(() => {
     setTranslationWords(initialTranslationWords);
@@ -85,12 +78,11 @@ const TranslationWordsDropdown = ({
           <div
             role="combobox"
             aria-expanded={searchOpen}
-            className="flex items-center justify-between rounded-sm transition-colors focus-visible:outline-none =focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background color-[--vscode-input-foreground] bg-[--vscode-input-background] border border-[--vscode-input-border] focus-visible:border-ring px-2 py-1 max-w-xl"
+            className="=focus-visible:ring-offset-2 ring-offset-background color-[--vscode-input-foreground] focus-visible:border-ring flex max-w-xl items-center justify-between rounded-sm border border-[--vscode-input-border] bg-[--vscode-input-background] px-2 py-1 transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
             // getting the right types requires installation of a library which is useless if that library is not being used
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ref={textFieldRef as any}
-            onFocus={onFocus}
-          >
+            onFocus={onFocus}>
             <span>
               {selectedTranslationWord
                 ? `${selectedTranslationWord?.name}`
@@ -105,35 +97,27 @@ const TranslationWordsDropdown = ({
         <Popover.Content asChild>
           <div className="bg-[--dropdown-background]">
             <div>
-              <div className="flex justify-between items-center px-2 py-1">
+              <div className="flex items-center justify-between px-2 py-1">
                 <div>Categories: </div>
                 <div>
                   <VSCodeButton
                     onClick={() => setTwCategory("all")}
-                    appearance={twCategory === "all" ? "primary" : "secondary"}
-                  >
+                    appearance={twCategory === "all" ? "primary" : "secondary"}>
                     All
                   </VSCodeButton>
                   <VSCodeButton
                     onClick={() => setTwCategory("kt")}
-                    appearance={twCategory === "kt" ? "primary" : "secondary"}
-                  >
+                    appearance={twCategory === "kt" ? "primary" : "secondary"}>
                     KT
                   </VSCodeButton>
                   <VSCodeButton
                     onClick={() => setTwCategory("names")}
-                    appearance={
-                      twCategory === "names" ? "primary" : "secondary"
-                    }
-                  >
+                    appearance={twCategory === "names" ? "primary" : "secondary"}>
                     Names
                   </VSCodeButton>
                   <VSCodeButton
                     onClick={() => setTwCategory("other")}
-                    appearance={
-                      twCategory === "other" ? "primary" : "secondary"
-                    }
-                  >
+                    appearance={twCategory === "other" ? "primary" : "secondary"}>
                     Other
                   </VSCodeButton>
                 </div>
@@ -144,7 +128,7 @@ const TranslationWordsDropdown = ({
                 placeholder={`Search translation word ...`}
                 value={query}
                 onInput={(e) => setQuery((e.target as HTMLInputElement).value)}
-                className="rounded text-sm w-full"
+                className="w-full rounded text-sm"
               />
             </div>
             {/* <List

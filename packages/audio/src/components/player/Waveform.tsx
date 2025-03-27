@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import WaveSurfer from 'wavesurfer.js';
-import { Howl } from 'howler';
+import React, { useEffect, useRef } from "react";
+import WaveSurfer from "wavesurfer.js";
+import { Howl } from "howler";
 
 interface IWaveformProps {
   url: string;
@@ -31,25 +31,21 @@ export const Waveform: React.FC<IWaveformProps> = ({
         const currentTime = howlRef.current.seek() as number;
         const duration = howlRef.current.duration();
 
-        if (duration && duration > 0 && typeof currentTime === 'number') {
+        if (duration && duration > 0 && typeof currentTime === "number") {
           waveSurferRef.current.seekTo(currentTime / duration);
         }
       } catch (err) {
-        console.error('Error in animation frame:', err);
+        console.error("Error in animation frame:", err);
       }
 
-      animationFrameRef.current = window.requestAnimationFrame(
-        updateWaveformPosition
-      );
+      animationFrameRef.current = window.requestAnimationFrame(updateWaveformPosition);
     }
   };
 
   const startProgressAnimation = () => {
     stopProgressAnimation();
     playingRef.current = true;
-    animationFrameRef.current = window.requestAnimationFrame(
-      updateWaveformPosition
-    );
+    animationFrameRef.current = window.requestAnimationFrame(updateWaveformPosition);
   };
 
   const stopProgressAnimation = () => {
@@ -79,24 +75,24 @@ export const Waveform: React.FC<IWaveformProps> = ({
     // Create WaveSurfer instance
     const ws = WaveSurfer.create({
       container: waveformRef.current,
-      waveColor: '#22D3EE',
-      progressColor: theme === 'dark' ? '#FFFFFF' : '#000000',
-      cursorColor: '#22D3EE',
-      height: 'auto',
+      waveColor: "#22D3EE",
+      progressColor: theme === "dark" ? "#FFFFFF" : "#000000",
+      cursorColor: "#22D3EE",
+      height: "auto",
       hideScrollbar: true,
       interact: true,
       barWidth: 2,
       barGap: 2,
       barRadius: 2,
-      backend: 'WebAudio',
+      backend: "WebAudio",
     });
     waveSurferRef.current = ws;
-    ws.on('finish', () => {
-      setControl('stop');
+    ws.on("finish", () => {
+      setControl("stop");
       stopProgressAnimation();
     });
 
-    ws.on('click', (relativeX) => {
+    ws.on("click", (relativeX) => {
       if (howlRef.current) {
         const duration = howlRef.current.duration();
         const newPos = duration * relativeX;
@@ -117,7 +113,7 @@ export const Waveform: React.FC<IWaveformProps> = ({
       src: [url],
       volume: volume,
       rate: speed,
-      format: ['mp3', 'wav'],
+      format: ["mp3", "wav"],
       html5: true,
       pool: 1,
       onplay: startProgressAnimation,
@@ -129,13 +125,13 @@ export const Waveform: React.FC<IWaveformProps> = ({
       onend: () => {
         if (ws) ws.seekTo(0);
         stopProgressAnimation();
-        setControl('stop');
+        setControl("stop");
       },
       onloaderror: (id, error) => {
-        console.error('Howl load error:', error);
+        console.error("Howl load error:", error);
       },
       onplayerror: (id, error) => {
-        console.error('Howl play error:', error);
+        console.error("Howl play error:", error);
       },
     });
 
@@ -152,29 +148,29 @@ export const Waveform: React.FC<IWaveformProps> = ({
 
     try {
       switch (control) {
-        case 'play': {
+        case "play": {
           sound.volume(Math.min(Math.max(volume, 0), 1));
           sound.play();
           break;
         }
-        case 'pause': {
+        case "pause": {
           sound.pause();
           break;
         }
-        case 'rewind': {
+        case "rewind": {
           sound.seek(0);
           ws.seekTo(0);
-          setControl('play');
+          setControl("play");
           break;
         }
-        case 'stop': {
+        case "stop": {
           sound.stop();
           ws.seekTo(0);
           break;
         }
       }
     } catch (error) {
-      console.error('Control error:', error);
+      console.error("Control error:", error);
     }
   }, [control]);
 
@@ -192,12 +188,8 @@ export const Waveform: React.FC<IWaveformProps> = ({
   }, [speed]);
 
   return (
-    <div className='flex items-center justify-between w-full gap-3'>
-      <div
-        className='flex-1 relative h-16'
-        ref={waveformRef}
-        id='wav-container'
-      ></div>
+    <div className="flex w-full items-center justify-between gap-3">
+      <div className="relative h-16 flex-1" ref={waveformRef} id="wav-container"></div>
     </div>
   );
 };

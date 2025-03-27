@@ -14,12 +14,7 @@ export default function Button({
   size?: "default" | "sm" | "lg" | "icon";
 }) {
   return (
-    <Buttons
-      onClick={onClick}
-      size={size}
-      className={className}
-      variant="outline"
-    >
+    <Buttons onClick={onClick} size={size} className={className} variant="outline">
       {icon}
       {label}
     </Buttons>

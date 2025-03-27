@@ -6,18 +6,10 @@ import {
   WidgetManager,
   codicon,
 } from "@theia/core/lib/browser";
-import {
-  inject,
-  injectable,
-  postConstruct,
-} from "@theia/core/shared/inversify";
+import { inject, injectable, postConstruct } from "@theia/core/shared/inversify";
 import { MessageService, URI, nls } from "@theia/core";
 import ResourcesTable from "@/components/ResourcesManager/ResourcesTable";
-import {
-  ConfigResourceValues,
-  DownloadResourceUtils,
-  ScribeResource,
-} from "./resources/types";
+import { ConfigResourceValues, DownloadResourceUtils, ScribeResource } from "./resources/types";
 import { registeredResources } from "./resources";
 import { WorkspaceService } from "@theia/workspace/lib/browser/workspace-service";
 import { FileService } from "@theia/filesystem/lib/browser/file-service";
@@ -70,21 +62,17 @@ export class ResourcesViewerWidget extends ReactWidget {
 
   protected onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
-    this.resourcesManagerUtils
-      .getDownloadedResourcesFromProjectConfig()
-      .then((resources) => {
-        this.downloadedResources = resources ?? [];
-        this.update();
-      });
+    this.resourcesManagerUtils.getDownloadedResourcesFromProjectConfig().then((resources) => {
+      this.downloadedResources = resources ?? [];
+      this.update();
+    });
   }
 
   protected onUpdateRequest(msg: Message): void {
-    this.resourcesManagerUtils
-      .getDownloadedResourcesFromProjectConfig()
-      .then((resources) => {
-        this.downloadedResources = resources ?? [];
-        super.onUpdateRequest(msg);
-      });
+    this.resourcesManagerUtils.getDownloadedResourcesFromProjectConfig().then((resources) => {
+      this.downloadedResources = resources ?? [];
+      super.onUpdateRequest(msg);
+    });
   }
 
   protected registeredResources = registeredResources;
@@ -119,7 +107,7 @@ export class ResourcesViewerWidget extends ReactWidget {
     };
 
     return (
-      <div className="flex flex-col mx-4">
+      <div className="mx-4 flex flex-col">
         <button onClick={this.openDialog}>Open Dialog</button>
 
         <ResourcesTable
@@ -139,13 +127,10 @@ export class ResourcesViewerWidget extends ReactWidget {
     ) => Promise<ConfigResourceValues>
   ) {
     try {
-      const currentFolderURI = (await this.workspaceService.roots)?.[0]
-        .resource;
+      const currentFolderURI = (await this.workspaceService.roots)?.[0].resource;
 
       if (!currentFolderURI) {
-        await this.messageService.error(
-          "Please open a workspace folder to download resources"
-        );
+        await this.messageService.error("Please open a workspace folder to download resources");
         return;
       }
 
@@ -168,13 +153,8 @@ export class ResourcesViewerWidget extends ReactWidget {
 
       const updatedDownloadedResourcePath = {
         ...downloadedResource,
-        localPath: downloadedResource.localPath.includes(
-          currentFolderURI.path.fsPath()
-        )
-          ? downloadedResource.localPath.replace(
-              currentFolderURI.path.fsPath(),
-              ""
-            )
+        localPath: downloadedResource.localPath.includes(currentFolderURI.path.fsPath())
+          ? downloadedResource.localPath.replace(currentFolderURI.path.fsPath(), "")
           : downloadedResource.localPath,
       };
 

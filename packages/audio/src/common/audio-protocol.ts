@@ -1,7 +1,7 @@
-import { RpcServer } from '@theia/core/lib/common/messaging/proxy-factory';
+import { RpcServer } from "@theia/core/lib/common/messaging/proxy-factory";
 
-export const FFmpegPath = '/services/audio-recorder';
-export const FFmpegServer = Symbol('FFmpegServer');
+export const FFmpegPath = "/services/audio-recorder";
+export const FFmpegServer = Symbol("FFmpegServer");
 
 export interface RecordingOptions {
   sampleRate?: number;
@@ -14,7 +14,7 @@ export interface RecordingOptions {
 
 export interface FileNode {
   name: string;
-  type: 'file' | 'folder';
+  type: "file" | "folder";
   path: string;
   children?: FileNode[];
 }

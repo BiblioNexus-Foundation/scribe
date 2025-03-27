@@ -1,8 +1,4 @@
-import {
-  VSCodeButton,
-  VSCodeDropdown,
-  VSCodeOption,
-} from "@vscode/webview-ui-toolkit/react";
+import { VSCodeButton, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
 import * as React from "@theia/core/shared/react";
 
 import { markdownToHTML } from "../../utils/tsv";
@@ -27,16 +23,14 @@ export const TranslationAcademy = ({
   const [taSubDirectories, setTaSubDirectories] = useState<string[]>([]);
   const [taContent, setTaContent] = useState<string | null>(null);
 
-  const [selectedDirectory, setSelectedDirectory] = useState<string>(
-    taDirectories[0] ?? ""
-  );
+  const [selectedDirectory, setSelectedDirectory] = useState<string>(taDirectories[0] ?? "");
   const [selectedSubDirectory, setSelectedSubDirectory] = useState<string>(
     taSubDirectories[0] ?? ""
   );
 
   return (
     <>
-      <div className="flex items-center gap-4 mb-6 justify-center">
+      <div className="mb-6 flex items-center justify-center gap-4">
         <VSCodeDropdown
           value={selectedDirectory}
           onChange={async (e) => {
@@ -46,8 +40,7 @@ export const TranslationAcademy = ({
             );
             setTaSubDirectories(directoryContent);
           }}
-          className="w-fit"
-        >
+          className="w-fit">
           {taDirectories.map((directory) => (
             <VSCodeOption className="w-full" key={directory}>
               {directory}
@@ -59,8 +52,7 @@ export const TranslationAcademy = ({
             setSelectedSubDirectory((e.target as HTMLSelectElement)?.value);
           }}
           value={selectedSubDirectory}
-          className="w-fit"
-        >
+          className="w-fit">
           {taSubDirectories.map((subDirectory) => (
             <VSCodeOption key={subDirectory} className="w-full">
               {subDirectory}
@@ -75,8 +67,7 @@ export const TranslationAcademy = ({
               subDirectory: selectedSubDirectory,
             });
             setTaContent(content);
-          }}
-        >
+          }}>
           View
         </VSCodeButton>
       </div>
