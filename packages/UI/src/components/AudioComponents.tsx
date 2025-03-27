@@ -1,6 +1,6 @@
-import * as React from "@theia/core/shared/react";
+import * as React from '@theia/core/shared/react';
 import { useState, useEffect } from 'react';
-import ChapterReading from "./ChapterReading";
+import ChapterReading from './ChapterReading';
 import BibleNavigation from 'bcv-navigator/lib/browser/components/BibleNavigation';
 
 interface BibleNavState {
@@ -9,7 +9,6 @@ interface BibleNavState {
   chapter: number;
   verse: number;
 }
-
 
 const AudioComponents: React.FC = () => {
   const [currentNav, setCurrentNav] = useState<BibleNavState | null>(() => {
@@ -55,33 +54,33 @@ const AudioComponents: React.FC = () => {
         showPrevChapter={true}
         showBookChapter={true}
         showNextChapter={true}
-      // scope={myScope} 
+        // scope={myScope}
       />
 
-      <div className="bg-[var(--theia-editor-background)]">
-        {currentNav &&
+      <div className='bg-[var(--theia-editor-background)]'>
+        {currentNav && (
           <ChapterReading
-            version="NLT"
+            version='NLT'
             chapterName={currentNav.book_name}
             verse={currentNav.chapter.toString()}
-            scripture="John the Baptist Prepares the Way
+            scripture='John the Baptist Prepares the Waysas
 1 This is the Good News about Jesus the Messiah, the Son of God. It began 2
 just as the prophet Isaiah had written:
-&quot;Look, I am sending my messenger ahead of you,
+"Look, I am sending my messenger ahead of you,
 and he will prepare your way.
 3 He is a voice shouting in the wilderness,
-'Prepare the way for the Lord's coming!
-Clear the road for him!&quot;
+&apos;Prepare the way for the Lord&apos;s coming!
+Clear the road for him!"
 4 This messenger was John the Baptist. He was in the wilderness and
 preached that people should be baptized to show that they had repented of
 their sins and turned to God to be forgiven. 5 All of Judea, including all the
 people of Jerusalem, went out to see and hear John. And when they
-        confessed their sins, he baptized them in the Jordan River."
+        confessed their sins, he baptized them in the Jordan River.'
           />
-        }
+        )}
       </div>
     </>
   );
-}
+};
 
 export default AudioComponents;

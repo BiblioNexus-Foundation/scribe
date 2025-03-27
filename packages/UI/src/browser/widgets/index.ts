@@ -2,36 +2,38 @@ import {
   FrontendApplicationContribution,
   WidgetFactory,
   bindViewContribution,
-} from "@theia/core/lib/browser";
-import { interfaces } from "@theia/core/shared/inversify";
-import { AiSidebar, AiSidebarContribution } from "./AiSidebar";
+} from '@theia/core/lib/browser';
+import { interfaces } from '@theia/core/shared/inversify';
+import { AiSidebar, AiSidebarContribution } from './AiSidebar';
 import {
   MainEditorLeftContribution,
   MainEditorLeftWidget,
-} from "./MainEditorLeft";
-import { AudioWidget, AudioContribution } from "./AudioWidget";
+} from './MainEditorLeft';
+import { AudioWidget, AudioContribution } from './AudioWidget';
 import {
   MainEditorRightContribution,
   MainEditorRightWidget,
-} from "./MainEditorRight";
+} from './MainEditorRight';
 import {
   BottomEditorLeft,
   BottomEditorLeftContribution,
-} from "./BottomEditorLeft";
+} from './BottomEditorLeft';
 import {
   BottomEditorRightContribution,
   BottomEditorRightWidget,
-} from "./BottomEditorRight";
-import { ChatContribution, ChatWidget } from "./ChatWidget";
-import { VideoContribution, VideoWidget } from "./Videowidget";
-import { AudioPlayContribution, AudioPlayWidget } from "./AudioplayWidget";
+} from './BottomEditorRight';
+import { ChatContribution, ChatWidget } from './ChatWidget';
+import { VideoContribution, VideoWidget } from './Videowidget';
+import { AudioPlayContribution, AudioPlayWidget } from './AudioplayWidget';
 import {
   CloudSyncCommandContribution,
   CloudSyncWidget,
   CloudSyncWidgetDialogProps,
-} from "./cloud-sync-widget";
-import { CommandContribution } from "@theia/core";
-import { CloudSyncUtils } from "../../utils/CloudSyncUtils";
+} from './cloud-sync-widget';
+import { CommandContribution } from '@theia/core';
+import { CloudSyncUtils } from '../../utils/CloudSyncUtils';
+import { TopToolbarContribution } from './TopToolbar';
+import { TopToolbarWidget } from './TopToolbar';
 
 export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   // sidebar widget binds
@@ -140,11 +142,23 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
     .inSingletonScope();
 
   bind(CloudSyncWidgetDialogProps).toConstantValue({
-    title: "Cloud Sync",
+    title: 'Cloud Sync',
   });
   bind(CloudSyncWidget).toSelf().inSingletonScope();
   bind(CloudSyncCommandContribution).toSelf().inSingletonScope();
   bind(CommandContribution).toService(CloudSyncCommandContribution);
 
   bind(CloudSyncUtils).toSelf().inSingletonScope();
+
+  // Top Toolbar widget binds
+  bindViewContribution(bind, TopToolbarContribution);
+  bind(FrontendApplicationContribution).toService(TopToolbarContribution);
+  bind(TopToolbarWidget).toSelf();
+  bind(WidgetFactory)
+    .toDynamicValue((context) => ({
+      id: TopToolbarWidget.ID,
+      createWidget: () =>
+        context.container.get<TopToolbarWidget>(TopToolbarWidget),
+    }))
+    .inSingletonScope();
 };

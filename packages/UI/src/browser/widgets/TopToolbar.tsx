@@ -12,13 +12,13 @@ import {
 } from '@theia/core/lib/browser';
 import { FrontendApplicationStateService } from '@theia/core/lib/browser/frontend-application-state';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
-import AudioComponents from '../../components/AudioComponents';
 import BibleNavigation from '../../components/BibleNavigation';
+import ResourceManage from '../../components/ResourceManage';
 
 @injectable()
-export class AudioWidget extends ReactWidget {
-  static readonly ID = 'Audio-page-widget';
-  static readonly LABER = 'main';
+export class TopToolbarWidget extends ReactWidget {
+  static readonly ID = 'Top-Toolbar-widget';
+  static readonly LABER = 'Top Toolbar';
 
   @postConstruct()
   protected init(): void {
@@ -26,22 +26,21 @@ export class AudioWidget extends ReactWidget {
   }
 
   protected async doInit(): Promise<void> {
-    this.id = AudioWidget.ID;
-    this.title.label = AudioWidget.LABER;
-    this.title.caption = AudioWidget.LABER;
+    this.id = TopToolbarWidget.ID;
+    this.title.label = TopToolbarWidget.LABER;
+    this.title.caption = TopToolbarWidget.LABER;
     this.title.closable = true;
     this.update();
   }
 
   render(): React.ReactNode {
-    // return <AudioComponents />;
-    return <BibleNavigation />;
+    return <ResourceManage />;
   }
 }
 
 @injectable()
-export class AudioContribution
-  extends AbstractViewContribution<AudioWidget>
+export class TopToolbarContribution
+  extends AbstractViewContribution<TopToolbarWidget>
   implements FrontendApplicationContribution
 {
   @inject(FrontendApplicationStateService)
@@ -52,8 +51,8 @@ export class AudioContribution
 
   constructor() {
     super({
-      widgetId: AudioWidget.ID,
-      widgetName: AudioWidget.LABER,
+      widgetId: TopToolbarWidget.ID,
+      widgetName: TopToolbarWidget.LABER,
       defaultWidgetOptions: {
         area: 'main',
       },
