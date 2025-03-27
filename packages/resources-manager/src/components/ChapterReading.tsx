@@ -16,19 +16,17 @@ export default function ChapterReading({
 }) {
   return (
     <div>
-      <div className="flex items-center border-b py-2.5 px-2 dark:border-zinc-900 border-zinc-200 justify-between">
+      <div className="flex items-center justify-between border-b border-zinc-200 px-2 py-2.5 dark:border-zinc-900">
         <Badge variant="destructive">{version}</Badge>
         <div className="flex items-center gap-[5px]">
           <Button label={chapterName} />
           <Button label={verse} />
-          <Button
-            icon={<IconSettings size={14} stroke={2} strokeLinejoin="miter" />}
-          />
+          <Button icon={<IconSettings size={14} stroke={2} strokeLinejoin="miter" />} />
         </div>{" "}
       </div>
-      <div className="mt-2.5 font-normal space-y-2 mx-auto max-w-md">
-        <h2 className="text-cyan-500 leading-5 text-center text-xl tracking-wide">{`${chapterName} ${verse}`}</h2>
-        <article className="dark:text-zinc-50 text-zinc-700 leading-5   text-xs tracking-wide text-center whitespace-pre-line">
+      <div className="mx-auto mt-2.5 max-w-md space-y-2 font-normal">
+        <h2 className="text-center text-xl leading-5 tracking-wide text-cyan-500">{`${chapterName} ${verse}`}</h2>
+        <article className="whitespace-pre-line text-center text-xs leading-5 tracking-wide text-zinc-700 dark:text-zinc-50">
           {scripture}
         </article>
       </div>

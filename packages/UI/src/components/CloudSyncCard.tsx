@@ -3,12 +3,7 @@ import React from "react";
 import { Buttons as Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   IconBrandOnedrive,
   IconHistory,
@@ -64,7 +59,7 @@ export default function CloudSyncCard({
 
   console.log("CloudSyncCard::: remotes ", remotes);
   return (
-    <Card className="w-full max-w-3xl z-[999999]">
+    <Card className="z-[999999] w-full max-w-3xl">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-2xl font-bold">Remotes</CardTitle>
 
@@ -76,7 +71,7 @@ export default function CloudSyncCard({
             </Button>
           </PopoverTrigger>
           <PopoverContent className="z-[99999]">
-            <div className="grid gap-4 z-[99999]">
+            <div className="z-[99999] grid gap-4">
               <form className="grid gap-2" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-3 items-center gap-4">
                   <Label htmlFor="name">Name</Label>
@@ -106,7 +101,7 @@ export default function CloudSyncCard({
       </CardHeader>
       <CardContent>
         {lastCommit && (
-          <div className="text-md font-semibold flex gap-2 pt-3">
+          <div className="text-md flex gap-2 pt-3 font-semibold">
             <span>Last Commit: </span>
             <span className="text-sm">{lastCommit.timestampRelative}</span>
           </div>
@@ -117,35 +112,24 @@ export default function CloudSyncCard({
             {remotes.map((remote, idx) => (
               <div
                 key={idx}
-                className="flex items-center justify-between space-x-2 text-foreground"
-              >
+                className="text-foreground flex items-center justify-between space-x-2">
                 <div className="flex items-center space-x-2">
-                  <span className="font-medium text-foreground">
-                    {remote.name}
-                  </span>
+                  <span className="text-foreground font-medium">{remote.name}</span>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
-                        <IconInfoCircle className="h-4 w-4 text-foreground" />
+                        <IconInfoCircle className="text-foreground h-4 w-4" />
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>
                           Push Link:{" "}
-                          <a
-                            href={remote.push}
-                            target="_blank"
-                            className="text-blue-500"
-                          >
+                          <a href={remote.push} target="_blank" className="text-blue-500">
                             {remote.push}
                           </a>
                         </p>
                         <p>
                           Fetch Link:{" "}
-                          <a
-                            href={remote.fetch}
-                            target="_blank"
-                            className="text-blue-500"
-                          >
+                          <a href={remote.fetch} target="_blank" className="text-blue-500">
                             {remote.fetch}
                           </a>
                         </p>
@@ -154,27 +138,15 @@ export default function CloudSyncCard({
                   </TooltipProvider>
                 </div>
                 <div className="flex space-x-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onSync(idx)}
-                  >
+                  <Button size="sm" variant="outline" onClick={() => onSync(idx)}>
                     <IconBrandOnedrive className="h-4 w-4" />
                     <span className="sr-only">Sync</span>
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onRemove(idx)}
-                  >
+                  <Button size="sm" variant="outline" onClick={() => onRemove(idx)}>
                     <IconTrash className="h-4 w-4" />
                     <span className="sr-only">Remove</span>
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onHistory(idx)}
-                  >
+                  <Button size="sm" variant="outline" onClick={() => onHistory(idx)}>
                     <IconHistory className="h-4 w-4" />
                     <span className="sr-only">History</span>
                   </Button>
@@ -183,7 +155,7 @@ export default function CloudSyncCard({
             ))}
           </div>
           <div>
-            <h3 className="text-lg font-semibold mb-4">Settings</h3>
+            <h3 className="mb-4 text-lg font-semibold">Settings</h3>
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -199,8 +171,7 @@ export default function CloudSyncCard({
                 <div className="flex items-center gap-2">
                   <label
                     htmlFor="auto-sync"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     Auto-sync remotes
                   </label>
                   {settings.autoSync && (
@@ -208,7 +179,7 @@ export default function CloudSyncCard({
                       <Input
                         type="number"
                         min="1"
-                        className="w-20 h-7"
+                        className="h-7 w-20"
                         value={settings.autoSyncInterval}
                         onChange={(e) =>
                           onSettingsChange({
@@ -217,7 +188,7 @@ export default function CloudSyncCard({
                           })
                         }
                       />
-                      <span className="text-sm text-foreground">seconds</span>
+                      <span className="text-foreground text-sm">seconds</span>
                     </div>
                   )}
                 </div>
@@ -236,8 +207,7 @@ export default function CloudSyncCard({
                 <div className="flex items-center gap-2">
                   <label
                     htmlFor="auto-commit"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     Auto Commit
                   </label>
                   {settings.autoCommit && (
@@ -245,7 +215,7 @@ export default function CloudSyncCard({
                       <Input
                         type="number"
                         min="1"
-                        className="w-20 h-7"
+                        className="h-7 w-20"
                         value={settings.autoCommitInterval}
                         onChange={(e) =>
                           onSettingsChange({
@@ -254,7 +224,7 @@ export default function CloudSyncCard({
                           })
                         }
                       />
-                      <span className="text-sm text-foreground">seconds</span>
+                      <span className="text-foreground text-sm">seconds</span>
                     </div>
                   )}
                 </div>

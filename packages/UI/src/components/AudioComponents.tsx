@@ -1,7 +1,7 @@
 import * as React from "@theia/core/shared/react";
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import ChapterReading from "./ChapterReading";
-import BibleNavigation from 'bcv-navigator/lib/browser/components/BibleNavigation';
+import BibleNavigation from "bcv-navigator/lib/browser/components/BibleNavigation";
 
 interface BibleNavState {
   book_abbr: string;
@@ -10,11 +10,10 @@ interface BibleNavState {
   verse: number;
 }
 
-
 const AudioComponents: React.FC = () => {
   const [currentNav, setCurrentNav] = useState<BibleNavState | null>(() => {
     // Initialize from localStorage on mount
-    const savedState = localStorage.getItem('bibleNavState');
+    const savedState = localStorage.getItem("bibleNavState");
     return savedState ? JSON.parse(savedState) : null;
   });
   // const myScope = {
@@ -25,18 +24,18 @@ const AudioComponents: React.FC = () => {
   useEffect(() => {
     // Function to handle updates to localStorage
     const handleStorageChange = () => {
-      const savedState = localStorage.getItem('bibleNavState');
+      const savedState = localStorage.getItem("bibleNavState");
       if (savedState) {
         setCurrentNav(JSON.parse(savedState));
       }
     };
 
     // Listen for the custom event from the navigation component
-    window.addEventListener('bibleNavUpdated', handleStorageChange);
+    window.addEventListener("bibleNavUpdated", handleStorageChange);
 
     // Also listen for storage events (in case localStorage is updated from another tab)
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'bibleNavState') {
+    window.addEventListener("storage", (e) => {
+      if (e.key === "bibleNavState") {
         const newValue = e.newValue ? JSON.parse(e.newValue) : null;
         setCurrentNav(newValue);
       }
@@ -44,8 +43,8 @@ const AudioComponents: React.FC = () => {
 
     // Cleanup listeners on unmount
     return () => {
-      window.removeEventListener('bibleNavUpdated', handleStorageChange);
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("bibleNavUpdated", handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
 
@@ -55,11 +54,11 @@ const AudioComponents: React.FC = () => {
         showPrevChapter={true}
         showBookChapter={true}
         showNextChapter={true}
-      // scope={myScope} 
+        // scope={myScope}
       />
 
       <div className="bg-[var(--theia-editor-background)]">
-        {currentNav &&
+        {currentNav && (
           <ChapterReading
             version="NLT"
             chapterName={currentNav.book_name}
@@ -78,10 +77,10 @@ their sins and turned to God to be forgiven. 5 All of Judea, including all the
 people of Jerusalem, went out to see and hear John. And when they
         confessed their sins, he baptized them in the Jordan River."
           />
-        }
+        )}
       </div>
     </>
   );
-}
+};
 
 export default AudioComponents;

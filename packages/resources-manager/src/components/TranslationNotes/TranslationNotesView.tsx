@@ -1,9 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  VSCodePanels,
-  VSCodePanelTab,
-  VSCodePanelView,
-} from "@vscode/webview-ui-toolkit/react";
+import { VSCodePanels, VSCodePanelTab, VSCodePanelView } from "@vscode/webview-ui-toolkit/react";
 
 import React from "@theia/core/shared/react";
 
@@ -51,16 +47,14 @@ function TranslationNotesView({
 
   const incrementNoteIndex = () =>
     setNoteIndex((prevIndex) =>
-      prevIndex <
-      translationNotesObj[verseRef?.chapter]?.[verseRef?.verse].length - 1
+      prevIndex < translationNotesObj[verseRef?.chapter]?.[verseRef?.verse].length - 1
         ? prevIndex + 1
         : prevIndex
     );
   const decrementNoteIndex = () =>
     setNoteIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : prevIndex));
 
-  const notes =
-    translationNotesObj?.[verseRef?.chapter]?.[verseRef?.verse] || [];
+  const notes = translationNotesObj?.[verseRef?.chapter]?.[verseRef?.verse] || [];
 
   if (!notes || notes.length === 0) {
     return <div>No notes found</div>;
@@ -69,29 +63,25 @@ function TranslationNotesView({
   return (
     <main>
       <section className="translation-note-view">
-        <div className="flex items-center border-b py-2.5 px-2 dark:border-zinc-900 border-zinc-200 justify-between">
+        <div className="flex items-center justify-between border-b border-zinc-200 px-2 py-2.5 dark:border-zinc-900">
           <Badge variant="destructive">
             {noteIndex + 1} of {notes.length}
           </Badge>
           <div className="flex items-center gap-[5px]">
             <Button
-              icon={
-                <span className="arrow-button codicon codicon-chevron-left"></span>
-              }
+              icon={<span className="arrow-button codicon codicon-chevron-left"></span>}
               onClick={decrementNoteIndex}
             />
             <Button
-              icon={
-                <span className="arrow-button codicon codicon-chevron-right"></span>
-              }
+              icon={<span className="arrow-button codicon codicon-chevron-right"></span>}
               onClick={incrementNoteIndex}
             />
           </div>
         </div>
         <VSCodePanels activeid="tab-verse" aria-label="note-type-tab">
           <VSCodePanelView id="view-verse">
-            <div className="mt-2.5 font-normal space-y-2 mx-auto max-w-md">
-              <article className="dark:text-zinc-50 text-zinc-700 leading-5   text-xs tracking-wide text-center whitespace-pre-line">
+            <div className="mx-auto mt-2.5 max-w-md space-y-2 font-normal">
+              <article className="whitespace-pre-line text-center text-xs leading-5 tracking-wide text-zinc-700 dark:text-zinc-50">
                 {<TranslationNote note={notes[noteIndex]} />}
               </article>
             </div>

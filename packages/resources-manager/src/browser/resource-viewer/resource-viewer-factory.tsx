@@ -2,10 +2,7 @@ import * as React from "@theia/core/shared/react";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import { ReactWidget, WidgetFactory } from "@theia/core/lib/browser";
 import { inject, injectable } from "@theia/core/shared/inversify";
-import {
-  ResourceViewerWidget,
-  ResourceViewerWidgetHandlers,
-} from "./resource-viewer-widget";
+import { ResourceViewerWidget, ResourceViewerWidgetHandlers } from "./resource-viewer-widget";
 import { FileService } from "@theia/filesystem/lib/browser/file-service";
 import { ConfigResourceValues } from "../resources/types";
 import { VerseRefUtils } from "@scribe/theia-utils/lib/browser";

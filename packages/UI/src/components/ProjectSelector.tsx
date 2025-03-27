@@ -1,22 +1,14 @@
 import * as React from "@theia/core/shared/react";
 import { Badge } from "./ui/Badge";
 
-export default function ProjectSelector({
-  title,
-  icon,
-}: {
-  title: string;
-  icon: React.ReactNode;
-}) {
+export default function ProjectSelector({ title, icon }: { title: string; icon: React.ReactNode }) {
   return (
-    <div className="rounded-3xl border cursor-pointer text-zinc-700 dark:text-zinc-50 group hover:border-cyan-500 transition-all duration-200 hover:text-cyan-500 w-full uppercase font-semibold  dark:border-zinc-800 border-zinc-300 h-40 dark:bg-zinc-900 bg-zinc-50 flex flex-col items-center justify-center gap-5">
-      <span className="tracking-wide leading-4  text-xs">{title}</span>
-      <span className="dark:bg-zinc-800 bg-zinc-200 h-12 rounded-full w-12 flex items-center justify-center group-hover:stroke-cyan-500 stroke-zinc-500 dark:stroke-zinc-50">
+    <div className="group flex h-40 w-full cursor-pointer flex-col items-center justify-center gap-5 rounded-3xl border border-zinc-300 bg-zinc-50 font-semibold uppercase text-zinc-700 transition-all duration-200 hover:border-cyan-500 hover:text-cyan-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50">
+      <span className="text-xs leading-4 tracking-wide">{title}</span>
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-200 stroke-zinc-500 group-hover:stroke-cyan-500 dark:bg-zinc-800 dark:stroke-zinc-50">
         {icon}
       </span>
-      {title === "Open project" && (
-        <Badge className="mr-auto ml-[14px]">12 projects</Badge>
-      )}
+      {title === "Open project" && <Badge className="ml-[14px] mr-auto">12 projects</Badge>}
     </div>
   );
 }

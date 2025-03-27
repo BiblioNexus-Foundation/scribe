@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from "react";
 import {
   IconMicrophone,
   IconPlayerPause,
@@ -7,16 +7,16 @@ import {
   IconSettings,
   IconTrashX,
   IconPlayerStop,
-} from '@tabler/icons-react';
-import ButtonGroups from 'scribe-ui/lib/components/ButtonGroup';
-import Button from 'scribe-ui/lib/components/Button';
-import Waveform from './player/Waveform';
-import { useState, useEffect } from '@theia/core/shared/react';
-import VolumeBar from './player/VolumeBar';
-import SelectDropdown from './common/SelectDropdown';
-import RealTimeWaveform from './recorder/RealTimeWaveform';
-import { AudioController } from './recorder/AudioController';
-import { FFmpegServer } from '../common/audio-protocol';
+} from "@tabler/icons-react";
+import ButtonGroups from "scribe-ui/lib/components/ButtonGroup";
+import Button from "scribe-ui/lib/components/Button";
+import Waveform from "./player/Waveform";
+import { useState, useEffect } from "@theia/core/shared/react";
+import VolumeBar from "./player/VolumeBar";
+import SelectDropdown from "./common/SelectDropdown";
+import RealTimeWaveform from "./recorder/RealTimeWaveform";
+import { AudioController } from "./recorder/AudioController";
+import { FFmpegServer } from "../common/audio-protocol";
 
 interface Option {
   label: string;
@@ -27,9 +27,9 @@ interface AudioPanelProps {
   server: FFmpegServer;
 }
 const options = [
-  { label: '1', value: 1.0 },
-  { label: '1.5', value: 1.5 },
-  { label: '2', value: 2.0 },
+  { label: "1", value: 1.0 },
+  { label: "1.5", value: 1.5 },
+  { label: "2", value: 2.0 },
 ];
 export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
   const [volume, setVolume] = useState<number>(0.7);
@@ -37,14 +37,14 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
     label: string;
     value: number;
   }>(options[0]);
-  const [displayWave, setDisplayWave] = useState<string>('recorder');
+  const [displayWave, setDisplayWave] = useState<string>("recorder");
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [currentFile, setCurrentFile] = useState<string>('');
+  const [currentFile, setCurrentFile] = useState<string>("");
   const [audioController] = useState(() => new AudioController(server));
-  const [control, setControl] = useState('');
-  const [waveformState, setWaveformState] = useState('stop');
-  const [currentOS, setCurrentOS] = useState('');
+  const [control, setControl] = useState("");
+  const [waveformState, setWaveformState] = useState("stop");
+  const [currentOS, setCurrentOS] = useState("");
   const [devices, setDevices] = useState<Option[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<Option | null>(null);
   const [hasRecorded, setHasRecorded] = useState(false);
@@ -63,7 +63,7 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
       }
     };
 
-    if ((!devices || devices.length === 0) && currentOS === 'win32') {
+    if ((!devices || devices.length === 0) && currentOS === "win32") {
       getDevices();
     }
   }, [currentOS, devices]);
@@ -80,15 +80,15 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
         if (isPaused) {
           await audioController.resumeRecording();
           setIsPaused(false);
-          setWaveformState('resume');
+          setWaveformState("resume");
         } else {
           await audioController.pauseRecording();
           setIsPaused(true);
-          setWaveformState('pause');
+          setWaveformState("pause");
         }
       }
     } catch (error) {
-      console.error('Pause/Resume error:', error);
+      console.error("Pause/Resume error:", error);
     }
   };
 
@@ -98,15 +98,15 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
         const filePath = await audioController.stopRecording();
         setIsRecording(false);
         setIsPaused(false);
-        setWaveformState('stop');
+        setWaveformState("stop");
         setHasRecorded(true);
         if (filePath) {
           setCurrentFile(filePath);
-          setDisplayWave('player');
+          setDisplayWave("player");
         }
       }
     } catch (error) {
-      console.error('Stop recording error:', error);
+      console.error("Stop recording error:", error);
     }
   };
 
@@ -115,22 +115,22 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
       if (!isRecording && !hasRecorded) {
         await audioController.startRecording();
         setIsRecording(true);
-        setControl('stop');
-        setCurrentFile('');
-        setWaveformState('start');
-        setDisplayWave('recorder');
+        setControl("stop");
+        setCurrentFile("");
+        setWaveformState("start");
+        setDisplayWave("recorder");
       }
     } catch (error) {
-      console.error('Recording error:', error);
+      console.error("Recording error:", error);
     }
   };
 
   const handleDelete = () => {
     if (currentFile) {
       server.deleteFile(currentFile);
-      setCurrentFile('');
-      setControl('stop');
-      setDisplayWave('recorder');
+      setCurrentFile("");
+      setControl("stop");
+      setDisplayWave("recorder");
       setHasRecorded(false);
     }
   };
@@ -145,28 +145,25 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
     }
   }, []);
 
-  const getButtonClass = (
-    isActive: boolean,
-    isSelected: boolean = false
-  ): string => {
+  const getButtonClass = (isActive: boolean, isSelected: boolean = false): string => {
     if (!isActive) {
-      return 'rounded-lg opacity-50 cursor-not-allowed pointer-events-none';
+      return "rounded-lg opacity-50 cursor-not-allowed pointer-events-none";
     }
 
     if (isSelected) {
-      return 'rounded-lg bg-cyan-400 dark:bg-cyan-500 text-zinc-800 dark:text-zinc-50 transition-colors';
+      return "rounded-lg bg-cyan-400 dark:bg-cyan-500 text-zinc-800 dark:text-zinc-50 transition-colors";
     }
 
-    return 'rounded-lg hover:bg-cyan-500 transition-colors';
+    return "rounded-lg hover:bg-cyan-500 transition-colors";
   };
 
   return (
-    <div className=''>
+    <div className="">
       <div>
         <ButtonGroups />
       </div>
-      <div className='h-[30%] border-t border-[rgb(250 250 250 / 0.1)]'>
-        {displayWave === 'recorder' ? (
+      <div className="border-[rgb(250 250 250 / 0.1)] h-[30%] border-t">
+        {displayWave === "recorder" ? (
           <RealTimeWaveform waveformState={waveformState} theme={theme} />
         ) : (
           <Waveform
@@ -179,12 +176,12 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
           />
         )}
       </div>
-      <div className='flex h-[30%] border-t border-[rgb(250 250 250 / 0.1)]'>
-        <div className='2xl:w-[15%] w-[20%] flex flex-col gap-4 items-center justify-center'>
-          <span className='uppercase leading-3 dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
+      <div className="border-[rgb(250 250 250 / 0.1)] flex h-[30%] border-t">
+        <div className="flex w-[20%] flex-col items-center justify-center gap-4 2xl:w-[15%]">
+          <span className="text-[10px] font-medium uppercase leading-3 text-zinc-400 dark:text-zinc-500">
             Speed
           </span>
-          <div className='h-8'>
+          <div className="h-8">
             <SelectDropdown
               options={options}
               selectedOption={playbackSpeed}
@@ -192,182 +189,121 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
             />
           </div>
         </div>
-        <div
-          className='w-[1px] h-7 bg-gray-300 dark:bg-zinc-700'
-          style={{ marginTop: '24px' }}
-        />
-        <div className='2xl:w-[15%] w-[20%] flex gap-7 justify-center'>
-          <div className='space-y-2'>
-            <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
-              {isRecording ? (isPaused ? 'Resume' : 'Pause') : 'Record'}
+        <div className="h-7 w-[1px] bg-gray-300 dark:bg-zinc-700" style={{ marginTop: "24px" }} />
+        <div className="flex w-[20%] justify-center gap-7 2xl:w-[15%]">
+          <div className="space-y-2">
+            <p className="text-[10px] font-medium uppercase text-zinc-400 dark:text-zinc-500">
+              {isRecording ? (isPaused ? "Resume" : "Pause") : "Record"}
             </p>
             <Button
               className={getButtonClass(!hasRecorded, isRecording && !isPaused)}
-              onClick={
-                !hasRecorded
-                  ? isRecording
-                    ? handlePauseResume
-                    : handleRecord
-                  : undefined
-              }
+              onClick={!hasRecorded ? (isRecording ? handlePauseResume : handleRecord) : undefined}
               icon={
                 isRecording ? (
                   isPaused ? (
-                    <IconPlayerPlay
-                      size={14}
-                      stroke={2}
-                      strokeLinejoin='miter'
-                    />
+                    <IconPlayerPlay size={14} stroke={2} strokeLinejoin="miter" />
                   ) : (
-                    <IconPlayerPause
-                      size={14}
-                      stroke={2}
-                      strokeLinejoin='miter'
-                    />
+                    <IconPlayerPause size={14} stroke={2} strokeLinejoin="miter" />
                   )
                 ) : (
-                  <IconMicrophone size={14} stroke={2} strokeLinejoin='miter' />
+                  <IconMicrophone size={14} stroke={2} strokeLinejoin="miter" />
                 )
               }
             />
           </div>
-          <div className='space-y-2'>
-            <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
+          <div className="space-y-2">
+            <p className="text-[10px] font-medium uppercase text-zinc-400 dark:text-zinc-500">
               Stop
             </p>
             <Button
-              className={getButtonClass(
-                isRecording && !isPaused && !hasRecorded
-              )}
-              onClick={
-                isRecording && !isPaused && !hasRecorded
-                  ? handleStop
-                  : undefined
-              }
-              icon={
-                <IconPlayerStop size={14} stroke={2} strokeLinejoin='miter' />
-              }
+              className={getButtonClass(isRecording && !isPaused && !hasRecorded)}
+              onClick={isRecording && !isPaused && !hasRecorded ? handleStop : undefined}
+              icon={<IconPlayerStop size={14} stroke={2} strokeLinejoin="miter" />}
             />
           </div>
         </div>
-        <div
-          className='w-[1px] h-7 bg-gray-300 dark:bg-zinc-700'
-          style={{ marginTop: '24px' }}
-        />
-        <div className='2xl:w-[40%] w-[50%] flex justify-between gap-7 px-16'>
-          <div className='space-y-2'>
-            {control === 'play' ? (
+        <div className="h-7 w-[1px] bg-gray-300 dark:bg-zinc-700" style={{ marginTop: "24px" }} />
+        <div className="flex w-[50%] justify-between gap-7 px-16 2xl:w-[40%]">
+          <div className="space-y-2">
+            {control === "play" ? (
               <>
-                <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
+                <p className="text-[10px] font-medium uppercase text-zinc-400 dark:text-zinc-500">
                   Pause
                 </p>
                 <Button
-                  className={getButtonClass(
-                    !isRecording && Boolean(currentFile),
-                    true
-                  )}
-                  icon={
-                    <IconPlayerPause
-                      size={14}
-                      stroke={2}
-                      strokeLinejoin='miter'
-                    />
-                  }
+                  className={getButtonClass(!isRecording && Boolean(currentFile), true)}
+                  icon={<IconPlayerPause size={14} stroke={2} strokeLinejoin="miter" />}
                   onClick={
-                    !isRecording && currentFile
-                      ? () => handlePlaybackControl('pause')
-                      : undefined
+                    !isRecording && currentFile ? () => handlePlaybackControl("pause") : undefined
                   }
                 />
               </>
             ) : (
               <>
-                <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
+                <p className="text-[10px] font-medium uppercase text-zinc-400 dark:text-zinc-500">
                   Play
                 </p>
                 <Button
                   className={getButtonClass(
                     !isRecording && Boolean(currentFile),
-                    control === 'play'
+                    control === "play"
                   )}
-                  icon={
-                    <IconPlayerPlay
-                      size={14}
-                      stroke={2}
-                      strokeLinejoin='miter'
-                    />
-                  }
+                  icon={<IconPlayerPlay size={14} stroke={2} strokeLinejoin="miter" />}
                   onClick={
-                    !isRecording && currentFile
-                      ? () => handlePlaybackControl('play')
-                      : undefined
+                    !isRecording && currentFile ? () => handlePlaybackControl("play") : undefined
                   }
                 />
               </>
             )}
           </div>
-          <div className='space-y-2'>
-            <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
+          <div className="space-y-2">
+            <p className="text-[10px] font-medium uppercase text-zinc-400 dark:text-zinc-500">
               Stop
             </p>
             <Button
-              className={getButtonClass(
-                !isRecording && Boolean(currentFile),
-                control === 'stop'
-              )}
-              icon={
-                <IconPlayerStop size={14} stroke={2} strokeLinejoin='miter' />
-              }
+              className={getButtonClass(!isRecording && Boolean(currentFile), control === "stop")}
+              icon={<IconPlayerStop size={14} stroke={2} strokeLinejoin="miter" />}
               onClick={
-                !isRecording && currentFile
-                  ? () => handlePlaybackControl('stop')
-                  : undefined
+                !isRecording && currentFile ? () => handlePlaybackControl("stop") : undefined
               }
             />
           </div>
-          <div className='space-y-2'>
-            <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
+          <div className="space-y-2">
+            <p className="text-[10px] font-medium uppercase text-zinc-400 dark:text-zinc-500">
               Rewind
             </p>
             <Button
               className={getButtonClass(!isRecording && Boolean(currentFile))}
-              icon={<IconRefresh size={14} stroke={2} strokeLinejoin='miter' />}
+              icon={<IconRefresh size={14} stroke={2} strokeLinejoin="miter" />}
               onClick={
-                !isRecording && currentFile
-                  ? () => handlePlaybackControl('rewind')
-                  : undefined
+                !isRecording && currentFile ? () => handlePlaybackControl("rewind") : undefined
               }
             />
           </div>
-          <div className='space-y-2'>
-            <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
+          <div className="space-y-2">
+            <p className="text-[10px] font-medium uppercase text-zinc-400 dark:text-zinc-500">
               Delete
             </p>
             <Button
               className={getButtonClass(!isRecording && Boolean(currentFile))}
-              icon={<IconTrashX size={14} stroke={2} strokeLinejoin='miter' />}
+              icon={<IconTrashX size={14} stroke={2} strokeLinejoin="miter" />}
               onClick={!isRecording && currentFile ? handleDelete : undefined}
             />
           </div>
-          <div className='space-y-4'>
+          <div className="space-y-4">
             <VolumeBar volume={volume} setVolume={setVolume} />
           </div>
         </div>
-        <div
-          className='w-[1px] h-7 bg-gray-300 dark:bg-zinc-700'
-          style={{ marginTop: '24px' }}
-        />
-        <div className='2xl:w-[10%] w-[15%] flex flex-col gap-4 items-center'>
-          <p className='uppercase dark:text-zinc-500 text-zinc-400 text-[10px] font-medium'>
+        <div className="h-7 w-[1px] bg-gray-300 dark:bg-zinc-700" style={{ marginTop: "24px" }} />
+        <div className="flex w-[15%] flex-col items-center gap-4 2xl:w-[10%]">
+          <p className="text-[10px] font-medium uppercase text-zinc-400 dark:text-zinc-500">
             Settings
           </p>
-          <div className='h-8'>
-            {currentOS === 'win32' ? (
+          <div className="h-8">
+            {currentOS === "win32" ? (
               <SelectDropdown
                 options={devices || []}
-                selectedOption={
-                  selectedDevice || { label: 'Select device', value: '' }
-                }
+                selectedOption={selectedDevice || { label: "Select device", value: "" }}
                 setSelectedOption={(option: Option) => {
                   setSelectedDevice(option);
                   server.setSelectedDevice(option.value);
@@ -377,8 +313,8 @@ export const AudioPanel: React.FC<AudioPanelProps> = ({ theme, server }) => {
               <IconSettings
                 size={24}
                 stroke={2}
-                strokeLinejoin='miter'
-                className='dark:text-zinc-50 text-zinc-500 cursor-pointer hover:text-cyan-400 dark:hover:text-cyan-400'
+                strokeLinejoin="miter"
+                className="cursor-pointer text-zinc-500 hover:text-cyan-400 dark:text-zinc-50 dark:hover:text-cyan-400"
                 onClick={() => server.openAudioSettings()}
               />
             )}

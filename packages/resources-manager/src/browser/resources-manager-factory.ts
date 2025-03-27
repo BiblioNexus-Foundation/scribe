@@ -10,12 +10,11 @@ import { inject, injectable } from "@theia/core/shared/inversify";
 import { ResourcesViewerWidget } from "./resources-manager-widget";
 
 export const RESOURCE_MANAGER_ID = "resource-manager-view-container";
-export const RESOURCE_MANAGER_VIEW_CONTAINER_TITLE_OPTIONS: ViewContainerTitleOptions =
-  {
-    label: nls.localizeByDefault("Resource Manager"),
-    iconClass: codicon("flame"),
-    closeable: true,
-  };
+export const RESOURCE_MANAGER_VIEW_CONTAINER_TITLE_OPTIONS: ViewContainerTitleOptions = {
+  label: nls.localizeByDefault("Resource Manager"),
+  iconClass: codicon("flame"),
+  closeable: true,
+};
 
 @injectable()
 export class ResourceManagerFactory implements WidgetFactory {
@@ -35,12 +34,8 @@ export class ResourceManagerFactory implements WidgetFactory {
       id: RESOURCE_MANAGER_ID,
       progressLocationId: "Resource Manager",
     });
-    viewContainer.setTitleOptions(
-      RESOURCE_MANAGER_VIEW_CONTAINER_TITLE_OPTIONS
-    );
-    const widget = await this.widgetManager.getOrCreateWidget(
-      ResourcesViewerWidget.ID
-    );
+    viewContainer.setTitleOptions(RESOURCE_MANAGER_VIEW_CONTAINER_TITLE_OPTIONS);
+    const widget = await this.widgetManager.getOrCreateWidget(ResourcesViewerWidget.ID);
     viewContainer.addWidget(widget, this.resourceViewerWidgetOptions);
     return viewContainer;
   }

@@ -1,15 +1,15 @@
-import { ContainerModule } from '@theia/core/shared/inversify';
-import { AudioWidget } from './audio-widget';
-import { AudioContribution } from './audio-contribution';
+import { ContainerModule } from "@theia/core/shared/inversify";
+import { AudioWidget } from "./audio-widget";
+import { AudioContribution } from "./audio-contribution";
 import {
   bindViewContribution,
   FrontendApplicationContribution,
   WidgetFactory,
-} from '@theia/core/lib/browser';
-import { FFmpegServer, FFmpegPath } from '../common/audio-protocol';
-import { WebSocketConnectionProvider } from '@theia/core/lib/browser';
+} from "@theia/core/lib/browser";
+import { FFmpegServer, FFmpegPath } from "../common/audio-protocol";
+import { WebSocketConnectionProvider } from "@theia/core/lib/browser";
 
-import '../../src/browser/style/index.css';
+import "../../src/browser/style/index.css";
 
 export default new ContainerModule((bind) => {
   bind(FFmpegServer)

@@ -1,9 +1,6 @@
 // bible-navigator-contribution.ts
 import { injectable } from "@theia/core/shared/inversify";
-import {
-  AbstractViewContribution,
-  FrontendApplication,
-} from "@theia/core/lib/browser";
+import { AbstractViewContribution, FrontendApplication } from "@theia/core/lib/browser";
 import { Command, CommandRegistry } from "@theia/core/lib/common/command";
 import { MenuModelRegistry } from "@theia/core";
 import { BibleNavigatorWidget } from "./navigator-widget";

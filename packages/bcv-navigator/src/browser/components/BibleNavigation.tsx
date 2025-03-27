@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import React = require("react");
 import versification from "../Assets/versification.json";
 
-
 // Scope interface
 interface Scope {
   [key: string]: any[];
@@ -29,25 +28,144 @@ interface VersificationData {
 }
 
 const fullBibleScope: Scope = {
-  GEN: [], EXO: [], LEV: [], NUM: [], DEU: [], JOS: [], JDG: [], RUT: [],
-  "1SA": [], "2SA": [], "1KI": [], "2KI": [], "1CH": [], "2CH": [], EZR: [],
-  NEH: [], EST: [], JOB: [], PSA: [], PRO: [], ECC: [], SNG: [], ISA: [],
-  JER: [], LAM: [], EZK: [], DAN: [], HOS: [], JOL: [], AMO: [], OBA: [],
-  JON: [], MIC: [], NAM: [], HAB: [], ZEP: [], HAG: [], ZEC: [], MAL: [],
-  MAT: [], MRK: [], LUK: [], JHN: [], ACT: [], ROM: [], "1CO": [], "2CO": [],
-  GAL: [], EPH: [], PHP: [], COL: [], "1TH": [], "2TH": [], "1TI": [], "2TI": [],
-  TIT: [], PHM: [], HEB: [], JAS: [], "1PE": [], "2PE": [], "1JN": [], "2JN": [],
-  "3JN": [], JUD: [], REV: []
+  GEN: [],
+  EXO: [],
+  LEV: [],
+  NUM: [],
+  DEU: [],
+  JOS: [],
+  JDG: [],
+  RUT: [],
+  "1SA": [],
+  "2SA": [],
+  "1KI": [],
+  "2KI": [],
+  "1CH": [],
+  "2CH": [],
+  EZR: [],
+  NEH: [],
+  EST: [],
+  JOB: [],
+  PSA: [],
+  PRO: [],
+  ECC: [],
+  SNG: [],
+  ISA: [],
+  JER: [],
+  LAM: [],
+  EZK: [],
+  DAN: [],
+  HOS: [],
+  JOL: [],
+  AMO: [],
+  OBA: [],
+  JON: [],
+  MIC: [],
+  NAM: [],
+  HAB: [],
+  ZEP: [],
+  HAG: [],
+  ZEC: [],
+  MAL: [],
+  MAT: [],
+  MRK: [],
+  LUK: [],
+  JHN: [],
+  ACT: [],
+  ROM: [],
+  "1CO": [],
+  "2CO": [],
+  GAL: [],
+  EPH: [],
+  PHP: [],
+  COL: [],
+  "1TH": [],
+  "2TH": [],
+  "1TI": [],
+  "2TI": [],
+  TIT: [],
+  PHM: [],
+  HEB: [],
+  JAS: [],
+  "1PE": [],
+  "2PE": [],
+  "1JN": [],
+  "2JN": [],
+  "3JN": [],
+  JUD: [],
+  REV: [],
 };
-
-
 
 // Book name mapping
 const bookNameMapping: { [key: string]: string } = {
   // Old Testament
-  "GEN": "Genesis", "EXO": "Exodus", "LEV": "Leviticus", "NUM": "Numbers", "DEU": "Deuteronomy", "JOS": "Joshua", "JDG": "Judges", "RUT": "Ruth", "1SA": "1 Samuel", "2SA": "2 Samuel", "1KI": "1 Kings", "2KI": "2 Kings", "1CH": "1 Chronicles", "2CH": "2 Chronicles", "EZR": "Ezra", "NEH": "Nehemiah", "EST": "Esther", "JOB": "Job", "PSA": "Psalms", "PRO": "Proverbs", "ECC": "Ecclesiastes", "SNG": "Song of Solomon", "ISA": "Isaiah", "JER": "Jeremiah", "LAM": "Lamentations", "EZK": "Ezekiel", "DAN": "Daniel", "HOS": "Hosea", "JOL": "Joel", "AMO": "Amos", "OBA": "Obadiah", "JON": "Jonah", "MIC": "Micah", "NAM": "Nahum", "HAB": "Habakkuk", "ZEP": "Zephaniah", "HAG": "Haggai", "ZEC": "Zechariah", "MAL": "Malachi",
+  GEN: "Genesis",
+  EXO: "Exodus",
+  LEV: "Leviticus",
+  NUM: "Numbers",
+  DEU: "Deuteronomy",
+  JOS: "Joshua",
+  JDG: "Judges",
+  RUT: "Ruth",
+  "1SA": "1 Samuel",
+  "2SA": "2 Samuel",
+  "1KI": "1 Kings",
+  "2KI": "2 Kings",
+  "1CH": "1 Chronicles",
+  "2CH": "2 Chronicles",
+  EZR: "Ezra",
+  NEH: "Nehemiah",
+  EST: "Esther",
+  JOB: "Job",
+  PSA: "Psalms",
+  PRO: "Proverbs",
+  ECC: "Ecclesiastes",
+  SNG: "Song of Solomon",
+  ISA: "Isaiah",
+  JER: "Jeremiah",
+  LAM: "Lamentations",
+  EZK: "Ezekiel",
+  DAN: "Daniel",
+  HOS: "Hosea",
+  JOL: "Joel",
+  AMO: "Amos",
+  OBA: "Obadiah",
+  JON: "Jonah",
+  MIC: "Micah",
+  NAM: "Nahum",
+  HAB: "Habakkuk",
+  ZEP: "Zephaniah",
+  HAG: "Haggai",
+  ZEC: "Zechariah",
+  MAL: "Malachi",
   // New Testament
-  "MAT": "Matthew", "MRK": "Mark", "LUK": "Luke", "JHN": "John", "ACT": "Acts", "ROM": "Romans", "1CO": "1 Corinthians", "2CO": "2 Corinthians", "GAL": "Galatians", "EPH": "Ephesians", "PHP": "Philippians", "COL": "Colossians", "1TH": "1 Thessalonians", "2TH": "2 Thessalonians", "1TI": "1 Timothy", "2TI": "2 Timothy", "TIT": "Titus", "PHM": "Philemon", "HEB": "Hebrews", "JAS": "James", "1PE": "1 Peter", "2PE": "2 Peter", "1JN": "1 John", "2JN": "2 John", "3JN": "3 John", "JUD": "Jude", "REV": "Revelation"
+  MAT: "Matthew",
+  MRK: "Mark",
+  LUK: "Luke",
+  JHN: "John",
+  ACT: "Acts",
+  ROM: "Romans",
+  "1CO": "1 Corinthians",
+  "2CO": "2 Corinthians",
+  GAL: "Galatians",
+  EPH: "Ephesians",
+  PHP: "Philippians",
+  COL: "Colossians",
+  "1TH": "1 Thessalonians",
+  "2TH": "2 Thessalonians",
+  "1TI": "1 Timothy",
+  "2TI": "2 Timothy",
+  TIT: "Titus",
+  PHM: "Philemon",
+  HEB: "Hebrews",
+  JAS: "James",
+  "1PE": "1 Peter",
+  "2PE": "2 Peter",
+  "1JN": "1 John",
+  "2JN": "2 John",
+  "3JN": "3 John",
+  JUD: "Jude",
+  REV: "Revelation",
 };
 
 interface VersificationData {
@@ -67,15 +185,83 @@ interface BibleStructure {
   "Old Testament": BibleBooks;
   "New Testament": BibleBooks;
 }
-const oldTestamentBooks = ["GEN", "EXO", "LEV", "NUM", "DEU", "JOS", "JDG", "RUT", "1SA", "2SA", "1KI", "2KI", "1CH", "2CH", "EZR", "NEH", "EST", "JOB", "PSA", "PRO", "ECC", "SNG", "ISA", "JER", "LAM", "EZK", "DAN", "HOS", "JOL", "AMO", "OBA", "JON", "MIC", "NAM", "HAB", "ZEP", "HAG", "ZEC", "MAL"];
-const newTestamentBooks = ["MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH", "PHP", "COL", "1TH", "2TH", "1TI", "2TI", "TIT", "PHM", "HEB", "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"];
+const oldTestamentBooks = [
+  "GEN",
+  "EXO",
+  "LEV",
+  "NUM",
+  "DEU",
+  "JOS",
+  "JDG",
+  "RUT",
+  "1SA",
+  "2SA",
+  "1KI",
+  "2KI",
+  "1CH",
+  "2CH",
+  "EZR",
+  "NEH",
+  "EST",
+  "JOB",
+  "PSA",
+  "PRO",
+  "ECC",
+  "SNG",
+  "ISA",
+  "JER",
+  "LAM",
+  "EZK",
+  "DAN",
+  "HOS",
+  "JOL",
+  "AMO",
+  "OBA",
+  "JON",
+  "MIC",
+  "NAM",
+  "HAB",
+  "ZEP",
+  "HAG",
+  "ZEC",
+  "MAL",
+];
+const newTestamentBooks = [
+  "MAT",
+  "MRK",
+  "LUK",
+  "JHN",
+  "ACT",
+  "ROM",
+  "1CO",
+  "2CO",
+  "GAL",
+  "EPH",
+  "PHP",
+  "COL",
+  "1TH",
+  "2TH",
+  "1TI",
+  "2TI",
+  "TIT",
+  "PHM",
+  "HEB",
+  "JAS",
+  "1PE",
+  "2PE",
+  "1JN",
+  "2JN",
+  "3JN",
+  "JUD",
+  "REV",
+];
 
-
-
-const extractBibleBooks = (versificationData: VersificationData, currentScope: Scope): BibleStructure => {
+const extractBibleBooks = (
+  versificationData: VersificationData,
+  currentScope: Scope
+): BibleStructure => {
   const oldTestament: BibleBooks = {};
   const newTestament: BibleBooks = {};
-
 
   // Filter books based on provided scope
   const scopedBooks = Object.keys(currentScope);
@@ -91,19 +277,19 @@ const extractBibleBooks = (versificationData: VersificationData, currentScope: S
     if (oldTestamentBooks.includes(bookAbbr)) {
       oldTestament[bookAbbr] = {
         fullName,
-        chapters: chapterCount
+        chapters: chapterCount,
       };
     } else if (newTestamentBooks.includes(bookAbbr)) {
       newTestament[bookAbbr] = {
         fullName,
-        chapters: chapterCount
+        chapters: chapterCount,
       };
     }
   }
 
   return {
     "Old Testament": oldTestament,
-    "New Testament": newTestament
+    "New Testament": newTestament,
   };
 };
 
@@ -126,20 +312,18 @@ const BibleNavigation: React.FC<NavigationProps> = ({
   const [currentVerse, setCurrentVerse] = useState<number>(1);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
-
   // Add state to track whether verse navigation is active
   const isVerseNavigation = showNextVerse && showPrevVerse;
 
-
-  const bibleBooks = React.useMemo(() =>
-    extractBibleBooks(versification as VersificationData, scope),
+  const bibleBooks = React.useMemo(
+    () => extractBibleBooks(versification as VersificationData, scope),
     [scope]
   );
 
   // Effect to detect dark mode changes
   useEffect(() => {
     const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark');
+      const isDark = document.documentElement.classList.contains("dark");
       setIsDarkMode(isDark);
     };
 
@@ -147,9 +331,9 @@ const BibleNavigation: React.FC<NavigationProps> = ({
     checkDarkMode();
 
     // Create observer to watch for class changes
-    const observer = new MutationObserver(mutations => {
-      mutations.forEach(mutation => {
-        if (mutation.attributeName === 'class') {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === "class") {
           checkDarkMode();
         }
       });
@@ -158,18 +342,14 @@ const BibleNavigation: React.FC<NavigationProps> = ({
     // Start observing
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class']
+      attributeFilter: ["class"],
     });
 
     return () => observer.disconnect();
   }, []);
 
-
-
-
-
   useEffect(() => {
-    const scopeBooks = Object.keys(scope).filter(book =>
+    const scopeBooks = Object.keys(scope).filter((book) =>
       versification.maxVerses.hasOwnProperty(book)
     );
 
@@ -184,11 +364,12 @@ const BibleNavigation: React.FC<NavigationProps> = ({
     }
   }, [scope]);
 
-
   useEffect(() => {
     if (selectedBookAbbr) {
       const testament = getTestamentForBook(selectedBookAbbr);
-      const bookName = testament ? bibleBooks[testament][selectedBookAbbr].fullName : selectedBookAbbr;
+      const bookName = testament
+        ? bibleBooks[testament][selectedBookAbbr].fullName
+        : selectedBookAbbr;
 
       // Only save new state if not in verse navigation mode
       if (!isVerseNavigation) {
@@ -199,8 +380,8 @@ const BibleNavigation: React.FC<NavigationProps> = ({
           verse: currentVerse,
         };
 
-        localStorage.setItem('bibleNavState', JSON.stringify(stateToSave));
-        window.dispatchEvent(new Event('bibleNavUpdated'));
+        localStorage.setItem("bibleNavState", JSON.stringify(stateToSave));
+        window.dispatchEvent(new Event("bibleNavUpdated"));
       }
     }
   }, [selectedBookAbbr, currentChapter, currentVerse, isVerseNavigation]);
@@ -216,7 +397,7 @@ const BibleNavigation: React.FC<NavigationProps> = ({
 
     if (bookElement && dropdownElement) {
       bookElement.scrollIntoView({
-        behavior: 'smooth',
+        behavior: "smooth",
         // block: 'center'  // Ensures the book is centered in the dropdown
       });
     }
@@ -227,7 +408,7 @@ const BibleNavigation: React.FC<NavigationProps> = ({
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node) &&
-        (!event.target || !(event.target as HTMLElement).closest('.dropdown-container'))
+        (!event.target || !(event.target as HTMLElement).closest(".dropdown-container"))
       ) {
         setDropdownOpen(false);
         setExpandedBook(null);
@@ -243,7 +424,7 @@ const BibleNavigation: React.FC<NavigationProps> = ({
   const getAllBooks = React.useMemo(() => {
     return () => {
       const books: string[] = [];
-      Object.values(bibleBooks).forEach(testament => {
+      Object.values(bibleBooks).forEach((testament) => {
         books.push(...Object.keys(testament));
       });
       return books;
@@ -252,13 +433,13 @@ const BibleNavigation: React.FC<NavigationProps> = ({
 
   const getAdjacentBook = React.useMemo(() => {
     const allBooks = getAllBooks();
-    return (direction: 'next' | 'prev'): string | null => {
+    return (direction: "next" | "prev"): string | null => {
       const currentIndex = allBooks.indexOf(selectedBookAbbr);
 
-      if (direction === 'next' && currentIndex < allBooks.length - 1) {
+      if (direction === "next" && currentIndex < allBooks.length - 1) {
         return allBooks[currentIndex + 1];
       }
-      if (direction === 'prev' && currentIndex > 0) {
+      if (direction === "prev" && currentIndex > 0) {
         return allBooks[currentIndex - 1];
       }
       return null;
@@ -287,12 +468,11 @@ const BibleNavigation: React.FC<NavigationProps> = ({
     selectedBookAbbr === availableBooks[availableBooks.length - 1] &&
     currentChapter === getTotalChapters(selectedBookAbbr || "");
 
-
   // Modify chapter navigation to reset verse to 1
   const prevChapter = () => {
     if (isPrevDisabled) return;
     if (currentChapter > 1) {
-      setCurrentChapter(prev => prev - 1);
+      setCurrentChapter((prev) => prev - 1);
       setCurrentVerse(1);
     } else {
       const prevBook = getAdjacentBook("prev");
@@ -307,7 +487,7 @@ const BibleNavigation: React.FC<NavigationProps> = ({
   const nextChapter = () => {
     if (isNextDisabled) return;
     if (currentChapter < getTotalChapters(selectedBookAbbr)) {
-      setCurrentChapter(prev => prev + 1);
+      setCurrentChapter((prev) => prev + 1);
       setCurrentVerse(1);
     } else {
       const nextBook = getAdjacentBook("next");
@@ -323,7 +503,7 @@ const BibleNavigation: React.FC<NavigationProps> = ({
   const handleBookClick = (bookAbbr: string, event: React.MouseEvent) => {
     event.stopPropagation();
 
-    setExpandedBook(prevBook => prevBook === bookAbbr ? null : bookAbbr);
+    setExpandedBook((prevBook) => (prevBook === bookAbbr ? null : bookAbbr));
     setTempSelectedBook(bookAbbr);
 
     setTimeout(() => {
@@ -338,9 +518,8 @@ const BibleNavigation: React.FC<NavigationProps> = ({
     } else {
       setExpandedBook(selectedBookAbbr);
     }
-    setDropdownOpen(prev => !prev);
+    setDropdownOpen((prev) => !prev);
   };
-
 
   const handleChapterSelection = (chapter: number, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -355,98 +534,83 @@ const BibleNavigation: React.FC<NavigationProps> = ({
   };
 
   return (
-
-    <div className="relative p-2 max-w-xs min-w-24  w-fit h-10 m-auto">
-      <div className="flex justify-evenly align-middle ">
+    <div className="relative m-auto h-10 w-fit min-w-24 max-w-xs p-2">
+      <div className="flex justify-evenly align-middle">
         {showPrevChapter && (
           <button
             onClick={prevChapter}
             disabled={isPrevDisabled}
-
-            className={`py-1 px-2 border-2 hover:border-blue-300 mr-2 rounded-lg
-                                ${isDarkMode ? 'text-zinc-50  border-cyan-700' : 'text-zinc-700'}
-            ${isPrevDisabled ? 'bg-gray-300 cursor-not-allowed' :
-                ''}`
-            }
-          >
-            {'<<'}
+            className={`mr-2 rounded-lg border-2 px-2 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700 text-zinc-50" : "text-zinc-700"} ${isPrevDisabled ? "cursor-not-allowed bg-gray-300" : ""}`}>
+            {"<<"}
           </button>
         )}
 
         {showBookChapter && (
           <button
             onClick={handleDropdownToggle}
-            className={`py-1 px-3 w-52 border-2 hover:border-blue-300 mr-2 rounded-lg
-                            ${isDarkMode ? 'text-zinc-50 border-cyan-700' : 'text-zinc-700'}
-                            `}
-          >
+            className={`mr-2 w-52 rounded-lg border-2 px-3 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700 text-zinc-50" : "text-zinc-700"} `}>
             {getSelectedBookFullName()} {currentChapter}
-          </button>)}
+          </button>
+        )}
 
         {showNextChapter && (
           <button
             onClick={nextChapter}
             disabled={isNextDisabled}
-
-            className={`py-1 px-2 border-2 hover:border-blue-300 rounded-lg
-                                ${isDarkMode ? 'text-zinc-50  border-cyan-700' : 'text-zinc-700'}
-            ${isNextDisabled ? 'bg-gray-300 cursor-not-allowed' :
-                ''}`
-            }
-          >
-            {'>>'}
-          </button>)}
+            className={`rounded-lg border-2 px-2 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700 text-zinc-50" : "text-zinc-700"} ${isNextDisabled ? "cursor-not-allowed bg-gray-300" : ""}`}>
+            {">>"}
+          </button>
+        )}
       </div>
 
       {dropdownOpen && (
-        <div className={`max-h-96 z-20 overflow-hidden p-2.5 border-2 border-blue-200 max-w-80
-        ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
+        <div
+          className={`z-20 max-h-96 max-w-80 overflow-hidden border-2 border-blue-200 p-2.5 ${isDarkMode ? "bg-gray-900" : "bg-white"}`}>
+          <div className="h-80 overflow-y-auto pb-4 pl-4 pr-4 pt-0" ref={dropdownRef}>
+            {Object.entries(bibleBooks).map(
+              ([testament, testamentBooks]: [string, BibleBooks]) =>
+                hasTestamentBooks(testamentBooks) && (
+                  <div key={testament} className="max-w-9/10 w-full">
+                    <h3
+                      className={`pl-4 text-lg font-bold ${isDarkMode ? "text-white" : "text-black"}`}>
+                      {testament}
+                    </h3>
+                    {Object.entries(testamentBooks).map(([bookAbbr, bookData]) => (
+                      <div
+                        key={bookAbbr}
+                        ref={(el) => (bookRefs.current[bookAbbr] = el)}
+                        className="relative w-full">
+                        <button
+                          onClick={(e) => handleBookClick(bookAbbr, e)}
+                          className={`'} relative mt-2 block w-full bg-gray-700 p-2 text-left text-white hover:border-2 hover:border-blue-300 ${selectedBookAbbr === bookAbbr ? "border-l-8 border-l-blue-700" : ""}`}>
+                          {bookData.fullName}
+                        </button>
 
-
-          <div className="h-80 overflow-y-auto pt-0 pl-4 pb-4 pr-4" ref={dropdownRef}>
-            {Object.entries(bibleBooks).map(([testament, testamentBooks]: [string, BibleBooks]) => (
-              hasTestamentBooks(testamentBooks) && (
-                <div key={testament} className="w-full max-w-9/10">
-                  <h3 className={`pl-4 font-bold text-lg
-                            ${isDarkMode ? 'text-white' : 'text-black'}`}>
-                    {testament}
-                  </h3>
-                  {Object.entries(testamentBooks).map(([bookAbbr, bookData]) => (
-                    <div key={bookAbbr} ref={el => bookRefs.current[bookAbbr] = el}
-                      className="w-full relative">
-                      <button
-                        onClick={(e) => handleBookClick(bookAbbr, e)}
-                        className={`mt-2 block w-full p-2 text-left relative
-                                        text-white bg-gray-700 '}
-                                        hover:border-2 hover:border-blue-300
-                                        ${selectedBookAbbr === bookAbbr ? 'border-l-8 border-l-blue-700' : ''}`}
-                      >
-                        {bookData.fullName}
-                      </button>
-
-                      {expandedBook === bookAbbr && (
-                        <div className="grid grid-cols-5 gap-2 mt-3">
-                          {Array.from({ length: bookData.chapters }, (_, i) => i + 1).map((chapter) => (
-                            <button
-                              key={chapter}
-                              onClick={(e) => handleChapterSelection(chapter, e)}
-                              className={`px-1 py-2
-                                                    ${selectedBookAbbr === bookAbbr && currentChapter === chapter
-                                  ? '!bg-blue-400 text-white'
-                                  : isDarkMode
-                                    ? 'bg-gray-700 text-white hover:bg-gray-600'
-                                    : 'bg-stone-300 text-black hover:bg-gray-200'}`}
-                            >
-                              {chapter}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )
-            ))}
+                        {expandedBook === bookAbbr && (
+                          <div className="mt-3 grid grid-cols-5 gap-2">
+                            {Array.from({ length: bookData.chapters }, (_, i) => i + 1).map(
+                              (chapter) => (
+                                <button
+                                  key={chapter}
+                                  onClick={(e) => handleChapterSelection(chapter, e)}
+                                  className={`px-1 py-2 ${
+                                    selectedBookAbbr === bookAbbr && currentChapter === chapter
+                                      ? "!bg-blue-400 text-white"
+                                      : isDarkMode
+                                        ? "bg-gray-700 text-white hover:bg-gray-600"
+                                        : "bg-stone-300 text-black hover:bg-gray-200"
+                                  }`}>
+                                  {chapter}
+                                </button>
+                              )
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )
+            )}
           </div>
         </div>
       )}

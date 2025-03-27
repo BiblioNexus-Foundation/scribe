@@ -1,11 +1,7 @@
 import { Message, ReactWidget } from "@theia/core/lib/browser";
 import * as React from "@theia/core/shared/react";
 
-import {
-  injectable,
-  inject,
-  postConstruct,
-} from "@theia/core/shared/inversify";
+import { injectable, inject, postConstruct } from "@theia/core/shared/inversify";
 import {
   AbstractViewContribution,
   FrontendApplicationContribution,
@@ -43,7 +39,7 @@ export class MainEditorRightWidget extends ReactWidget {
   }
   protected render(): React.ReactNode {
     return (
-      <div className='bg-[var(--theia-editor-background)]'>
+      <div className="bg-[var(--theia-editor-background)]">
         <ChapterReading
           version="NLT"
           chapterName="Mark"

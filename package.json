@@ -17,11 +17,15 @@
     "watch:electron": "lerna run --parallel watch --ignore scribe-browser",
     "electron:dist": "yarn --cwd applications/electron deploy:local",
     "syncpack": "syncpack list-mismatches",
-    "syncpack:fix": "syncpack fix-mismatches"
+    "syncpack:fix": "syncpack fix-mismatches",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "check-format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\""
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
     "lerna": "2.4.0",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11",
     "rimraf": "*",
     "syncpack": "^13.0.2"
   },

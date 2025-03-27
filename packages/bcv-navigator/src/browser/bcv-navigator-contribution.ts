@@ -1,28 +1,27 @@
-import { injectable } from '@theia/core/shared/inversify';
-import { MenuModelRegistry } from '@theia/core';
-import { BcvNavigatorWidget } from './bcv-navigator-widget';
-import { AbstractViewContribution } from '@theia/core/lib/browser';
-import { Command, CommandRegistry } from '@theia/core/lib/common/command';
+import { injectable } from "@theia/core/shared/inversify";
+import { MenuModelRegistry } from "@theia/core";
+import { BcvNavigatorWidget } from "./bcv-navigator-widget";
+import { AbstractViewContribution } from "@theia/core/lib/browser";
+import { Command, CommandRegistry } from "@theia/core/lib/common/command";
 
-export const BcvNavigatorCommand: Command = { id: 'bcv-navigator:command' };
+export const BcvNavigatorCommand: Command = { id: "bcv-navigator:command" };
 
 @injectable()
 export class BcvNavigatorContribution extends AbstractViewContribution<BcvNavigatorWidget> {
-
   /**
    * `AbstractViewContribution` handles the creation and registering
    *  of the widget including commands, menus, and keybindings.
-   * 
-   * We can pass `defaultWidgetOptions` which define widget properties such as 
+   *
+   * We can pass `defaultWidgetOptions` which define widget properties such as
    * its location `area` (`main`, `left`, `right`, `bottom`), `mode`, and `ref`.
-   * 
+   *
    */
   constructor() {
     super({
       widgetId: BcvNavigatorWidget.ID,
       widgetName: BcvNavigatorWidget.LABEL,
-      defaultWidgetOptions: { area: 'left' },
-      toggleCommandId: BcvNavigatorCommand.id
+      defaultWidgetOptions: { area: "left" },
+      toggleCommandId: BcvNavigatorCommand.id,
     });
   }
 
@@ -46,7 +45,7 @@ export class BcvNavigatorContribution extends AbstractViewContribution<BcvNaviga
    */
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(BcvNavigatorCommand, {
-      execute: () => super.openView({ activate: false, reveal: true })
+      execute: () => super.openView({ activate: false, reveal: true }),
     });
   }
 

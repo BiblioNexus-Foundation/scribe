@@ -43,10 +43,7 @@ export type EditorRef = {
   setUsj(usj: Usj): void;
   getScrollPosition: () => number;
   setScrollPosition: (position: number) => void;
-  addEventListener?: (
-    type: string,
-    listener: EventListenerOrEventListenerObject
-  ) => void;
+  addEventListener?: (type: string, listener: EventListenerOrEventListenerObject) => void;
 };
 
 export default function LexicalEditor({

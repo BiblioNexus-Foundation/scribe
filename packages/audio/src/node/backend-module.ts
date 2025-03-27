@@ -1,8 +1,5 @@
 import { ContainerModule } from "@theia/core/shared/inversify";
-import {
-  ConnectionHandler,
-  RpcConnectionHandler,
-} from "@theia/core/lib/common/messaging";
+import { ConnectionHandler, RpcConnectionHandler } from "@theia/core/lib/common/messaging";
 import { FFmpegPath, FFmpegServer } from "../common/audio-protocol";
 import { FFmpegServerImpl } from "./audio-backend-module";
 
@@ -11,9 +8,7 @@ export default new ContainerModule((bind) => {
   bind(ConnectionHandler)
     .toDynamicValue(
       (ctx) =>
-        new RpcConnectionHandler(FFmpegPath, () =>
-          ctx.container.get<FFmpegServer>(FFmpegServer)
-        )
+        new RpcConnectionHandler(FFmpegPath, () => ctx.container.get<FFmpegServer>(FFmpegServer))
     )
     .inSingletonScope();
 });

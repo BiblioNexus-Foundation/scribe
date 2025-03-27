@@ -1,10 +1,10 @@
-import { injectable } from '@theia/core/shared/inversify';
-import { MenuModelRegistry } from '@theia/core';
-import { AudioWidget } from './audio-widget';
-import { AbstractViewContribution } from '@theia/core/lib/browser';
-import { Command, CommandRegistry } from '@theia/core/lib/common/command';
+import { injectable } from "@theia/core/shared/inversify";
+import { MenuModelRegistry } from "@theia/core";
+import { AudioWidget } from "./audio-widget";
+import { AbstractViewContribution } from "@theia/core/lib/browser";
+import { Command, CommandRegistry } from "@theia/core/lib/common/command";
 
-export const AudioCommand: Command = { id: 'audio:command' };
+export const AudioCommand: Command = { id: "audio:command" };
 
 @injectable()
 export class AudioContribution extends AbstractViewContribution<AudioWidget> {
@@ -20,7 +20,7 @@ export class AudioContribution extends AbstractViewContribution<AudioWidget> {
     super({
       widgetId: AudioWidget.ID,
       widgetName: AudioWidget.LABEL,
-      defaultWidgetOptions: { area: 'bottom' },
+      defaultWidgetOptions: { area: "bottom" },
       toggleCommandId: AudioCommand.id,
     });
   }

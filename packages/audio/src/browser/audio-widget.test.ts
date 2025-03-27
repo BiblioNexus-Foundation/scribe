@@ -1,10 +1,10 @@
-import 'reflect-metadata';
-import { MessageService } from '@theia/core';
-import { ContainerModule, Container } from '@theia/core/shared/inversify';
-import { AudioWidget } from './audio-widget';
-import { render } from '@testing-library/react';
+import "reflect-metadata";
+import { MessageService } from "@theia/core";
+import { ContainerModule, Container } from "@theia/core/shared/inversify";
+import { AudioWidget } from "./audio-widget";
+import { render } from "@testing-library/react";
 
-describe('AudioWidget', () => {
+describe("AudioWidget", () => {
   let widget: AudioWidget;
 
   beforeEach(async () => {
@@ -21,8 +21,8 @@ describe('AudioWidget', () => {
     widget = container.resolve<AudioWidget>(AudioWidget);
   });
 
-  it('should render react node correctly', async () => {
+  it("should render react node correctly", async () => {
     const element = render(widget.render());
-    expect(element.queryByText('Display Message')).toBeTruthy();
+    expect(element.queryByText("Display Message")).toBeTruthy();
   });
 });

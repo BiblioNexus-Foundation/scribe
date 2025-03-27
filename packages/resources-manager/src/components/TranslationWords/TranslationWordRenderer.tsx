@@ -3,8 +3,8 @@ import { markdownToHTML } from "../../utils/tsv";
 
 const TranslationWordRenderer = ({ content }: { content: string | null }) => {
   return (
-    <div className="mt-2.5 font-normal space-y-2 mx-auto max-w-md">
-      <article className="dark:text-zinc-50 text-zinc-700 leading-5 text-xs tracking-wide text-center whitespace-pre-line">
+    <div className="mx-auto mt-2.5 max-w-md space-y-2 font-normal">
+      <article className="whitespace-pre-line text-center text-xs leading-5 tracking-wide text-zinc-700 dark:text-zinc-50">
         {content ? (
           <div
             dangerouslySetInnerHTML={{ __html: markdownToHTML(content) ?? "" }}

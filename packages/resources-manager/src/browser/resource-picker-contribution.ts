@@ -1,11 +1,7 @@
 import { type CommandContribution, type CommandRegistry } from "@theia/core";
 import { ApplicationShell } from "@theia/core/lib/browser";
 
-import {
-  inject,
-  injectable,
-  postConstruct,
-} from "@theia/core/shared/inversify";
+import { inject, injectable, postConstruct } from "@theia/core/shared/inversify";
 import { ResourcesPickerWidget } from "./resource-picker-widget";
 import type { DeflatedToolbarTree } from "@theia/toolbar/lib/browser/toolbar-interfaces";
 import { ToolbarAlignment } from "@theia/toolbar/lib/browser/toolbar-interfaces";

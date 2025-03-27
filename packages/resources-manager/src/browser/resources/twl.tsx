@@ -61,9 +61,7 @@ export const twlResource: ScribeResource<Door43RepoResponse> = {
 
       if (item.isDirectory) {
         await fs.createFolder(
-          URI.fromFilePath(
-            downloadResourceFolder.path.join(item.name).toString()
-          )
+          URI.fromFilePath(downloadResourceFolder.path.join(item.name).toString())
         );
       } else {
         const bufferContent = Buffer.from(await item.arrayBuffer());
@@ -82,9 +80,7 @@ export const twlResource: ScribeResource<Door43RepoResponse> = {
     data.meta = fullResource;
     data.lastUpdatedAg = moment().format();
     await fs.writeFile(
-      URI.fromFilePath(
-        downloadResourceFolder.path.join("metadata.json").toString()
-      ),
+      URI.fromFilePath(downloadResourceFolder.path.join("metadata.json").toString()),
       BinaryBuffer.fromString(JSON.stringify(data))
     );
 
@@ -93,17 +89,12 @@ export const twlResource: ScribeResource<Door43RepoResponse> = {
     let linkedDownloadResponse = null;
 
     if (linkedResource) {
-      linkedDownloadResponse = await twResource.downloadResource(
-        linkedResource,
-        {
-          resourceFolderUri: resourceFolderUri,
-          fs: fs,
-        }
-      );
+      linkedDownloadResponse = await twResource.downloadResource(linkedResource, {
+        resourceFolderUri: resourceFolderUri,
+        fs: fs,
+      });
     } else {
-      console.log(
-        "Unable to download linked resource for Translation Words List"
-      );
+      console.log("Unable to download linked resource for Translation Words List");
     }
 
     const resourceReturn = {
@@ -122,13 +113,8 @@ export const twlResource: ScribeResource<Door43RepoResponse> = {
       version: resourceReturn?.resource.release.tag_name,
       linkedTw: linkedDownloadResponse && {
         ...linkedDownloadResponse,
-        localPath: linkedDownloadResponse.localPath.includes(
-          resourceFolderUri.path.toString()
-        )
-          ? linkedDownloadResponse.localPath.replace(
-              resourceFolderUri.path.toString(),
-              ""
-            )
+        localPath: linkedDownloadResponse.localPath.includes(resourceFolderUri.path.toString())
+          ? linkedDownloadResponse.localPath.replace(resourceFolderUri.path.toString(), "")
           : linkedDownloadResponse.localPath,
       },
     };
@@ -266,23 +252,17 @@ export const convertTwlRCUriToScribeResourceUri = async ({
   resourcesRootUri: URI;
 }): Promise<URI> => {
   try {
-    const twlResourceMetaUri = resourceUri.withPath(
-      resourceUri.path.join("metadata.json")
-    );
+    const twlResourceMetaUri = resourceUri.withPath(resourceUri.path.join("metadata.json"));
 
     const twlResourceMetaFile = await fs.readFile(twlResourceMetaUri);
 
-    const twlResourceLanguage = JSON.parse(twlResourceMetaFile.value.toString())
-      ?.meta?.language;
+    const twlResourceLanguage = JSON.parse(twlResourceMetaFile.value.toString())?.meta?.language;
 
     const twResourcesUri = URI.fromFilePath(
       resourcesRootUri.path.toString() + resource.linkedTw.localPath
     );
 
-    const twPath = path.replace(
-      "rc://*/tw/dict",
-      twResourcesUri.path.toString()
-    );
+    const twPath = path.replace("rc://*/tw/dict", twResourcesUri.path.toString());
 
     const uri = URI.fromFilePath(`${twPath}.md`);
 
