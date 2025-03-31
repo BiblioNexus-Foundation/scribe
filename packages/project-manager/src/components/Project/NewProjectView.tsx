@@ -423,7 +423,7 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
       location: projectLocation,
       licence
     };
-    projectServer.saveToFile(data, `${projectName}.json`)
+    projectServer.saveToFile(data, projectName)
     alert("Project Created Successfully!!")
   };
 

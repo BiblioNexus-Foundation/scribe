@@ -34,11 +34,6 @@ export class ProjectServiceBackend implements ProjectServer {
     throw new Error('Method not implemented.');
   }
 
-  /**
-   * Process data using the special Node.js package
-   * @param data Input data to process
-   * @returns Processed result
-   */
   async validateUSFM(data: string): Promise<any> {
     try {
       this.logger.debug(`Processing USFM data:...`);
@@ -62,23 +57,41 @@ export class ProjectServiceBackend implements ProjectServer {
   async sayHelloTo(name: string): Promise<string> {
     return `Hello, ${name}!`;
   }
-  // async initiallizer() {
-  //   USFMParser.init("https://cdn.jsdelivr.net/npm/usfm-grammar-web@3.0.0/tree-sitter-usfm.wasm",
-  //     "https://cdn.jsdelivr.net/npm/usfm-grammar-web@3.0.0/tree-sitter.wasm");
-  //   Validator.init("https://cdn.jsdelivr.net/npm/usfm-grammar-web@3.0.0/tree-sitter-usfm.wasm",
-  //     "https://cdn.jsdelivr.net/npm/usfm-grammar-web@3.0.0/tree-sitter.wasm");
-  // }
+
+  async USFMtoUSJ(data: string): Promise<any> {
+    await USFMParser.init("https://cdn.jsdelivr.net/npm/usfm-grammar-web@3.0.0/tree-sitter-usfm.wasm",
+      "https://cdn.jsdelivr.net/npm/usfm-grammar-web@3.0.0/tree-sitter.wasm");
+    const usfm = fs.readFileSync(data, 'utf8');
+    const usfmParser = new USFMParser(usfm);
+    const output = usfmParser.toUSJ();
+    console.log(JSON.stringify(output.content[0].code));
+    return { id: output.content[0].code, usj: output };
+  }
 
   async saveToFile(data: any, filename: string): Promise<boolean> {
     try {
-      const filePath = this.getFilePath(filename);
+      const project = path.join(this.projectDir, data.name);
+      this.ensureDirectoryExists(project);
+      console.log('project', project);
+      const filePath = path.join(project, filename);
+      console.log('filePath', filePath);
 
-      // Create directories if they don't exist
-      const dirPath = path.dirname(filePath);
-      this.ensureDirectoryExists(dirPath);
+      // Create an array of promises for each source file
+      const usjPromises = data.sourceFiles.map(async (source: string) => {
+        const usjResult = await this.USFMtoUSJ(source);
+        return usjResult;
+      });
 
-      // Write data to file
-      fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+      // Wait for all promises to resolve
+      const usjResults = await Promise.all(usjPromises);
+
+      // Write each USJ result to a file
+      usjResults.forEach((usj) => {
+        fs.writeFileSync(path.join(project, `${usj.id}.usj`), JSON.stringify(usj.usj, null, 2));
+      });
+
+      // Write the main data to a file
+      fs.writeFileSync(`${filePath}.json`, JSON.stringify(data, null, 2));
 
       this.logger.info(`Successfully saved file: ${filePath}`);
       return true;
@@ -114,7 +127,6 @@ export class ProjectServiceBackend implements ProjectServer {
   }
 
   private getFilePath(filename: string): string {
-    // Sanitize filename to prevent directory traversal
     const sanitizedFilename = filename.replace(/\.\./g, '');
     return path.isAbsolute(sanitizedFilename)
       ? sanitizedFilename
