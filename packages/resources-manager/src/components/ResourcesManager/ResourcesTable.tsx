@@ -1,10 +1,14 @@
-import * as React from "@theia/core/shared/react";
-import { DownloadedResource, ResourceDisplay } from "./types";
+import * as React from '@theia/core/shared/react';
+import { DownloadedResource, ResourceDisplay } from './types';
 
-import { VSCodeButton, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
-import { ConfigResourceValues } from "@/browser/resources/types";
+import {
+  VSCodeButton,
+  VSCodeDropdown,
+  VSCodeOption,
+} from '@vscode/webview-ui-toolkit/react';
+import { ConfigResourceValues } from '@/browser/resources/types';
 
-declare module "react" {
+declare module 'react' {
   interface InputHTMLAttributes<T> extends React.HTMLAttributes<T> {
     webkitdirectory?: boolean;
   }
@@ -30,7 +34,7 @@ const ResourcesTable = ({
 }) => {
   const initRef = useRef(false);
   const [selectedResourceType, setSelectedResourceType] = useState<string>(
-    resourcesTypes[0]?.value ?? ""
+    resourcesTypes[0]?.value ?? ''
   );
 
   const [resourceTableData, setResourceTableData] = useState<any[]>([]);
@@ -77,11 +81,11 @@ const ResourcesTable = ({
     useImportOfflineResource();
 
   return (
-    <div className="text-foreground">
-      <div className="flex w-full justify-between">
-        <span className="text-foreground">Filter Resources</span>
+    <div className='text-foreground'>
+      <div className='flex justify-between w-full'>
+        <span className='text-foreground'>Filter Resources</span>
         <VSCodeDropdown
-          className="bg-background border-muted w-1/2"
+          className='w-1/2 bg-background border-muted'
           onInput={(e: any) => {
             setSelectedResourceType(
               (
@@ -99,82 +103,92 @@ const ResourcesTable = ({
         </VSCodeDropdown>
       </div>
       {importedOfflineResource ? (
-        <div className="border-muted my-2 flex flex-col rounded-md border p-4">
-          <h1 className="text-foreground font-semibold">Selected Resource:</h1>
-          <div className="text-muted flex flex-col">
+        <div className='flex flex-col border border-muted rounded-md p-4 my-2'>
+          <h1 className='font-semibold text-foreground'>Selected Resource:</h1>
+          <div className='flex flex-col text-muted'>
             <p>Name: {importedOfflineResource.metadata.name}</p>
             <p>ID: {importedOfflineResource.metadata.id}</p>
             <p>Version: {importedOfflineResource.metadata.version}</p>
             <p>Path: {importedOfflineResource.path}</p>
             <VSCodeButton
               onClick={() => handleAddResource(selectedResourceType)}
-              className="bg-primary text-foreground">
-              <i className="codicon codicon-cloud-upload"></i>
+              className='bg-primary text-foreground'
+            >
+              <i className='codicon codicon-cloud-upload'></i>
             </VSCodeButton>
           </div>
         </div>
       ) : (
-        <div className="mt-2 flex justify-between">
-          <div className="text-foreground min-w-2">Import Resources</div>
+        <div className='flex justify-between mt-2'>
+          <div className='min-w-2 text-foreground'>Import Resources</div>
           <VSCodeButton
             onClick={() => {
               handleImportResource({ selectedResourceType });
             }}
-            className="min-w-28">
-            <i className="codicon codicon-cloud-upload"></i>
+            className='min-w-28'
+          >
+            <i className='codicon codicon-cloud-upload'></i>
           </VSCodeButton>
         </div>
       )}
-      <table className="w-full table-auto border-collapse">
-        <thead className="border-muted border-b font-semibold">
+      <table className='table-auto w-full border-collapse'>
+        <thead className='font-semibold border-b border-muted'>
           <tr>
-            <td className="py-2">Resource</td>
-            <td className="py-2">Owner</td>
-            <td className="py-2">Version</td>
-            <td className="py-2"></td>
+            <td className='py-2'>Resource</td>
+            <td className='py-2'>Owner</td>
+            <td className='py-2'>Version</td>
+            <td className='py-2'></td>
           </tr>
         </thead>
 
-        <tbody className="gap-3">
+        <tbody className='gap-3'>
           {resourceTableData?.map((resource) => (
-            <tr className="border-muted border-b">
-              <td className="py-2">{resource.name}</td>
-              <td className="py-2">
+            <tr className='border-b border-muted'>
+              <td className='py-2'>{resource.name}</td>
+              <td className='py-2'>
                 {resource.owner.avatarUrl ? (
                   <img
                     src={resource.owner.avatarUrl}
                     alt={resource.owner.name}
-                    className="h-8 w-8 rounded-lg object-contain"
+                    className='w-8 h-8 rounded-lg object-contain'
                   />
                 ) : (
                   resource.owner.name
                 )}
               </td>
               <td
-                className="py-2"
+                className='py-2'
                 title={`Released on : ${new Date(
                   resource.version.releaseDate
                 ).toLocaleDateString()}`}>
                 {resource.version.tag}
               </td>
-              <td className="flex items-center justify-center px-2 py-2">
-                {!downloadedResources.find((item) => item.id === resource.id) ? (
+              <td className='flex items-center justify-center px-2 py-2'>
+                {!downloadedResources.find(
+                  (item) => item.id === resource.id
+                ) ? (
                   <VSCodeButton
-                    title="Download Resource"
-                    appearance="secondary"
-                    className="bg-background w-full"
-                    onClick={() => handleDownload(resource)}>
-                    <i className="codicon codicon-cloud-download"></i>
+                    title='Download Resource'
+                    appearance='secondary'
+                    className='w-full bg-background'
+                    onClick={() => handleDownload(resource)}
+                  >
+                    <i className='codicon codicon-cloud-download'></i>
                   </VSCodeButton>
                 ) : (
                   <VSCodeButton
-                    title="Open Resource"
-                    appearance="primary"
-                    className="bg-primary w-full"
+                    title='Open Resource'
+                    appearance='primary'
+                    className='w-full bg-primary'
                     onClick={() =>
-                      openResource(downloadedResources.find((item) => item.id === resource.id))
-                    }>
-                    <i className="codicon codicon-eye"></i>
+                      openResource(
+                        downloadedResources.find(
+                          (item) => item.id === resource.id
+                        )
+                      )
+                    }
+                  >
+                    <i className='codicon codicon-eye'></i>
                   </VSCodeButton>
                 )}
               </td>

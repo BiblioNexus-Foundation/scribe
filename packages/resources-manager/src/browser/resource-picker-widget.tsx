@@ -1,12 +1,12 @@
-import * as React from "@theia/core/shared/react";
-import { ReactDialog } from "@theia/core/lib/browser/dialogs/react-dialog";
-import { inject, injectable } from "@theia/core/shared/inversify";
-import { DialogProps } from "@theia/core/lib/browser";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { resourcesGroups } from "./resources";
-import ResourceTypeDisplay from "../components/ResourcesManager/ResourcesDisplay";
+import * as React from '@theia/core/shared/react';
+import { ReactDialog } from '@theia/core/lib/browser/dialogs/react-dialog';
+import { inject, injectable } from '@theia/core/shared/inversify';
+import { DialogProps } from '@theia/core/lib/browser';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { resourcesGroups } from './resources';
+import ResourceTypeDisplay from '../components/ResourcesManager/ResourcesDisplay';
 
-import { Message } from "@theia/core/lib/browser";
+import { Message } from '@theia/core/lib/browser';
 
 import { MessageService } from "@theia/core";
 import { ConfigResourceValues, DownloadResourceUtils, ScribeResource } from "./resources/types";
@@ -14,29 +14,30 @@ import { registeredResources } from "./resources";
 import { WorkspaceService } from "@theia/workspace/lib/browser/workspace-service";
 import { FileService } from "@theia/filesystem/lib/browser/file-service";
 
-import { ResourceManagerUtils } from "./utils";
-import { ResourceViewerOpener } from "./resource-viewer/resource-viewer-opener";
+import { ResourceManagerUtils } from './utils';
+import { ResourceViewerOpener } from './resource-viewer/resource-viewer-opener';
 
-import { VerseRefUtils, VerseRefValue } from "@scribe/theia-utils/lib/browser";
+import { VerseRefUtils, VerseRefValue } from '@scribe/theia-utils/lib/browser';
+import { BookPlus } from 'lucide-react';
 
 @injectable()
 export class ResourcePickerDialogProps extends DialogProps {}
 
 @injectable()
 export class ResourcesPickerWidget extends ReactDialog<void> {
-  static readonly ID = "ResourcesPickerWidget";
+  static readonly ID = 'ResourcesPickerWidget';
 
   constructor(
     @inject(ResourcePickerDialogProps)
     protected override readonly props: ResourcePickerDialogProps
   ) {
     super({
-      title: "Resources Picker ",
+      title: 'Resources Picker ',
     });
     if (this.titleNode && this.titleNode.parentElement) {
-      this.titleNode.parentElement.style.textTransform = "uppercase";
-      this.titleNode.parentElement.style.backgroundColor = "#083344";
-      this.titleNode.parentElement.style.color = "#164E63";
+      this.titleNode.parentElement.style.textTransform = 'uppercase';
+      this.titleNode.parentElement.style.backgroundColor = '#083344';
+      this.titleNode.parentElement.style.color = '#164E63';
     }
 
     // this.titleNode.className =
@@ -75,7 +76,7 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
   }
 
   get value(): any {
-    return "value";
+    return 'value';
   }
 
   render(): React.ReactNode {
@@ -83,7 +84,7 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
 
     const openHandler = async (resourceInfo: ConfigResourceValues, resource: ScribeResource) => {
       if (!resource) {
-        await this.messageService.error("Resource type not found");
+        await this.messageService.error('Resource type not found');
         return;
       }
 
@@ -95,48 +96,82 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
       });
     };
     return (
-      <div className="relative top-0 flex h-[80vh] w-[90vw] justify-between gap-3">
-        {/* <VerseRefInput
+      <div className='h-[90vh]'>
+        <div className='flex gap-4 px-3 py-1 '>
+          <p className='  text-foreground font-bold text-xl'>Resources :</p>
+          <button className='text-sm text-muted flex gap-2 justify-center items-center px-4 py-2 bg-cyan-800 rounded-md rounded-lg'>
+            <BookPlus className='h-3.5 w-3.5' />
+            Import Resources
+          </button>
+        </div>
+        <div className='w-[90vw] h-[73vh] top-0   flex relative gap-3 justify-between'>
+          {/* <VerseRefInput
           setVerseRef={(verseRef) => this.verseRefUtils.setVerseRef(verseRef)}
         /> */}
 
-        <Tabs defaultValue={allUngroupedResources[0].id} className="flex w-full">
-          <TabsList className="mr-3 flex h-fit w-1/6 flex-col">
-            {resourcesGroups.map((group) => (
-              <div key={group.id} className="mb-5 flex w-full flex-col gap-2">
-                <h1 className="text-xxs uppercase">{group.name}</h1>
-                {group.resources.map((resource) => (
-                  <TabsTrigger
-                    value={resource.id}
-                    asChild
-                    className="m-0 mx-0 flex items-center px-2 py-0.5 font-medium text-white">
-                    <button className="flex gap-2 text-sm">
-                      {resource.icon}
-                      <span>{resource.displayLabel}</span>
-                    </button>
-                  </TabsTrigger>
-                ))}
+          <Tabs
+            defaultValue={allUngroupedResources[0].id}
+            className='w-full flex '
+          >
+            <TabsList className='flex flex-col w-1/6 h-fit'>
+              <div className='flex flex-col gap-4 w-full mb-5 mt-2.5'>
+                <div className='flex justify-start items-center'>
+                  <h1 className='uppercase text-xxs p-3'>Filter</h1>
+                </div>
+                <div className='border-t border-muted w-full py-2 px-2'>
+                  <h3 className='text-sm font-medium mb-2 text-cyan-600'>
+                    Resources types
+                  </h3>
+                  {resourcesGroups.map((group) => (
+                    <div
+                      key={group.id}
+                      className='flex flex-col gap-2 w-full mb-5'
+                    >
+                      {/* <h1 className='uppercase text-xxs'>{group.name}</h1> */}
+                      {group.resources.map((resource) => (
+                        <TabsTrigger
+                          value={resource.id}
+                          asChild
+                          className='text-white font-medium px-2 mx-0  flex items-center m-0 py-0.5'
+                        >
+                          <button className='flex gap-2 text-sm'>
+                            {resource.icon}
+                            <span>{resource.displayLabel}</span>
+                          </button>
+                        </TabsTrigger>
+                      ))}
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </TabsList>
-          <div className="min-h-full flex-1 border-l border-gray-300 px-10">
-            {allUngroupedResources.map((resource) => (
-              <TabsContent value={resource.id}>
-                <ResourceTypeDisplay
-                  resourceType={{
-                    value: resource.id,
-                    label: resource.displayLabel,
-                    getTableDisplayData: resource.getTableDisplayData,
-                    downloadHandler: <ResourceInfo extends {}>(resourceInfo: ResourceInfo) =>
-                      this._downloadResource(resourceInfo, resource.downloadResource),
-                  }}
-                  downloadedResources={this.downloadedResources}
-                  openResource={(resourceInfo) => openHandler(resourceInfo, resource)}
-                />
-              </TabsContent>
-            ))}
-          </div>
-        </Tabs>
+            </TabsList>
+            <div className=' min-h-full  flex-1'>
+              <div></div>
+              {allUngroupedResources.map((resource) => (
+                <TabsContent value={resource.id}>
+                  <ResourceTypeDisplay
+                    resourceType={{
+                      value: resource.id,
+                      label: resource.displayLabel,
+                      getTableDisplayData: resource.getTableDisplayData,
+                      downloadHandler: <ResourceInfo extends {}>(
+                        resourceInfo: ResourceInfo
+                      ) =>
+                        this._downloadResource(
+                          resourceInfo,
+                          resource.downloadResource
+                        ),
+                    }}
+                    downloadedResources={this.downloadedResources}
+                    openResource={(resourceInfo) =>
+                      openHandler(resourceInfo, resource)
+                    }
+                  />
+                </TabsContent>
+              ))}
+            </div>
+          </Tabs>
+        </div>
       </div>
     );
   }
@@ -159,11 +194,11 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
       const fs = this.fs;
 
       const resourceFolderUri = currentFolderURI.withPath(
-        currentFolderURI.path.join(".project", "resources")
+        currentFolderURI.path.join('.project', 'resources')
       );
 
       const prog = await this.messageService.showProgress({
-        text: "Downloading resource ...",
+        text: 'Downloading resource ...',
       });
 
       const downloadedResource = await downloadHandler(resourceInfo, {
@@ -171,7 +206,7 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
         resourceFolderUri,
       });
 
-      prog.report({ message: "Updating the configuration" });
+      prog.report({ message: 'Updating the configuration' });
 
       const updatedDownloadedResourcePath = {
         ...downloadedResource,
@@ -187,10 +222,10 @@ export class ResourcesPickerWidget extends ReactDialog<void> {
       this.update();
       prog.cancel();
 
-      this.messageService.info("Resource downloaded successfully");
+      this.messageService.info('Resource downloaded successfully');
     } catch (error) {
       console.error(error);
-      await this.messageService.error("Unable to download resource ...");
+      await this.messageService.error('Unable to download resource ...');
     }
   }
 }

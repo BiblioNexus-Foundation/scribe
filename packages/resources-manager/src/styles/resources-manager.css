@@ -17,6 +17,10 @@
 .toolbar-column.left {
   display: none;
 }
+.dialogContent {
+  max-height: 80vh !important;
+  padding: 0 !important;
+}
 /* .p-TabBar-tab.p-mod-closable {
   display: none;
 
