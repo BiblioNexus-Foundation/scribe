@@ -5,7 +5,8 @@ import * as path from 'path';
 import { inject } from '@theia/core/shared/inversify';
 import { ProjectServer } from '../common/project-protocol';
 // @ts-ignore
-import { USFMParser, Validator } from 'usfm-grammar-web';
+import { USFMParser, Validator, Filter } from 'usfm-grammar-web';
+import { generateProjectUUID } from './generateUUID';
 
 @injectable()
 export class ProjectServiceBackend implements ProjectServer {
@@ -32,6 +33,32 @@ export class ProjectServiceBackend implements ProjectServer {
   }
   getClient?(): void | undefined {
     throw new Error('Method not implemented.');
+  }
+
+  async highlightVerseText(usjData: any, replacementText = "... \n") {
+    console.log("highlighted");
+
+    // Clone the original data to avoid modifying the input
+    const result = JSON.parse(JSON.stringify(usjData));
+
+    // Process the content array
+    for (let i = 0; i < result.content.length - 1; i++) {
+      const currentItem = result.content[i];
+      const nextItem = result.content[i + 1];
+
+      // Check if the current item is a verse marker and the next item is a string
+      if (
+        currentItem &&
+        typeof currentItem === 'object' &&
+        currentItem.type === 'verse' &&
+        typeof nextItem === 'string'
+      ) {
+        // Replace the text with the specified replacement
+        result.content[i + 1] = replacementText;
+      }
+    }
+
+    return result;
   }
 
   async validateUSFM(data: string): Promise<any> {
@@ -64,16 +91,24 @@ export class ProjectServiceBackend implements ProjectServer {
     const usfm = fs.readFileSync(data, 'utf8');
     const usfmParser = new USFMParser(usfm);
     const output = usfmParser.toUSJ();
-    console.log(JSON.stringify(output.content[0].code));
-    return { id: output.content[0].code, usj: output };
+    const cleanUSJ = usfmParser.toUSJ(null, [...Filter.BCV, ...Filter.TEXT])
+    // const cleanUSJ = usfmParser.toUSJ(null, [...Filter.BCV, ...Filter.PARAGRAPHS])
+    // const cleanUSJ = usfmParser.toUSJ(null, [...Filter.BCV, ...Filter.PARAGRAPHS, ...Filter.TEXT])
+    const convertedData = await this.highlightVerseText(cleanUSJ);
+    console.log(JSON.stringify(output.content[0].code), JSON.stringify(convertedData));
+    return { id: output.content[0].code, usj: output, target: cleanUSJ, edited: convertedData };
   }
 
   async saveToFile(data: any, filename: string): Promise<boolean> {
     try {
-      const project = path.join(this.projectDir, data.name);
-      this.ensureDirectoryExists(project);
+      const uuid = generateProjectUUID(data.name)
+      console.log("uuid", uuid);
+
+      const project = path.join(this.projectDir, `${data.name}-${uuid}`);
+      const textTranslation = path.join(project, `scripture:textTranslation-${uuid}`)
+      this.ensureDirectoryExists(textTranslation);
       console.log('project', project);
-      const filePath = path.join(project, filename);
+      const filePath = path.join(textTranslation, 'settings');
       console.log('filePath', filePath);
 
       // Create an array of promises for each source file
@@ -87,7 +122,9 @@ export class ProjectServiceBackend implements ProjectServer {
 
       // Write each USJ result to a file
       usjResults.forEach((usj) => {
-        fs.writeFileSync(path.join(project, `${usj.id}.usj`), JSON.stringify(usj.usj, null, 2));
+        fs.writeFileSync(path.join(textTranslation, `${usj.id}.usj`), JSON.stringify(usj.usj, null, 2));
+        fs.writeFileSync(path.join(textTranslation, `target-${usj.id}.usj`), JSON.stringify(usj.target, null, 2));
+        fs.writeFileSync(path.join(textTranslation, `edited-${usj.id}.usj`), JSON.stringify(usj.edited, null, 2));
       });
 
       // Write the main data to a file
