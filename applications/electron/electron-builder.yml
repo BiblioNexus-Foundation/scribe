@@ -35,6 +35,10 @@ win:
     provider: generic
     url: 'https://download.eclipse.org/theia/ide/${version}/windows'
     useMultipleRangeRequest: false
+  extraResources:
+    - from: ../../ffmpeg/win
+      to: app/ffmpeg/win
+
 mac:
   icon: resources/icons/MacLauncherIcon/512-512-2.icns
   category: public.app-category.developer-tools
@@ -45,6 +49,10 @@ mac:
   publish:
     provider: generic
     url: 'https://download.eclipse.org/theia/ide/latest/macos'
+  extraResources:
+    - from: ../../ffmpeg/mac
+      to: app/ffmpeg/mac
+
 linux:
   icon: resources/icons/LinuxLauncherIcon/512-512.png
   category: Development
@@ -55,6 +63,9 @@ linux:
   publish:
     provider: generic
     url: 'https://download.eclipse.org/theia/ide/latest/linux'
+  extraResources:
+    - from: ../../ffmpeg/linux
+      to: app/ffmpeg/linux
 
 nsis:
   menuCategory: true

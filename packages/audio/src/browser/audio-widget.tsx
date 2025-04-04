@@ -28,26 +28,42 @@ export class AudioWidget extends ReactWidget {
   }
 
   protected async doInit(): Promise<void> {
-    this.id = AudioWidget.ID;
-    this.title.label = AudioWidget.LABEL;
-    this.title.caption = AudioWidget.LABEL;
-    this.title.closable = true;
-    this.title.iconClass = "fa fa-window-maximize"; // example widget icon.
+    try {
+      this.id = AudioWidget.ID;
+      this.title.label = AudioWidget.LABEL;
+      this.title.caption = AudioWidget.LABEL;
+      this.title.closable = true;
+      this.title.iconClass = "fa fa-window-maximize"; // example widget icon.
 
-    // Set initial theme
-    this.currentTheme = this.themeService.getCurrentTheme().type;
+      // Set initial theme
+      this.currentTheme = this.themeService.getCurrentTheme().type;
 
-    console.log(this.server, "server");
-    // Subscribe to theme changes
-    this.themeService.onDidColorThemeChange(() => {
-      this.handleThemeChange();
-    });
+      // Safely log the server reference
+      if (this.server) {
+        console.log("Audio server is available");
+      } else {
+        console.error("Audio server reference is missing or undefined");
+      }
 
-    await this.initializeWorkspace();
+      // Subscribe to theme changes
+      this.themeService.onDidColorThemeChange(() => {
+        this.handleThemeChange();
+      });
 
-    this.update(); // Force initial render
+      // Make sure server is available before proceeding
+      if (this.server) {
+        await this.initializeWorkspace();
+      } else {
+        throw new Error("Cannot initialize workspace: server reference is not available");
+      }
+
+      this.update(); // Force initial render
+    } catch (error) {
+      console.error(
+        `Failed to initialize audio widget: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
-
   // Handles theme change and updates widget state
   protected handleThemeChange(): void {
     const newTheme = this.themeService.getCurrentTheme().type;
