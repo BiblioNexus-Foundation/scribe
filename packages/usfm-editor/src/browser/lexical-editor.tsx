@@ -1,5 +1,5 @@
-import * as React from "@theia/core/shared/react";
-import { BookCode, Usj } from "@biblionexus-foundation/scripture-utilities";
+import * as React from '@theia/core/shared/react';
+import { BookCode, Usj } from '@biblionexus-foundation/scripture-utilities';
 
 import {
   Editor,
@@ -7,7 +7,7 @@ import {
   DEFAULT_VIEW_MODE,
   immutableNoteCallerNodeName,
   UsjNodeOptions,
-} from "@biblionexus-foundation/scribe-editor";
+} from '@biblionexus-foundation/scribe-editor';
 import {
   SyntheticEvent,
   useCallback,
@@ -15,22 +15,22 @@ import {
   useState,
   useRef,
   useMemo,
-} from "@theia/core/shared/react";
-import { Emitter } from "@theia/core";
-
-export type TextDirection = "ltr" | "rtl" | "auto";
+} from '@theia/core/shared/react';
+import { Emitter } from '@theia/core';
+import AudioPlayerComponent from 'audio-player/lib/browser/audio-player-component';
+export type TextDirection = 'ltr' | 'rtl' | 'auto';
 export interface ScriptureReference {
   bookCode: BookCode;
   chapterNum: number;
   verseNum: number;
 }
 const defaultUsj: Usj = {
-  type: "USJ",
-  version: "3.1",
+  type: 'USJ',
+  version: '3.1',
   content: [],
 };
 const defaultScrRef: ScriptureReference = {
-  /* PSA */ bookCode: "PSA",
+  /* PSA */ bookCode: 'PSA',
   chapterNum: 1,
   verseNum: 1,
 };
@@ -72,14 +72,14 @@ export default function LexicalEditor({
   const nodeOptions: UsjNodeOptions = {
     [immutableNoteCallerNodeName]: {
       onClick: (e: SyntheticEvent) => {
-        console.log("Note caller clicked", e);
+        console.log('Note caller clicked', e);
       },
     },
   };
 
   useEffect(() => {
     if (usjInput) {
-      console.log("Setting usjInput", usjInput);
+      console.log('Setting usjInput', usjInput);
       setUsj(usjInput);
       isDirty = false;
     }
@@ -99,16 +99,37 @@ export default function LexicalEditor({
   const onUsjChange = useCallback(
     (newUsj: Usj) => {
       if (onUsjUpdate) {
-        console.log("Usj changed in editor", newUsj);
+        console.log('Usj changed in editor', newUsj);
         onUsjUpdate(newUsj); // Call the callback with the new USJ
       }
     },
     [usj]
   );
 
+  // Styles for layout
+  const containerStyle = {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    height: '100vh', // Take full viewport height
+    overflow: 'hidden', // Prevent scrolling of the container
+  };
+
+  const editorStyle = {
+    flex: '1 1 auto', // Grow and shrink as needed
+    overflowY: 'auto' as const, // Allow scrolling within the editor
+    padding: '16px',
+  };
+
+  const audioPlayerStyle = {
+    flex: '0 0 auto', // Don't grow or shrink
+    borderTop: '1px solid #444',
+    backgroundColor: '#1e1e1e',
+    width: '100%',
+  };
+
   return (
-    <div className="lexical-editor-container">
-      <div className="editor-wrapper p-4 text-gray-600">
+    <div style={containerStyle}>
+      <div style={editorStyle}>
         <Editor
           usjInput={usj}
           ref={editorRef}
@@ -118,6 +139,10 @@ export default function LexicalEditor({
           scrRef={scrRef}
           setScrRef={setScrRef}
         />
+        <div>Hello</div>
+      </div>
+      <div style={audioPlayerStyle}>
+        <AudioPlayerComponent />
       </div>
     </div>
   );

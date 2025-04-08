@@ -16,7 +16,8 @@
     "@theia/plugin": "1.57.0",
     "@theia/plugin-ext": "1.57.0",
     "sj-usfm-grammar": "^3.0.8",
-    "@scribe/theia-utils": "0.0.1"
+    "@scribe/theia-utils": "0.0.1",
+    "audio-player": "0.0.0"
   },
   "devDependencies": {
     "@testing-library/react": "^11.2.7",

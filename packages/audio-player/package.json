@@ -1,0 +1,36 @@
+{
+  "name": "audio-player",
+  "keywords": [
+    "theia-extension"
+  ],
+  "version": "0.0.0",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "dependencies": {
+    "@theia/core": "1.57.0",
+    "wavesurfer.js": "^7.9.0"
+  },
+  "devDependencies": {
+    "rimraf": "latest",
+    "typescript": "^5.6.2",
+    "@testing-library/react": "^11.2.7",
+    "@types/jest": "^26.0.20",
+    "jest": "^26.6.3",
+    "lucide-react": "^0.468.0",
+    "ts-node": "^10.9.1",
+    "ts-jest": "^26.5.6"
+  },
+  "scripts": {
+    "prepare": "yarn run clean && yarn run build",
+    "clean": "rimraf lib",
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "theiaExtensions": [
+    {
+      "frontend": "lib/browser/audio-player-frontend-module"
+    }
+  ]
+}
