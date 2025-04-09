@@ -4,6 +4,7 @@ import { spawn, execSync, ChildProcess, exec } from "child_process";
 import * as path from "path";
 import * as os from "os";
 import * as fs from "fs/promises";
+import * as Fs from "fs";
 import { promisify } from "util";
 const execAsync = promisify(exec);
 @injectable()
@@ -589,41 +590,148 @@ export class FFmpegServerImpl implements FFmpegServer {
   getClient?(): void | undefined {
     throw new Error("Method not implemented.");
   }
+
   private getPlatformSpecificFFmpegPath(): string {
-    const ffmpegDir = path.resolve(__dirname, "../../../../ffmpeg");
-    switch (os.platform()) {
-      case "win32":
-        return path.join(ffmpegDir, "win", "ffmpeg.exe");
-      case "darwin":
-        return path.join(ffmpegDir, "mac", "ffmpeg");
-      case "linux":
-        return path.join(ffmpegDir, "linux", "ffmpeg");
-      default:
-        throw new Error("Unsupported OS platform for FFmpeg");
+    try {
+      // Use the environment variable set in config.js
+      if (process.env.FFMPEG_DIR) {
+        const binaryName = os.platform() === "win32" ? "ffmpeg.exe" : "ffmpeg";
+        const ffmpegPath = path.join(process.env.FFMPEG_DIR, binaryName);
+
+        console.log(`Checking FFmpeg at path: ${ffmpegPath}`);
+
+        if (Fs.existsSync(ffmpegPath)) {
+          console.log(`Found FFmpeg at: ${ffmpegPath}`);
+
+          // On non-Windows platforms, ensure the binary is executable
+          if (os.platform() !== "win32") {
+            try {
+              // Get current permissions
+              const stats = Fs.statSync(ffmpegPath);
+              const currentMode = stats.mode;
+
+              // Add executable permission if not already set
+              if (!(currentMode & 0o111)) {
+                console.log(`Setting executable permissions for: ${ffmpegPath}`);
+                Fs.chmodSync(ffmpegPath, currentMode | 0o111);
+              }
+            } catch (error) {
+              console.warn(
+                `Warning: Could not check/set executable permissions: ${error instanceof Error ? error.message : String(error)}`
+              );
+            }
+          }
+
+          return ffmpegPath;
+        } else {
+          console.warn(`FFmpeg not found at configured path: ${ffmpegPath}`);
+        }
+      } else {
+        console.warn("FFMPEG_DIR environment variable not set");
+      }
+
+      // Fall back to searching in various locations
+      const platform =
+        os.platform() === "win32" ? "win" : os.platform() === "darwin" ? "mac" : "linux";
+      const binaryName = platform === "win" ? "ffmpeg.exe" : "ffmpeg";
+
+      // Check user data directory first
+      const homeDir = os.homedir();
+      const userDataDir = path.join(homeDir, ".scribe");
+      const userBinaryPath = path.join(userDataDir, ".bin", "ffmpeg", platform, binaryName);
+
+      if (Fs.existsSync(userBinaryPath)) {
+        console.log(`Found FFmpeg in user data directory: ${userBinaryPath}`);
+        return userBinaryPath;
+      }
+
+      // Check app directory
+      const appDir = path.resolve(__dirname, "..", "..", "..", "..", "ffmpeg");
+      const appBinaryPath = path.join(appDir, platform, binaryName);
+
+      if (Fs.existsSync(appBinaryPath)) {
+        console.log(`Found FFmpeg in app directory: ${appBinaryPath}`);
+        return appBinaryPath;
+      }
+
+      // Last resort - check resources directory if in a packaged app
+      if (process.resourcesPath) {
+        const resourcesBinaryPath = path.join(
+          process.resourcesPath,
+          "app",
+          "ffmpeg",
+          platform,
+          binaryName
+        );
+        if (Fs.existsSync(resourcesBinaryPath)) {
+          console.log(`Found FFmpeg in resources directory: ${resourcesBinaryPath}`);
+          return resourcesBinaryPath;
+        }
+      }
+
+      console.error("Could not find FFmpeg binary in any expected location");
+      throw new Error("FFmpeg binary not found");
+    } catch (error) {
+      console.error(
+        `Error finding FFmpeg path: ${error instanceof Error ? error.message : String(error)}`
+      );
+      throw error;
     }
   }
+
+  private async checkFFmpegInstallation(): Promise<void> {
+    try {
+      console.log(`Checking FFmpeg installation at: ${this.ffmpegPath}`);
+
+      // Verify file exists
+      if (!Fs.existsSync(this.ffmpegPath)) {
+        console.error(`FFmpeg binary not found at: ${this.ffmpegPath}`);
+        throw new Error(`FFmpeg binary not found at: ${this.ffmpegPath}`);
+      }
+
+      // Set executable permissions on non-Windows platforms
+      if (os.platform() !== "win32") {
+        try {
+          const stats = Fs.statSync(this.ffmpegPath);
+          Fs.chmodSync(this.ffmpegPath, stats.mode | 0o755);
+          console.log(`Set executable permissions for: ${this.ffmpegPath}`);
+        } catch (chmodErr) {
+          console.warn(
+            `Warning: Failed to set executable permissions: ${chmodErr instanceof Error ? chmodErr.message : String(chmodErr)}`
+          );
+        }
+      }
+
+      // Run FFmpeg version check
+      try {
+        const quotedPath = this.ffmpegPath.includes(" ") ? `"${this.ffmpegPath}"` : this.ffmpegPath;
+        const output = execSync(`${quotedPath} -version`, { encoding: "utf8" });
+        console.log(`FFmpeg version info: ${output.split("\n")[0]}`);
+      } catch (execErr) {
+        console.error(
+          `FFmpeg execution test failed: ${execErr instanceof Error ? execErr.message : String(execErr)}`
+        );
+        throw new Error(
+          `FFmpeg execution test failed: ${execErr instanceof Error ? execErr.message : String(execErr)}`
+        );
+      }
+
+      console.log(`FFmpeg installation check passed`);
+    } catch (err) {
+      console.error(
+        `FFmpeg installation check failed: ${err instanceof Error ? err.message : String(err)}`
+      );
+      throw new Error(
+        `FFmpeg is not installed or not functioning correctly: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+  }
+
   async getSystemOS() {
     const currentOS = os.platform();
     return currentOS;
   }
-  private async checkFFmpegInstallation(): Promise<void> {
-    try {
-      await fs.access(this.ffmpegPath, fs.constants.F_OK);
-      if (os.platform() !== "win32") {
-        try {
-          await fs.chmod(this.ffmpegPath, 0o755);
-        } catch (chmodErr) {
-          console.warn("Warning: Failed to set executable permissions:", chmodErr);
-        }
-      }
-      await fs.access(this.ffmpegPath, fs.constants.X_OK);
-      execSync(`${this.ffmpegPath} -version`);
-    } catch (err) {
-      console.error("FFmpeg installation check failed:", err);
-      throw new Error("FFmpeg is not installed or not functioning correctly");
-    }
-  }
-
+  
   private getAudioInputFormat(): { format: string; device: string } {
     switch (os.platform()) {
       case "win32":
