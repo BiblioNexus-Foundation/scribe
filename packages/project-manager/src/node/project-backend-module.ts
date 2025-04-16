@@ -7,10 +7,11 @@ import { ProjectServer } from '../common/project-protocol';
 // @ts-ignore
 import { USFMParser, Validator, Filter } from 'usfm-grammar-web';
 import { generateProjectUUID } from './generateUUID';
+// import createTranslationSB from './createTranslationSB';
 
 @injectable()
 export class ProjectServiceBackend implements ProjectServer {
-  private projectDir: string;
+  public projectDir: string;
 
   constructor(
     @inject(ILogger) private readonly logger: ILogger
@@ -24,7 +25,9 @@ export class ProjectServiceBackend implements ProjectServer {
     // Ensure project directory exists
     this.ensureDirectoryExists(this.projectDir);
   }
-
+  async getProjectDirectory(): Promise<string> {
+    return this.projectDir;
+  }
   dispose(): void {
     throw new Error('Method not implemented.');
   }
@@ -35,8 +38,7 @@ export class ProjectServiceBackend implements ProjectServer {
     throw new Error('Method not implemented.');
   }
 
-  async highlightVerseText(usjData: any, replacementText = "... \n") {
-    console.log("highlighted");
+  async cleanVerseText(usjData: any, replacementText = "... \n") {
 
     // Clone the original data to avoid modifying the input
     const result = JSON.parse(JSON.stringify(usjData));
@@ -94,22 +96,21 @@ export class ProjectServiceBackend implements ProjectServer {
     const cleanUSJ = usfmParser.toUSJ(null, [...Filter.BCV, ...Filter.TEXT])
     // const cleanUSJ = usfmParser.toUSJ(null, [...Filter.BCV, ...Filter.PARAGRAPHS])
     // const cleanUSJ = usfmParser.toUSJ(null, [...Filter.BCV, ...Filter.PARAGRAPHS, ...Filter.TEXT])
-    const convertedData = await this.highlightVerseText(cleanUSJ);
-    console.log(JSON.stringify(output.content[0].code), JSON.stringify(convertedData));
-    return { id: output.content[0].code, usj: output, target: cleanUSJ, edited: convertedData };
+    const convertedData = await this.cleanVerseText(cleanUSJ);
+    // console.log(JSON.stringify(output.content[0].code), JSON.stringify(convertedData));
+    return { id: output.content[0].code, usj: output, target: convertedData };
   }
 
-  async saveToFile(data: any, filename: string): Promise<boolean> {
+  async saveToFile(data: any): Promise<boolean> {
     try {
       const uuid = generateProjectUUID(data.name)
-      console.log("uuid", uuid);
-
       const project = path.join(this.projectDir, `${data.name}-${uuid}`);
       const textTranslation = path.join(project, `scripture:textTranslation-${uuid}`)
       this.ensureDirectoryExists(textTranslation);
-      console.log('project', project);
-      const filePath = path.join(textTranslation, 'settings');
-      console.log('filePath', filePath);
+      const audioTranslation = path.join(project, `scripture:audioTranslation-${uuid}`)
+      this.ensureDirectoryExists(audioTranslation);
+      const sources = path.join(project, 'sources', `${data.sourceLanguage.lc}-${uuid}`)
+      this.ensureDirectoryExists(sources);
 
       // Create an array of promises for each source file
       const usjPromises = data.sourceFiles.map(async (source: string) => {
@@ -122,15 +123,19 @@ export class ProjectServiceBackend implements ProjectServer {
 
       // Write each USJ result to a file
       usjResults.forEach((usj) => {
-        fs.writeFileSync(path.join(textTranslation, `${usj.id}.usj`), JSON.stringify(usj.usj, null, 2));
-        fs.writeFileSync(path.join(textTranslation, `target-${usj.id}.usj`), JSON.stringify(usj.target, null, 2));
-        fs.writeFileSync(path.join(textTranslation, `edited-${usj.id}.usj`), JSON.stringify(usj.edited, null, 2));
+        fs.writeFileSync(path.join(sources, `${usj.id}.usj`), JSON.stringify(usj.usj, null, 2));
+        fs.writeFileSync(path.join(textTranslation, `${usj.id}.usj`), JSON.stringify(usj.target, null, 2));
       });
-
+      data.sourceDir = sources;
+      data.textDir = textTranslation;
+      data.audioDir = audioTranslation;
       // Write the main data to a file
-      fs.writeFileSync(`${filePath}.json`, JSON.stringify(data, null, 2));
+      fs.writeFileSync(path.join(project, `scribe.json`), JSON.stringify(data, null, 2));
 
-      this.logger.info(`Successfully saved file: ${filePath}`);
+      // const metadata = createTranslationSB(data)
+      // fs.writeFileSync(path.join(textTranslation, `metadata.json`), JSON.stringify(metadata, null, 2));
+
+      this.logger.info(`Successfully saved file: ${textTranslation}`);
       return true;
     } catch (error) {
       this.logger.error(`Error saving file: ${error.message}`);

@@ -212,6 +212,20 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
     if (!languagesLoaded.current) {
       fetchLanguages();
     }
+
+    const getProjectDir = async () => {
+      if (!projectLocation) {
+        try {
+          const dir = await projectServer.getProjectDirectory();
+          console.log("dir", dir);
+          setProjectLocation(dir);
+        } catch (error) {
+          console.error("Failed to get project directory:", error);
+        }
+      }
+    };
+
+    getProjectDir();
   }, []);
 
   React.useEffect(() => {
@@ -416,8 +430,8 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
     const data = {
       name: projectName,
       description,
-      sourceLanguage,
-      targetLanguage,
+      sourceLanguage: languages.find(obj => obj.lc === sourceLanguage),
+      targetLanguage: languages.find(obj => obj.lc === targetLanguage),
       sourceFiles: usfmFiles,
       targetFiles: targetUsfmFiles,
       location: projectLocation,

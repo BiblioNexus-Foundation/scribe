@@ -6,4 +6,5 @@ export interface ProjectServer extends RpcServer<void> {
   validateUSFM(data: string): Promise<{success: boolean, message: string}>;
   sayHelloTo(name: string): Promise<string>;
   saveToFile(data: any, filename: string): Promise<boolean>;
+  getProjectDirectory(): Promise<string>;
 }
