@@ -1,7 +1,7 @@
-import * as React from "@theia/core/shared/react";
-import { useState, useEffect } from "react";
-import ChapterReading from "./ChapterReading";
-import BibleNavigation from "bcv-navigator/lib/browser/components/BibleNavigation";
+import * as React from '@theia/core/shared/react';
+import { useState, useEffect } from 'react';
+import ChapterReading from './ChapterReading';
+import BibleNavigation from 'bcv-navigator/lib/browser/components/BibleNavigation';
 
 interface BibleNavState {
   book_abbr: string;
@@ -57,25 +57,25 @@ const AudioComponents: React.FC = () => {
         // scope={myScope}
       />
 
-      <div className="bg-[var(--theia-editor-background)]">
+      <div className='bg-[var(--theia-editor-background)]'>
         {currentNav && (
           <ChapterReading
-            version="NLT"
+            version='NLT'
             chapterName={currentNav.book_name}
             verse={currentNav.chapter.toString()}
-            scripture="John the Baptist Prepares the Way
+            scripture='John the Baptist Prepares the Way
 1 This is the Good News about Jesus the Messiah, the Son of God. It began 2
-just as the prophet Isaiah had written:
-&quot;Look, I am sending my messenger ahead of you,
+just as the prophet Isaiah had written:asdfasdf
+"Look, I am sending my messenger ahead of you,
 and he will prepare your way.
 3 He is a voice shouting in the wilderness,
-'Prepare the way for the Lord's coming!
-Clear the road for him!&quot;
+&apos;Prepare the way for the Lord&apos;s coming!
+Clear the road for him!"
 4 This messenger was John the Baptist. He was in the wilderness and
 preached that people should be baptized to show that they had repented of
 their sins and turned to God to be forgiven. 5 All of Judea, including all the
 people of Jerusalem, went out to see and hear John. And when they
-        confessed their sins, he baptized them in the Jordan River."
+        confessed their sins, he baptized them in the Jordan River.'
           />
         )}
       </div>

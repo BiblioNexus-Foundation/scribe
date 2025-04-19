@@ -78,58 +78,58 @@ export default function LexicalEditor({
     },
   };
 
-  // Initialize from VerseRefUtils if available
-  useEffect(() => {
-    if (verseRefUtils) {
-      verseRefUtils.getVerseRef().then((verseRef: VerseRefValue) => {
-        setScrRef({
-          book: verseRef.book as BookCode,
-          chapterNum: verseRef.chapter,
-          verseNum: verseRef.verse,
-        });
-      });
-
-      // Listen for verse reference changes
-      verseRefUtils.onVerseRefChange((verseRef: VerseRefValue) => {
-        console.log('VerseRef changed', verseRef);
-        setScrRef({
-          book: verseRef.book as BookCode,
-          chapterNum: verseRef.chapter,
-          verseNum: verseRef.verse,
-        });
-      });
-    }
-  }, [verseRefUtils]);
-
-  // // Update VerseRefUtils when scrRef changes
+  // // Initialize from VerseRefUtils if available
   // useEffect(() => {
+  //   if (verseRefUtils) {
+  //     verseRefUtils.getVerseRef().then((verseRef: VerseRefValue) => {
+  //       setScrRef({
+  //         book: verseRef.book as BookCode,
+  //         chapterNum: verseRef.chapter,
+  //         verseNum: verseRef.verse,
+  //       });
+  //     });
+
+  //     // Listen for verse reference changes
+  //     verseRefUtils.onVerseRefChange((verseRef: VerseRefValue) => {
+  //       console.log('VerseRef changed', verseRef);
+  //       setScrRef({
+  //         book: verseRef.book as BookCode,
+  //         chapterNum: verseRef.chapter,
+  //         verseNum: verseRef.verse,
+  //       });
+  //     });
+  //   }
+  // }, [verseRefUtils]);
+
+  // // // Update VerseRefUtils when scrRef changes
+  // // useEffect(() => {
+  // //   if (verseRefUtils && scrRef) {
+  // //     verseRefUtils.setVerseRef({
+  // //       book: scrRef.bookCode,
+  // //       chapter: scrRef.chapterNum,
+  // //       verse: scrRef.verseNum,
+  // //     });
+  // //   }
+  // // }, [scrRef, verseRefUtils]);
+  // useEffect(() => {
+  //   console.log('scrRef changed', scrRef);
   //   if (verseRefUtils && scrRef) {
-  //     verseRefUtils.setVerseRef({
-  //       book: scrRef.bookCode,
-  //       chapter: scrRef.chapterNum,
-  //       verse: scrRef.verseNum,
+  //     // Get current verse ref and compare before updating
+  //     verseRefUtils.getVerseRef().then((currentVerseRef) => {
+  //       if (
+  //         currentVerseRef.book !== scrRef.book ||
+  //         currentVerseRef.chapter !== scrRef.chapterNum ||
+  //         currentVerseRef.verse !== scrRef.verseNum
+  //       ) {
+  //         verseRefUtils.setVerseRef({
+  //           book: scrRef.book,
+  //           chapter: scrRef.chapterNum,
+  //           verse: scrRef.verseNum,
+  //         });
+  //       }
   //     });
   //   }
   // }, [scrRef, verseRefUtils]);
-  useEffect(() => {
-    console.log('scrRef changed', scrRef);
-    if (verseRefUtils && scrRef) {
-      // Get current verse ref and compare before updating
-      verseRefUtils.getVerseRef().then((currentVerseRef) => {
-        if (
-          currentVerseRef.book !== scrRef.book ||
-          currentVerseRef.chapter !== scrRef.chapterNum ||
-          currentVerseRef.verse !== scrRef.verseNum
-        ) {
-          verseRefUtils.setVerseRef({
-            book: scrRef.book,
-            chapter: scrRef.chapterNum,
-            verse: scrRef.verseNum,
-          });
-        }
-      });
-    }
-  }, [scrRef, verseRefUtils]);
 
   useEffect(() => {
     if (usjInput) {
@@ -178,11 +178,6 @@ export default function LexicalEditor({
     }
   }, [focusEditor]);
 
-  const handleScrRefChange = (newScrRef: ScriptureReference) => {
-    setScrRef(newScrRef);
-    console.log('ScrRef changed', { newScrRef });
-  };
-
   return (
     <div className='lexical-editor-container'>
       <div className='editor-wrapper p-4 text-gray-600'>
@@ -193,8 +188,8 @@ export default function LexicalEditor({
           viewOptions={viewOptions}
           nodeOptions={nodeOptions}
           scrRef={scrRef}
-          // setScrRef={handleScrRefChange}
           setScrRef={setScrRef}
+          readOnly={false}
         />
       </div>
     </div>

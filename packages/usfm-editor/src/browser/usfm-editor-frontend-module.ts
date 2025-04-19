@@ -2,6 +2,8 @@ import { ContainerModule } from '@theia/core/shared/inversify';
 import '../../src/browser/style/usfm-editor.css';
 import '../../src/browser/style/nodes-menu.css';
 import '../../src/browser/style/Modal.css';
+import '../../src/browser/style/BCVSelector.css';
+import '../../src/browser/style/Toolbar.css';
 import {
   OpenHandler,
   WidgetFactory,

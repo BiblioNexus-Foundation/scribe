@@ -9,7 +9,7 @@
     "src"
   ],
   "dependencies": {
-    "@biblionexus-foundation/scribe-editor": "0.1.2-scribe-v2",
+    "@biblionexus-foundation/scribe-editor": "0.1.2-scribe-v3-dev",
     "@biblionexus-foundation/scripture-utilities": "^0.0.7",
     "@scribe/theia-utils": "0.0.1",
     "@theia/core": "1.57.0",

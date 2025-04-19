@@ -1,0 +1,158 @@
+/* BCVSelector.css */
+
+.bcv-selector {
+  position: relative;
+  display: inline-block;
+}
+
+.bcv-selector-button {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  min-width: 120px;
+}
+
+.bcv-selector-button:hover {
+  background-color: #f5f5f5;
+}
+
+.bcv-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  z-index: 1001;
+  border: 1px solid #ddd;
+}
+
+.bcv-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.bcv-dropdown-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.bcv-close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.bcv-tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.bcv-tab {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.bcv-tab.active {
+  border-bottom: 2px solid #06b6d4;
+  color: #06b6d4;
+}
+
+.bcv-books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+  padding: 16px;
+}
+
+.bcv-book-button {
+  padding: 8px;
+  background-color: #f5f5f5;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: center;
+}
+
+.bcv-book-button:hover:not(:disabled) {
+  background-color: #e0f7fa;
+  border-color: #06b6d4;
+}
+
+.bcv-book-button.selected {
+  background-color: #06b6d4;
+  color: white;
+  border-color: #06b6d4;
+}
+
+.bcv-book-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bcv-chapters-container {
+  padding: 16px;
+}
+
+.bcv-chapters-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.bcv-back-button {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  color: #06b6d4;
+  cursor: pointer;
+  padding: 0;
+  margin-right: 16px;
+}
+
+.bcv-book-title {
+  margin: 0;
+  font-size: 16px;
+}
+
+.bcv-chapters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  gap: 8px;
+}
+
+.bcv-chapter-button {
+  padding: 8px;
+  background-color: #f5f5f5;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: center;
+}
+
+.bcv-chapter-button:hover {
+  background-color: #e0f7fa;
+  border-color: #06b6d4;
+}

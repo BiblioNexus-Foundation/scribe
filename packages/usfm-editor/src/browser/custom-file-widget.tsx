@@ -16,7 +16,7 @@ import LexicalEditor from './lexical-editor';
 import { Saveable, SaveOptions } from '@theia/core/lib/browser';
 import { Emitter, Event } from '@theia/core';
 import { Usj } from '@biblionexus-foundation/scripture-utilities';
-import { VerseRefUtils } from '@scribe/theia-utils/lib/browser';
+import { VerseRefUtils, VerseRefValue } from '@scribe/theia-utils/lib/browser';
 
 @injectable()
 export class CustomFileWidget extends ReactWidget implements Saveable {
@@ -26,6 +26,9 @@ export class CustomFileWidget extends ReactWidget implements Saveable {
   onDirtyChanged: Event<void> = this.onDirtyChangedEmitter.event;
   onContentChanged: Event<void> = this.onContentChangedEmitter.event;
   autosave: 'off';
+
+  // Add tracking for verse ref changes
+  private lastVerseRef: VerseRefValue | null = null;
 
   async save(options?: SaveOptions): Promise<void> {
     if (this.currentUsj && this.uri) {
@@ -65,6 +68,36 @@ export class CustomFileWidget extends ReactWidget implements Saveable {
     this.id = CustomFileWidget.ID;
     this.title.closable = true;
     this.update();
+
+    // Set up monitoring for verse ref changes
+    this.setupVerseRefMonitoring();
+  }
+
+  private setupVerseRefMonitoring(): void {
+    if (this.verseRefUtils) {
+      // Get initial verse ref
+      this.verseRefUtils.getVerseRef().then((verseRef) => {
+        this.lastVerseRef = verseRef;
+        console.log('Initial verse ref:', verseRef);
+      });
+
+      // Listen for verse ref changes
+      this.verseRefUtils.onVerseRefChange((verseRef) => {
+        // Check if this was an editor-initiated change
+        const wasExternalChange =
+          !this.lastVerseRef ||
+          this.lastVerseRef.book !== verseRef.book ||
+          this.lastVerseRef.chapter !== verseRef.chapter ||
+          this.lastVerseRef.verse !== verseRef.verse;
+
+        // Update our tracking
+        this.lastVerseRef = verseRef;
+
+        if (!wasExternalChange) {
+          console.log('Editor updated the verse reference to:', verseRef);
+        }
+      });
+    }
   }
 
   public async setUri(uri: URI): Promise<void> {
