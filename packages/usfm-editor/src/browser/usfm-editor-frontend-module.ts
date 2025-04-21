@@ -4,6 +4,7 @@ import '../../src/browser/style/nodes-menu.css';
 import '../../src/browser/style/Modal.css';
 import '../../src/browser/style/BCVSelector.css';
 import '../../src/browser/style/Toolbar.css';
+import '../../src/browser/style/missing-book.css';
 import {
   OpenHandler,
   WidgetFactory,
@@ -25,6 +26,7 @@ import { CommandContribution } from '@theia/core';
 import { LexicalEditorKeybindingContribution } from './lexical-editor-keybinding-contribution';
 import { LexicalEditorKeybindingContext } from './lexical-editor-keybinding-context';
 import { KeybindingContext } from '@theia/core/lib/browser';
+import { EditorStartupContribution } from './editor-startup-contribution';
 
 export const Saveable = Symbol('Saveable');
 export default new ContainerModule((bind) => {
@@ -60,4 +62,10 @@ export default new ContainerModule((bind) => {
   // Add these lines to bind the keybinding context
   bind(LexicalEditorKeybindingContext).toSelf().inSingletonScope();
   bind(KeybindingContext).to(LexicalEditorKeybindingContext).inSingletonScope();
+
+  // Bind the new startup contribution
+  bind(EditorStartupContribution).toSelf().inSingletonScope();
+  bind(FrontendApplicationContribution)
+    .to(EditorStartupContribution)
+    .inSingletonScope();
 });

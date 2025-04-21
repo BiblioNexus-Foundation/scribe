@@ -1,5 +1,9 @@
 import * as React from '@theia/core/shared/react';
-import { BookCode, Usj } from '@biblionexus-foundation/scripture-utilities';
+import {
+  BookCode,
+  MarkerObject,
+  Usj,
+} from '@biblionexus-foundation/scripture-utilities';
 
 import {
   Editor,
@@ -33,7 +37,7 @@ const defaultUsj: Usj = {
   content: [],
 };
 const defaultScrRef: ScriptureReference = {
-  book: 'PSA',
+  book: 'GEN',
   chapterNum: 1,
   verseNum: 1,
 };
@@ -55,15 +59,18 @@ export default function LexicalEditor({
   isDirty,
   onUsjUpdate,
   verseRefUtils,
+  readOnly = false,
 }: {
   usjInput?: Usj;
   isDirty?: boolean;
   onDirtyChangedEmitter?: Emitter<void>;
   onUsjUpdate?: (usj: Usj) => void;
   verseRefUtils?: VerseRefUtils;
+  readOnly?: boolean;
 }) {
   const [usj, setUsj] = useState<Usj>(defaultUsj);
   const editorRef = useRef<EditorRef>(null);
+  const [currentBookId, setCurrentBookId] = useState<string | null>(null);
 
   const [scrRef, setScrRef] = useState(defaultScrRef);
   const [lexicalScrRef, setLexicalScrRef] = useState(defaultScrRef);
@@ -78,64 +85,85 @@ export default function LexicalEditor({
     },
   };
 
-  // // Initialize from VerseRefUtils if available
-  // useEffect(() => {
-  //   if (verseRefUtils) {
-  //     verseRefUtils.getVerseRef().then((verseRef: VerseRefValue) => {
-  //       setScrRef({
-  //         book: verseRef.book as BookCode,
-  //         chapterNum: verseRef.chapter,
-  //         verseNum: verseRef.verse,
-  //       });
-  //     });
+  // Initialize from VerseRefUtils if available
+  useEffect(() => {
+    if (verseRefUtils) {
+      verseRefUtils.getVerseRef().then((verseRef: VerseRefValue) => {
+        setScrRef({
+          book: verseRef.book as BookCode,
+          chapterNum: verseRef.chapter,
+          verseNum: verseRef.verse,
+        });
 
-  //     // Listen for verse reference changes
-  //     verseRefUtils.onVerseRefChange((verseRef: VerseRefValue) => {
-  //       console.log('VerseRef changed', verseRef);
-  //       setScrRef({
-  //         book: verseRef.book as BookCode,
-  //         chapterNum: verseRef.chapter,
-  //         verseNum: verseRef.verse,
-  //       });
-  //     });
-  //   }
-  // }, [verseRefUtils]);
+        setCurrentBookId(verseRef.book);
+      });
+    }
+  }, [verseRefUtils]);
 
-  // // // Update VerseRefUtils when scrRef changes
-  // // useEffect(() => {
-  // //   if (verseRefUtils && scrRef) {
-  // //     verseRefUtils.setVerseRef({
-  // //       book: scrRef.bookCode,
-  // //       chapter: scrRef.chapterNum,
-  // //       verse: scrRef.verseNum,
-  // //     });
-  // //   }
-  // // }, [scrRef, verseRefUtils]);
-  // useEffect(() => {
-  //   console.log('scrRef changed', scrRef);
-  //   if (verseRefUtils && scrRef) {
-  //     // Get current verse ref and compare before updating
-  //     verseRefUtils.getVerseRef().then((currentVerseRef) => {
-  //       if (
-  //         currentVerseRef.book !== scrRef.book ||
-  //         currentVerseRef.chapter !== scrRef.chapterNum ||
-  //         currentVerseRef.verse !== scrRef.verseNum
-  //       ) {
-  //         verseRefUtils.setVerseRef({
-  //           book: scrRef.book,
-  //           chapter: scrRef.chapterNum,
-  //           verse: scrRef.verseNum,
-  //         });
-  //       }
-  //     });
-  //   }
-  // }, [scrRef, verseRefUtils]);
+  // Update scrRef when verse reference changes (but only on chapter/verse changes within same book)
+  useEffect(() => {
+    if (verseRefUtils) {
+      const verseChangeListener = (verseRef: VerseRefValue) => {
+        console.log('VerseRef changed in editor component', verseRef);
+
+        // If the book hasn't changed, update the scrRef
+        if (verseRef.book === currentBookId) {
+          setScrRef({
+            book: verseRef.book as BookCode,
+            chapterNum: verseRef.chapter,
+            verseNum: verseRef.verse,
+          });
+        } else {
+          // Book has changed, update our tracking
+          setCurrentBookId(verseRef.book);
+        }
+      };
+
+      // Add the listener
+      let disposable: { dispose: () => void } | undefined;
+      verseRefUtils.onVerseRefChange(verseChangeListener);
+
+      // Clean up the listener when component unmounts
+      return () => {
+        // No need to call dispose since onVerseRefChange doesn't return a disposable
+      };
+    }
+  }, [verseRefUtils, currentBookId]);
+
+  // Update VerseRefUtils when scrRef changes from editor interaction
+  useEffect(() => {
+    console.log('scrRef changed in editor', scrRef);
+    if (verseRefUtils && scrRef) {
+      console.log('Updating VerseRefUtils', scrRef);
+      // Only update if this is a change within the same book
+      verseRefUtils.getVerseRef().then((currentVerseRef) => {
+        if (
+          currentVerseRef.chapter !== scrRef.chapterNum ||
+          currentVerseRef.verse !== scrRef.verseNum
+        ) {
+          verseRefUtils.setVerseRef({
+            book: scrRef.book,
+            chapter: scrRef.chapterNum,
+            verse: scrRef.verseNum,
+          });
+        }
+      });
+    }
+  }, [scrRef, verseRefUtils, currentBookId]);
 
   useEffect(() => {
     if (usjInput) {
       console.log('Setting usjInput', usjInput);
       setUsj(usjInput);
-      isDirty = false;
+
+      // Extract book ID from USJ if available
+      const bookMarker = usjInput.content.find(
+        (item) => typeof item !== 'string' && item.type === 'book' && item.code
+      ) as MarkerObject | undefined;
+
+      if (bookMarker?.code) {
+        setCurrentBookId(bookMarker.code);
+      }
     }
   }, [usjInput]);
 
@@ -164,6 +192,9 @@ export default function LexicalEditor({
     }
   }, [editorRef]);
 
+  const navScope = {
+    availableBooks: new Set(['GEN', 'JHN', 'HAB', 'PSA']),
+  };
   // Expose the focus method to parent components
   useEffect(() => {
     // Make the focus method available to the parent DOM element
@@ -189,7 +220,8 @@ export default function LexicalEditor({
           nodeOptions={nodeOptions}
           scrRef={scrRef}
           setScrRef={setScrRef}
-          readOnly={false}
+          readOnly={readOnly}
+          scope={navScope}
         />
       </div>
     </div>

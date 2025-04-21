@@ -1,10 +1,10 @@
-import { injectable } from "@theia/core/shared/inversify";
-import { MenuModelRegistry } from "@theia/core";
-import { UsfmEditorWidget } from "./usfm-editor-widget";
-import { AbstractViewContribution } from "@theia/core/lib/browser";
-import { Command, CommandRegistry } from "@theia/core/lib/common/command";
+import { injectable } from '@theia/core/shared/inversify';
+import { MenuModelRegistry } from '@theia/core';
+import { UsfmEditorWidget } from './usfm-editor-widget';
+import { AbstractViewContribution } from '@theia/core/lib/browser';
+import { Command, CommandRegistry } from '@theia/core/lib/common/command';
 
-export const UsfmEditorCommand: Command = { id: "usfm-editor:command" };
+export const UsfmEditorCommand: Command = { id: 'usfm-editor:command' };
 
 @injectable()
 export class UsfmEditorContribution extends AbstractViewContribution<UsfmEditorWidget> {
@@ -20,7 +20,7 @@ export class UsfmEditorContribution extends AbstractViewContribution<UsfmEditorW
     super({
       widgetId: UsfmEditorWidget.ID,
       widgetName: UsfmEditorWidget.LABEL,
-      defaultWidgetOptions: { area: "left" },
+      defaultWidgetOptions: { area: 'left' },
       toggleCommandId: UsfmEditorCommand.id,
     });
   }

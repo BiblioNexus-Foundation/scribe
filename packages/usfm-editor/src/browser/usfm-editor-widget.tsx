@@ -1,17 +1,31 @@
-import * as React from "react";
-import { injectable, postConstruct, inject } from "@theia/core/shared/inversify";
-import { AlertMessage } from "@theia/core/lib/browser/widgets/alert-message";
-import { ReactWidget } from "@theia/core/lib/browser/widgets/react-widget";
-import { MessageService } from "@theia/core";
-import { Message } from "@theia/core/lib/browser";
+import * as React from 'react';
+import {
+  injectable,
+  postConstruct,
+  inject,
+} from '@theia/core/shared/inversify';
+import { ReactWidget } from '@theia/core/lib/browser/widgets/react-widget';
+import { MessageService } from '@theia/core';
+import { Message } from '@theia/core/lib/browser';
+import { Emitter } from '@theia/core';
+import { Usj } from '@biblionexus-foundation/scripture-utilities';
+import LexicalEditor from './lexical-editor';
+import { VerseRefUtils } from '@scribe/theia-utils/lib/browser';
 
 @injectable()
 export class UsfmEditorWidget extends ReactWidget {
-  static readonly ID = "usfm-editor:widget";
-  static readonly LABEL = "UsfmEditor Widget";
+  static readonly ID = 'usfm-editor:widget';
+  static readonly LABEL = 'USFM Editor';
 
   @inject(MessageService)
   protected readonly messageService!: MessageService;
+
+  @inject(VerseRefUtils)
+  protected readonly verseRefUtils!: VerseRefUtils;
+
+  protected usj: Usj | undefined;
+  protected isDirty = false;
+  protected readonly onDirtyChangedEmitter = new Emitter<void>();
 
   @postConstruct()
   protected init(): void {
@@ -23,36 +37,66 @@ export class UsfmEditorWidget extends ReactWidget {
     this.title.label = UsfmEditorWidget.LABEL;
     this.title.caption = UsfmEditorWidget.LABEL;
     this.title.closable = true;
-    this.title.iconClass = "fa fa-window-maximize"; // example widget icon.
+    this.title.iconClass = 'fa fa-book'; // Bible/book icon
+
+    // Initialize with default USJ
+    this.usj = {
+      type: 'USJ',
+      version: '3.1',
+      content: [],
+    };
+
     this.update();
+    this.open();
   }
 
   render(): React.ReactElement {
-    const header = `This is a sample widget which simply calls the messageService
-        in order to display an info message to end users.`;
     return (
-      <div id="widget-container">
-        <AlertMessage type="INFO" header={header} />
-        <button
-          id="displayMessageButton"
-          className="theia-button secondary"
-          title="Display Message"
-          onClick={(_a) => this.displayMessage()}>
-          Display Message
-        </button>
+      <div id='usfm-editor-container' className='usfm-editor-container'>
+        <LexicalEditor
+          usjInput={this.usj}
+          isDirty={this.isDirty}
+          onDirtyChangedEmitter={this.onDirtyChangedEmitter}
+          onUsjUpdate={this.handleUsjUpdate}
+          verseRefUtils={this.verseRefUtils}
+        />
       </div>
     );
   }
 
-  protected displayMessage(): void {
-    this.messageService.info("Congratulations: UsfmEditor Widget Successfully Created!");
-  }
+  protected handleUsjUpdate = (newUsj: Usj): void => {
+    this.usj = newUsj;
+    this.isDirty = true;
+    this.onDirtyChangedEmitter.fire();
+  };
 
   protected onActivateRequest(msg: Message): void {
     super.onActivateRequest(msg);
-    const htmlElement = document.getElementById("displayMessageButton");
-    if (htmlElement) {
-      htmlElement.focus();
+    const editorContainer = document.getElementById('usfm-editor-container');
+    if (editorContainer) {
+      editorContainer.focus();
     }
+  }
+
+  // Method to load USJ content
+  public loadContent(usj: Usj): void {
+    this.usj = usj;
+    this.isDirty = false;
+    this.update();
+  }
+
+  // Method to get current USJ content
+  public getContent(): Usj | undefined {
+    return this.usj;
+  }
+
+  // Method to check if content has been modified
+  public isDirtyContent(): boolean {
+    return this.isDirty;
+  }
+
+  // Add a method to open the widget
+  public open(): void {
+    this.activate();
   }
 }
