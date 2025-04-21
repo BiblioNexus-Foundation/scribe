@@ -1,9 +1,5 @@
 import * as React from "@theia/core/shared/react";
-import {
-  inject,
-  injectable,
-  postConstruct,
-} from "@theia/core/shared/inversify";
+import { inject, injectable, postConstruct } from "@theia/core/shared/inversify";
 import { ReactWidget } from "@theia/core/lib/browser/widgets/react-widget";
 import {
   AbstractViewContribution,
@@ -49,18 +45,18 @@ export class ChatWidget extends ReactWidget {
   render(): React.ReactNode {
     return (
       <div className="bg-[var(--theia-editor-background)]">
-        <ScrollArea className="w-full h-full overflow-y-auto bg-[var(--theia-editor-background)] pb-2">
+        <ScrollArea className="h-full w-full overflow-y-auto bg-[var(--theia-editor-background)] pb-2">
           <ScrollBar orientation="vertical" />
 
-          <div className="flex items-center sticky bg-[var(--theia-editor-background)]  top-0 z-20 gap-[5px] border-b py-2.5 px-2 border-[rgb(250 250 250 / 0.1)] justify-center">
+          <div className="border-[rgb(250 250 250 / 0.1)] sticky top-0 z-20 flex items-center justify-center gap-[5px] border-b bg-[var(--theia-editor-background)] px-2 py-2.5">
             <Button
               label="Discuss"
-              className="dark:border-cyan-900 bg-cyan-100 hover:bg-cyan-200 dark:bg-cyan-950  border-cyan-300 text-cyan-700"
-              />
+              className="border-cyan-300 bg-cyan-100 text-cyan-700 hover:bg-cyan-200 dark:border-cyan-900 dark:bg-cyan-950"
+            />
             <Button label="Suggest" />
             <Button label="Checks" />
           </div>
-          <div className="space-y-2.5   px-5 py-2.5">
+          <div className="space-y-2.5 px-5 py-2.5">
             <QuestionCard isAudio />
             <QuestionCard isImage />
             <QuestionCard />
@@ -69,37 +65,24 @@ export class ChatWidget extends ReactWidget {
             <QuestionCard />
             <QuestionCard />
 
-            <div className=" absolute bottom-0 pt-4 pb-[11px] bg-[var(rgb(245 245 245 / 0.4))] w-full left-0 px-5">
+            <div className="bg-[var(rgb(245 245 245 / 0.4))] absolute bottom-0 left-0 w-full px-5 pb-[11px] pt-4">
               <div className="relative">
-                <Textarea
-                  className="h-20"
-                  placeholder="Ask AI Bot some questions"
-                />
-                <div className="flex absolute bottom-2.5 right-2.5 items-center gap-2.5">
+                <Textarea className="h-20" placeholder="Ask AI Bot some questions" />
+                <div className="absolute bottom-2.5 right-2.5 flex items-center gap-2.5">
                   <Button
                     size="icon"
-                    className="dark:bg-cyan-500 bg-cyan-400 hover:bg-cyan-500 dark:hover:bg-cyan-400 text-zinc-800 dark:text-black  dark:border-cyan-700"
-                    icon={
-                      <IconPhoto size={12} stroke={2} strokeLinejoin="miter" />
-                    }
+                    className="bg-cyan-400 text-zinc-800 hover:bg-cyan-500 dark:border-cyan-700 dark:bg-cyan-500 dark:text-black dark:hover:bg-cyan-400"
+                    icon={<IconPhoto size={12} stroke={2} strokeLinejoin="miter" />}
                   />
                   <Button
                     size="icon"
-                    className="dark:bg-cyan-500 bg-cyan-400 hover:bg-cyan-500 dark:hover:bg-cyan-400 text-zinc-800 dark:text-black  dark:border-cyan-700"
-                    icon={
-                      <IconMicrophone
-                        size={12}
-                        stroke={2}
-                        strokeLinejoin="miter"
-                      />
-                    }
+                    className="bg-cyan-400 text-zinc-800 hover:bg-cyan-500 dark:border-cyan-700 dark:bg-cyan-500 dark:text-black dark:hover:bg-cyan-400"
+                    icon={<IconMicrophone size={12} stroke={2} strokeLinejoin="miter" />}
                   />
                   <Button
                     size="icon"
-                    className="dark:bg-cyan-500 bg-cyan-400 hover:bg-cyan-500 dark:hover:bg-cyan-400 text-zinc-800 dark:text-black  dark:border-cyan-700"
-                    icon={
-                      <IconPhoto size={12} stroke={2} strokeLinejoin="miter" />
-                    }
+                    className="bg-cyan-400 text-zinc-800 hover:bg-cyan-500 dark:border-cyan-700 dark:bg-cyan-500 dark:text-black dark:hover:bg-cyan-400"
+                    icon={<IconPhoto size={12} stroke={2} strokeLinejoin="miter" />}
                   />
                 </div>
               </div>

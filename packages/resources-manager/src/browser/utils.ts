@@ -17,9 +17,7 @@ export class ResourceManagerUtils {
   @inject(FileService)
   protected readonly fileService: FileService;
 
-  addDownloadedResourceToProjectConfig = async (
-    resource: ConfigResourceValues
-  ) => {
+  addDownloadedResourceToProjectConfig = async (resource: ConfigResourceValues) => {
     const roots = await this.workspaceService.roots;
 
     const projectURI = roots[0].resource;
@@ -48,23 +46,15 @@ export class ResourceManagerUtils {
     const configDownloadedResources = config.resources ?? [];
 
     if (configDownloadedResources.some((r: any) => r.id === resource.id)) {
-      this.messageService.info(
-        `Resource ${resource.name} already exists in the project!`
-      );
+      this.messageService.info(`Resource ${resource.name} already exists in the project!`);
       return;
     }
 
-    const newConfigDownloadedResources = [
-      ...configDownloadedResources,
-      resource,
-    ];
+    const newConfigDownloadedResources = [...configDownloadedResources, resource];
 
     config.resources = newConfigDownloadedResources;
 
-    await this.fileService.write(
-      configFileUri,
-      JSON.stringify(config, null, 2)
-    );
+    await this.fileService.write(configFileUri, JSON.stringify(config, null, 2));
   };
 
   getDownloadedResourcesFromProjectConfig = async () => {

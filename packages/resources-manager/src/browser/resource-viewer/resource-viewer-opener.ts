@@ -1,9 +1,6 @@
 import { ApplicationShell, WidgetManager } from "@theia/core/lib/browser";
 import { inject, injectable } from "@theia/core/shared/inversify";
-import {
-  ResourceViewerWidget,
-  ResourceViewerWidgetHandlers,
-} from "./resource-viewer-widget";
+import { ResourceViewerWidget, ResourceViewerWidgetHandlers } from "./resource-viewer-widget";
 import { ConfigResourceValues } from "../resources/types";
 
 @injectable()
@@ -18,10 +15,10 @@ export class ResourceViewerOpener {
     resource: ConfigResourceValues,
     handlers: ResourceViewerWidgetHandlers<TData>
   ): Promise<void> {
-    const widget = await this.widgetManager.getOrCreateWidget(
-      ResourceViewerWidget.FACTORY_ID,
-      { resource, handlers }
-    );
+    const widget = await this.widgetManager.getOrCreateWidget(ResourceViewerWidget.FACTORY_ID, {
+      resource,
+      handlers,
+    });
 
     await this.shell.addWidget(widget, {
       area: "main",

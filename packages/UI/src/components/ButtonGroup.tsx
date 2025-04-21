@@ -1,11 +1,6 @@
 import React from "@theia/core/shared/react";
 import Button from "./Button"; // Adjust the import path as necessary
-import {
-  IconMicrophone,
-  IconPhoto,
-  IconMapPin,
-  IconVideo,
-} from "@tabler/icons-react";
+import { IconMicrophone, IconPhoto, IconMapPin, IconVideo } from "@tabler/icons-react";
 
 interface ButtonConfig {
   icon?: any;
@@ -98,8 +93,7 @@ const buttonGroups = [
   [
     {
       icon: <IconVideo size={12} stroke={2} strokeLinejoin="miter" />,
-      className:
-        "dark:bg-zinc-900 rounded-lg bg-zinc-300 hover:bg-zinc-400 dark:hover:bg-zinc-800",
+      className: "dark:bg-zinc-900 rounded-lg bg-zinc-300 hover:bg-zinc-400 dark:hover:bg-zinc-800",
     },
     {
       icon: <IconMicrophone size={12} stroke={2} strokeLinejoin="miter" />,

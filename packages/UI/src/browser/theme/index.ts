@@ -1,8 +1,4 @@
-import {
-  inject,
-  injectable,
-  postConstruct,
-} from "@theia/core/shared/inversify";
+import { inject, injectable, postConstruct } from "@theia/core/shared/inversify";
 import { MonacoThemingService } from "@theia/monaco/lib/browser/monaco-theming-service";
 
 @injectable()

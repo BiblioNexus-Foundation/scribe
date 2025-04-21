@@ -35,9 +35,7 @@ export default new ContainerModule((bind) => {
   bind(FileProcessorService)
     .toDynamicValue((ctx) => {
       const connection = ctx.container.get(WebSocketConnectionProvider);
-      return connection.createProxy<FileProcessorServiceInterface>(
-        FILE_PROCESSOR_PATH
-      );
+      return connection.createProxy<FileProcessorServiceInterface>(FILE_PROCESSOR_PATH);
     })
     .inSingletonScope();
 
@@ -49,8 +47,7 @@ export default new ContainerModule((bind) => {
   bind(WidgetFactory)
     .toDynamicValue((ctx) => ({
       id: BibleNavigatorWidget.ID,
-      createWidget: () =>
-        ctx.container.get<BibleNavigatorWidget>(BibleNavigatorWidget),
+      createWidget: () => ctx.container.get<BibleNavigatorWidget>(BibleNavigatorWidget),
     }))
     .inSingletonScope();
 });

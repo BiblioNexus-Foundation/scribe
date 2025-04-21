@@ -9,12 +9,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "bg-primary text-white hover:bg-[var(--theia-button-hoverBackground)]",
+        default: "bg-primary text-white hover:bg-[var(--theia-button-hoverBackground)]",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-[var(--theia-statusBarItem-errorBackground)]",
-        outline:
-          "border border-border bg-input hover:bg-[var(--theia-toolbar-hoverBackground)]",
+        outline: "border border-border bg-input hover:bg-[var(--theia-toolbar-hoverBackground)]",
         secondary:
           "bg-secondary hover:bg-[var(--theia-button-secondaryHoverBackground)] text-secondary-foreground",
         ghost: "hover:bg-accent hover:text-accent-foreground",
@@ -44,11 +42,7 @@ const Buttons = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
     return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      />
+      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
     );
   }
 );

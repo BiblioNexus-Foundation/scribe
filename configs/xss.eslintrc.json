@@ -8,14 +8,16 @@
   },
   "rules": {
     "no-unsanitized/method": [
-      "warn", {
+      "warn",
+      {
         "escape": {
           "methods": ["DOMPurify.sanitize"]
         }
       }
     ],
     "no-unsanitized/property": [
-      "warn", {
+      "warn",
+      {
         "escape": {
           "methods": ["DOMPurify.sanitize"]
         }
