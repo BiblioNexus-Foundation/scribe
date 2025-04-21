@@ -76,6 +76,8 @@ export class ProjectManagerWidget extends ReactWidget {
           onBack={this.goBackToWelcome}
           fileDialogService={this.fileDialogService}
           projectServer={this.projectServer}
+          workspaceServer={this.workspaceService}
+          onClose={this.closeWidget}
         />;
 
       case 'openProject':

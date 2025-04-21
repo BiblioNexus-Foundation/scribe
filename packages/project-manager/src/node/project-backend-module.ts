@@ -101,7 +101,7 @@ export class ProjectServiceBackend implements ProjectServer {
     return { id: output.content[0].code, usj: output, target: convertedData };
   }
 
-  async saveToFile(data: any): Promise<boolean> {
+  async saveToFile(data: any): Promise<{ status: boolean; path: string }> {
     try {
       const uuid = generateProjectUUID(data.name)
       const project = path.join(this.projectDir, `${data.name}-${uuid}`);
@@ -136,7 +136,7 @@ export class ProjectServiceBackend implements ProjectServer {
       // fs.writeFileSync(path.join(textTranslation, `metadata.json`), JSON.stringify(metadata, null, 2));
 
       this.logger.info(`Successfully saved file: ${textTranslation}`);
-      return true;
+      return { status: true, path: project };
     } catch (error) {
       this.logger.error(`Error saving file: ${error.message}`);
       throw new Error(`Failed to save file: ${error.message}`);

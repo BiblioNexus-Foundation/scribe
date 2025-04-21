@@ -8,6 +8,8 @@ interface NewProjectViewProps {
   onBack: () => void;
   fileDialogService?: FileDialogService;
   projectServer?: any;
+  workspaceServer?: any;
+  onClose: () => void;
 }
 
 interface ValidationItem {
@@ -27,7 +29,7 @@ interface FileValidationStatus {
   errorDescription?: string;
 }
 
-const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogService, projectServer }) => {
+const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogService, projectServer, workspaceServer, onClose }) => {
   const [projectLocation, setProjectLocation] = React.useState<string>("");
   const [usfmFiles, setUsfmFiles] = React.useState<string[]>([]);
   const [targetUsfmFiles, setTargetUsfmFiles] = React.useState<string[]>([]);
@@ -413,7 +415,7 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
     return errors.length === 0;
   };
 
-  const handleCreateProject = () => {
+  const handleCreateProject = async () => {
     if (!validateForm()) {
       return;
     }
@@ -437,8 +439,16 @@ const NewProjectView: React.FC<NewProjectViewProps> = ({ onBack, fileDialogServi
       location: projectLocation,
       licence
     };
-    projectServer.saveToFile(data, projectName)
-    alert("Project Created Successfully!!")
+    const result = await projectServer.saveToFile(data, projectName)
+    if (result.status) {
+      const uri = new URI(result.path);
+      workspaceServer.open(uri, {
+        preserveWindow: true
+      });
+      onClose();
+    } else {
+      alert("Project Creation Failed!!")
+    }
   };
 
   const toggleAdvancedOptions = () => {
