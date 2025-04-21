@@ -28,7 +28,6 @@ export class CustomFileWidget extends ReactWidget implements Saveable {
   onContentChanged: Event<void> = this.onContentChangedEmitter.event;
   autosave: 'off';
 
-  // Add tracking for verse ref changes
   private lastVerseRef: VerseRefValue | null = null;
 
   async save(options?: SaveOptions): Promise<void> {
@@ -70,28 +69,23 @@ export class CustomFileWidget extends ReactWidget implements Saveable {
     this.title.closable = true;
     this.update();
 
-    // Set up monitoring for verse ref changes
     this.setupVerseRefMonitoring();
   }
 
   private setupVerseRefMonitoring(): void {
     if (this.verseRefUtils) {
-      // Get initial verse ref
       this.verseRefUtils.getVerseRef().then((verseRef) => {
         this.lastVerseRef = verseRef;
         console.log('Initial verse ref:', verseRef);
       });
 
-      // Listen for verse ref changes
       this.verseRefUtils.onVerseRefChange((verseRef) => {
-        // Check if this was an editor-initiated change
         const wasExternalChange =
           !this.lastVerseRef ||
           this.lastVerseRef.book !== verseRef.book ||
           this.lastVerseRef.chapter !== verseRef.chapter ||
           this.lastVerseRef.verse !== verseRef.verse;
 
-        // Update our tracking
         this.lastVerseRef = verseRef;
 
         if (!wasExternalChange) {
@@ -105,7 +99,6 @@ export class CustomFileWidget extends ReactWidget implements Saveable {
     this.uri = uri;
     await this.getBookID();
 
-    // Update verse ref with book from filename if available
     if (this.bookId) {
       const currentVerseRef = await this.verseRefUtils.getVerseRef();
       if (currentVerseRef.book !== this.bookId) {
@@ -125,21 +118,17 @@ export class CustomFileWidget extends ReactWidget implements Saveable {
     this.update();
   }
 
-  // New method to set default content for non-existent books
   public async setDefaultContent(usj: Usj, uri: URI): Promise<void> {
     this.uri = uri;
     await this.getBookID();
 
-    // Set the processed content directly
     this.processedContent = usj;
     this.currentUsj = usj;
 
-    // Update title and caption
     const fileName = uri.path.base;
     this.title.label = fileName;
     this.title.caption = fileName;
 
-    // Update verse ref with book from filename if available
     if (this.bookId) {
       const currentVerseRef = await this.verseRefUtils.getVerseRef();
       if (currentVerseRef.book !== this.bookId) {
@@ -151,7 +140,6 @@ export class CustomFileWidget extends ReactWidget implements Saveable {
       }
     }
 
-    // Mark as dirty since this is a new file
     this.dirty = true;
     this.onDirtyChangedEmitter.fire(undefined);
 
@@ -179,7 +167,7 @@ export class CustomFileWidget extends ReactWidget implements Saveable {
   protected async parseContent(): Promise<void> {
     this.processedContent = JSON.parse(this.fileContent);
     console.log('Frontend: Processed content received');
-    this.dirty = false; // Set to false since we just loaded the file
+    this.dirty = false;
     this.onDirtyChangedEmitter.fire(undefined);
   }
 
@@ -223,7 +211,6 @@ export class CustomFileWidget extends ReactWidget implements Saveable {
     this.node.focus();
 
     setTimeout(() => {
-      // Try to find the lexical editor's editable area and focus it
       const editorElement = this.node.querySelector(
         '.lexical-editor-container .editor-wrapper'
       );

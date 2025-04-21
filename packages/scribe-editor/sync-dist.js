@@ -4,7 +4,7 @@ const path = require('path');
 
 // Source and target directories
 const sourceDir = '/home/samueljohn/projects/scripture-editors/packages/scribe/dist';
-const targetDir = '/home/samueljohn/projects/scribe-theia-main/packages/scribe-editor/lib';
+const targetDir = '/home/samueljohn/projects/scribe-theia-main/packages/scribe-editor/lexical-lib';
 
 // Make sure the target directory exists
 fs.ensureDirSync(targetDir);

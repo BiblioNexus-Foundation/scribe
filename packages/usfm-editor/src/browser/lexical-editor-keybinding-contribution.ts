@@ -22,39 +22,31 @@ export class LexicalEditorKeybindingContribution
 
   registerKeybindings(registry: KeybindingRegistry): void {
     const whenActiveEditor = "activeEditorId == 'custom-file-widget'";
-    // Register the standard editing shortcuts with higher priority
-    // This will effectively intercept them but do nothing, allowing them to pass through
-    // to the Lexical editor component
 
-    // Cut
     registry.registerKeybinding({
       command: LEXICAL_CUT_COMMAND.id,
       keybinding: 'ctrl+x',
       when: whenActiveEditor,
     });
 
-    // Copy
     registry.registerKeybinding({
       command: LEXICAL_COPY_COMMAND.id,
       keybinding: 'ctrl+c',
       when: whenActiveEditor,
     });
 
-    // Paste
     registry.registerKeybinding({
       command: LEXICAL_PASTE_COMMAND.id,
       keybinding: 'ctrl+v',
       when: whenActiveEditor,
     });
 
-    // Undo
     registry.registerKeybinding({
       command: LEXICAL_UNDO_COMMAND.id,
       keybinding: 'ctrl+z',
       when: whenActiveEditor,
     });
 
-    // Redo - support both common variants
     registry.registerKeybinding({
       command: LEXICAL_REDO_COMMAND.id,
       keybinding: 'ctrl+shift+z',
@@ -68,9 +60,7 @@ export class LexicalEditorKeybindingContribution
     });
   }
 
-  // We also need to register these commands with the CommandRegistry
   registerCommands(registry: CommandRegistry): void {
-    // Register no-op commands for all the keybindings
     registry.registerCommand(LEXICAL_CUT_COMMAND, {
       execute: () => {
         console.log('Intercepted shortcut: Cut (Ctrl+X)');

@@ -5,9 +5,7 @@ import {
 } from '@theia/core/shared/inversify';
 import { GlobalStateStorage } from './global-state-storage';
 import { URI } from '@theia/core';
-import {
-  Disposable,
-} from '@theia/core/lib/common/disposable';
+import { Disposable } from '@theia/core/lib/common/disposable';
 
 // FOR the documentation:
 const DEFAULT_VERSE_REF_URI = URI.fromComponents({

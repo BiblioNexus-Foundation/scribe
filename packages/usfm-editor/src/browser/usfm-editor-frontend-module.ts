@@ -27,6 +27,7 @@ import { LexicalEditorKeybindingContribution } from './lexical-editor-keybinding
 import { LexicalEditorKeybindingContext } from './lexical-editor-keybinding-context';
 import { KeybindingContext } from '@theia/core/lib/browser';
 import { EditorStartupContribution } from './editor-startup-contribution';
+import { ReadOnlyEditorWidget } from './readonly-editor-widget';
 
 export const Saveable = Symbol('Saveable');
 export default new ContainerModule((bind) => {
@@ -35,6 +36,15 @@ export default new ContainerModule((bind) => {
     .toDynamicValue((ctx) => ({
       id: CustomFileWidget.ID,
       createWidget: () => ctx.container.get<CustomFileWidget>(CustomFileWidget),
+    }))
+    .inSingletonScope();
+
+  bind(ReadOnlyEditorWidget).toSelf();
+  bind(WidgetFactory)
+    .toDynamicValue((ctx) => ({
+      id: ReadOnlyEditorWidget.ID,
+      createWidget: () =>
+        ctx.container.get<ReadOnlyEditorWidget>(ReadOnlyEditorWidget),
     }))
     .inSingletonScope();
 
@@ -50,7 +60,6 @@ export default new ContainerModule((bind) => {
 
   bind(Saveable).toService(CustomFileWidget);
 
-  // Bind the keybinding contribution
   bind(LexicalEditorKeybindingContribution).toSelf().inSingletonScope();
   bind(KeybindingContribution)
     .to(LexicalEditorKeybindingContribution)
@@ -59,11 +68,9 @@ export default new ContainerModule((bind) => {
     .to(LexicalEditorKeybindingContribution)
     .inSingletonScope();
 
-  // Add these lines to bind the keybinding context
   bind(LexicalEditorKeybindingContext).toSelf().inSingletonScope();
   bind(KeybindingContext).to(LexicalEditorKeybindingContext).inSingletonScope();
 
-  // Bind the new startup contribution
   bind(EditorStartupContribution).toSelf().inSingletonScope();
   bind(FrontendApplicationContribution)
     .to(EditorStartupContribution)

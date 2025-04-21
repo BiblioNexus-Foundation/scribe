@@ -35,31 +35,26 @@ export class ReadOnlyEditorWidget extends ReactWidget {
   protected init(): void {
     this.id = ReadOnlyEditorWidget.ID;
     this.title.closable = true;
-    this.title.iconClass = 'fa fa-book-reader'; // Different icon for source
+    this.title.iconClass = 'fa fa-book-reader';
     this.update();
 
-    // Set up monitoring for verse ref changes
     this.setupVerseRefMonitoring();
   }
 
   private setupVerseRefMonitoring(): void {
     if (this.verseRefUtils) {
-      // Get initial verse ref
       this.verseRefUtils.getVerseRef().then((verseRef) => {
         this.lastVerseRef = verseRef;
         console.log('ReadOnly: Initial verse ref:', verseRef);
       });
 
-      // Listen for verse ref changes
       this.verseRefUtils.onVerseRefChange((verseRef) => {
-        // Check if this was an editor-initiated change
         const wasExternalChange =
           !this.lastVerseRef ||
           this.lastVerseRef.book !== verseRef.book ||
           this.lastVerseRef.chapter !== verseRef.chapter ||
           this.lastVerseRef.verse !== verseRef.verse;
 
-        // Update our tracking
         this.lastVerseRef = verseRef;
 
         if (!wasExternalChange) {
@@ -73,7 +68,6 @@ export class ReadOnlyEditorWidget extends ReactWidget {
     this.uri = uri;
     await this.getBookID();
 
-    // Update verse ref with book from filename if available
     if (this.bookId) {
       const currentVerseRef = await this.verseRefUtils.getVerseRef();
       if (currentVerseRef.book !== this.bookId) {
@@ -93,21 +87,17 @@ export class ReadOnlyEditorWidget extends ReactWidget {
     this.update();
   }
 
-  // Method to set default content for non-existent books
   public async setDefaultContent(usj: Usj, uri: URI): Promise<void> {
     this.uri = uri;
     await this.getBookID();
 
-    // Set the processed content directly
     this.processedContent = usj;
     this.currentUsj = usj;
 
-    // Update title and caption
     const fileName = uri.path.base;
     this.title.label = `Source: ${fileName}`;
     this.title.caption = `Source: ${fileName}`;
 
-    // Update verse ref with book from filename if available
     if (this.bookId) {
       const currentVerseRef = await this.verseRefUtils.getVerseRef();
       if (currentVerseRef.book !== this.bookId) {
@@ -156,8 +146,6 @@ export class ReadOnlyEditorWidget extends ReactWidget {
   }
 
   handleUsjUpdate = (newUsj: Usj) => {
-    // This should not be called since the editor is read-only,
-    // but we keep it to maintain compatibility with LexicalEditor
     console.log('ReadOnly: Usj updated (unexpected)', newUsj);
     this.currentUsj = newUsj;
   };
@@ -184,7 +172,6 @@ export class ReadOnlyEditorWidget extends ReactWidget {
     this.node.focus();
 
     setTimeout(() => {
-      // Try to find the lexical editor's editable area and focus it
       const editorElement = this.node.querySelector(
         '.lexical-editor-container .editor-wrapper'
       );

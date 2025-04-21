@@ -1,4 +1,3 @@
-// src/browser/editor-startup-contribution.ts
 import { injectable, inject } from '@theia/core/shared/inversify';
 import {
   FrontendApplicationContribution,
@@ -8,7 +7,8 @@ import {
   ApplicationShell,
 } from '@theia/core/lib/browser';
 import {
-  PROJECT_LOCATION,
+  SOURCE_PROJECT_LOCATION,
+  TARGET_PROJECT_LOCATION,
   BOOK_FILE_EXTENSION,
   DEFAULT_BOOK_ID,
 } from '../utils/constants';
@@ -24,6 +24,7 @@ import {
   DisposableCollection,
 } from '@theia/core/lib/common/disposable';
 import { BookCode, Usj } from '@biblionexus-foundation/scripture-utilities';
+import { ReadOnlyEditorWidget } from './readonly-editor-widget';
 
 @injectable()
 export class EditorStartupContribution
@@ -48,37 +49,29 @@ export class EditorStartupContribution
   protected isChangingBook: boolean = false;
   protected toDispose = new DisposableCollection();
 
-  // Default USJ object for new books
-  protected defaultUsj: Usj = {
-    type: 'USJ',
-    version: '3.1',
-    content: [],
-  };
+  protected sourceWidget: ReadOnlyEditorWidget | null = null;
+  protected targetWidget: CustomFileWidget | null = null;
 
   onStart(app: FrontendApplication): MaybePromise<void> {
-    // Wait briefly for the IDE to fully initialize
     setTimeout(() => this.openEditorWithCurrentBook(), 1000);
   }
 
   onStop(): void {
-    // Clean up all event listeners when the application stops
     this.toDispose.dispose();
   }
 
   protected async openEditorWithCurrentBook(): Promise<void> {
     try {
-      // Get current verse reference
       const verseRef = await this.verseRefUtils.getVerseRef();
       console.log('Initial verse ref:', verseRef);
 
       let bookId = verseRef.book;
 
-      // If no book is set, try to find the first available book
       if (!bookId) {
         const availableBooks = await this.getAvailableBooks();
         if (availableBooks.length > 0) {
           bookId = availableBooks[0].name;
-          // Update verse ref with the first book
+
           await this.verseRefUtils.setVerseRef({
             book: bookId,
             chapter: 1,
@@ -89,10 +82,8 @@ export class EditorStartupContribution
         }
       }
 
-      // Open the book file
-      await this.openBookFile(bookId);
+      await this.openBookFiles(bookId);
 
-      // Set up listener for verse reference changes
       this.setupVerseRefListener();
     } catch (error) {
       console.error('Error opening editor on startup:', error);
@@ -101,7 +92,7 @@ export class EditorStartupContribution
 
   protected async getAvailableBooks(): Promise<FileStat[]> {
     try {
-      const projectUri = new URI(PROJECT_LOCATION);
+      const projectUri = new URI(TARGET_PROJECT_LOCATION);
       const projectStat = await this.fileService.resolve(projectUri);
 
       if (projectStat.children) {
@@ -117,7 +108,7 @@ export class EditorStartupContribution
     }
   }
 
-  protected async openBookFile(bookId: string): Promise<void> {
+  protected async openBookFiles(bookId: string): Promise<void> {
     if (this.isChangingBook || this.currentOpenedBookId === bookId) {
       return;
     }
@@ -126,55 +117,13 @@ export class EditorStartupContribution
       `Attempting to open book: ${bookId}, current book: ${this.currentOpenedBookId}`
     );
     this.isChangingBook = true;
+
     try {
-      const bookPath = `${PROJECT_LOCATION}/${bookId}${BOOK_FILE_EXTENSION}`;
-      const bookUri = new URI(bookPath);
+      await this.openSourceBook(bookId);
 
-      // Check if file exists
-      try {
-        await this.fileService.resolve(bookUri);
+      await this.openTargetBook(bookId);
 
-        // Open the file
-        const opener = await this.openerService.getOpener(bookUri);
-        const widget = await opener.open(bookUri);
-
-        if (widget instanceof CustomFileWidget) {
-          this.currentOpenedBookId = bookId;
-          console.log(`Successfully opened book: ${bookId}`);
-        }
-      } catch (error) {
-        console.error(`Error resolving book file for ${bookId}:`, error);
-
-        // Get or create widget
-        const widget =
-          await this.widgetManager.getOrCreateWidget<CustomFileWidget>(
-            CustomFileWidget.ID,
-            { factoryId: CustomFileWidget.ID }
-          );
-
-        if (widget instanceof CustomFileWidget) {
-          // Instead of showing placeholder, create default USJ for the book
-          const bookInfo = BIBLE_BOOKS.find((book) => book.id === bookId);
-          const defaultUsjForBook = this.createDefaultUsjForBook(
-            bookId,
-            bookInfo?.name || bookId
-          );
-
-          // Create a temporary URI for the widget title
-          const tempUri = new URI(
-            `${PROJECT_LOCATION}/${bookId}${BOOK_FILE_EXTENSION}`
-          );
-
-          // Set the widget's content to the default USJ
-          await widget.setDefaultContent(defaultUsjForBook, tempUri);
-
-          if (!widget.isAttached) {
-            this.shell.addWidget(widget, { area: 'main' });
-          }
-          this.shell.activateWidget(widget.id);
-          this.currentOpenedBookId = bookId;
-        }
-      }
+      this.currentOpenedBookId = bookId;
     } catch (error) {
       console.error(`Error opening book ${bookId}:`, error);
     } finally {
@@ -182,9 +131,79 @@ export class EditorStartupContribution
     }
   }
 
-  // Create a default USJ object for a new book
+  protected async openSourceBook(bookId: string): Promise<void> {
+    const bookPath = `${SOURCE_PROJECT_LOCATION}/${bookId}${BOOK_FILE_EXTENSION}`;
+    const bookUri = new URI(bookPath);
+
+    try {
+      const widget =
+        await this.widgetManager.getOrCreateWidget<ReadOnlyEditorWidget>(
+          ReadOnlyEditorWidget.ID
+        );
+
+      this.sourceWidget = widget;
+
+      try {
+        await this.fileService.resolve(bookUri);
+        await widget.setUri(bookUri);
+      } catch (error) {
+        console.log(
+          `Source book ${bookId} doesn't exist, creating default content`
+        );
+        const bookInfo = BIBLE_BOOKS.find((book) => book.id === bookId);
+        const defaultUsjForBook = this.createDefaultUsjForBook(
+          bookId,
+          bookInfo?.name || bookId
+        );
+        await widget.setDefaultContent(defaultUsjForBook, bookUri);
+      }
+
+      if (!widget.isAttached) {
+        this.shell.addWidget(widget, { area: 'main', mode: 'split-left' });
+      }
+    } catch (error) {
+      console.error(`Error opening source book ${bookId}:`, error);
+    }
+  }
+
+  protected async openTargetBook(bookId: string): Promise<void> {
+    const bookPath = `${TARGET_PROJECT_LOCATION}/${bookId}${BOOK_FILE_EXTENSION}`;
+    const bookUri = new URI(bookPath);
+
+    try {
+      const widget =
+        await this.widgetManager.getOrCreateWidget<CustomFileWidget>(
+          CustomFileWidget.ID
+        );
+
+      this.targetWidget = widget;
+
+      try {
+        await this.fileService.resolve(bookUri);
+        await widget.setUri(bookUri);
+      } catch (error) {
+        console.log(
+          `Target book ${bookId} doesn't exist, creating default content`
+        );
+        const bookInfo = BIBLE_BOOKS.find((book) => book.id === bookId);
+        const defaultUsjForBook = this.createDefaultUsjForBook(
+          bookId,
+          bookInfo?.name || bookId
+        );
+        await widget.setDefaultContent(defaultUsjForBook, bookUri);
+      }
+
+      if (!widget.isAttached) {
+        this.shell.addWidget(widget, { area: 'main', mode: 'split-right' });
+      }
+
+      this.shell.activateWidget(widget.id);
+    } catch (error) {
+      console.error(`Error opening target book ${bookId}:`, error);
+    }
+  }
+
   protected createDefaultUsjForBook(bookId: string, bookName: string): Usj {
-    // Create a basic USJ structure with appropriate book marker
     return {
       type: 'USJ',
       version: '3.1',
@@ -212,7 +231,7 @@ export class EditorStartupContribution
                   type: 'verse',
                   marker: 'v',
                   number: '1',
-                  content: ['BOOK NOT AVAILABLE'],
+                  content: [''],
                 },
               ],
             },
@@ -224,10 +243,8 @@ export class EditorStartupContribution
 
   protected setupVerseRefListener(): void {
     if (this.verseRefUtils) {
-      // Clean up any existing listeners
       this.toDispose.dispose();
 
-      // Add new listener with the improved VerseRefUtils API
       const disposable = this.verseRefUtils.onVerseRefChange(
         (verseRef: VerseRefValue) => {
           console.log('VerseRef changed in startup contribution:', verseRef);
@@ -236,12 +253,11 @@ export class EditorStartupContribution
             console.log(
               `Book changed from ${this.currentOpenedBookId} to ${verseRef.book}, opening new book...`
             );
-            this.openBookFile(verseRef.book);
+            this.openBookFiles(verseRef.book);
           }
         }
       );
 
-      // Add to our disposal collection
       this.toDispose.push(disposable);
     }
   }

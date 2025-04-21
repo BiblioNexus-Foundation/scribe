@@ -1,1 +1,1 @@
-export * from '../lib/index';
+export * from '../lexical-lib/index';

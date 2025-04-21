@@ -6,10 +6,10 @@
   "version": "0.1.2-scribe-v3-dev",
   "description": "Scripture editor used in Scribe (Theia Dev Version)",
   "license": "MIT",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "lexical-lib/index.js",
+  "types": "lexical-lib/index.d.ts",
   "files": [
-    "lib",
+    "lexical-lib",
     "src"
   ],
   "dependencies": {
@@ -28,7 +28,7 @@
   },
   "scripts": {
     "prepare": "yarn run clean && yarn run build",
-    "clean": "rimraf lib",
+    "clean": "rimraf lexical-lib",
     "build": "echo 'Skipping build as files are synced from npm package'",
     "watch": "echo 'Skipping watch as files are synced from npm package'"
   }

@@ -37,9 +37,8 @@ export class UsfmEditorWidget extends ReactWidget {
     this.title.label = UsfmEditorWidget.LABEL;
     this.title.caption = UsfmEditorWidget.LABEL;
     this.title.closable = true;
-    this.title.iconClass = 'fa fa-book'; // Bible/book icon
+    this.title.iconClass = 'fa fa-book';
 
-    // Initialize with default USJ
     this.usj = {
       type: 'USJ',
       version: '3.1',
@@ -78,24 +77,20 @@ export class UsfmEditorWidget extends ReactWidget {
     }
   }
 
-  // Method to load USJ content
   public loadContent(usj: Usj): void {
     this.usj = usj;
     this.isDirty = false;
     this.update();
   }
 
-  // Method to get current USJ content
   public getContent(): Usj | undefined {
     return this.usj;
   }
 
-  // Method to check if content has been modified
   public isDirtyContent(): boolean {
     return this.isDirty;
   }
 
-  // Add a method to open the widget
   public open(): void {
     this.activate();
   }

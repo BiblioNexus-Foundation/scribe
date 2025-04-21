@@ -22,6 +22,7 @@ import {
 } from '@theia/core/shared/react';
 import { Emitter } from '@theia/core';
 import { VerseRefUtils, VerseRefValue } from '@scribe/theia-utils/lib/browser';
+import { SCOPE } from '@/utils/constants';
 
 export type TextDirection = 'ltr' | 'rtl' | 'auto';
 export interface ScriptureReference {
@@ -85,7 +86,6 @@ export default function LexicalEditor({
     },
   };
 
-  // Initialize from VerseRefUtils if available
   useEffect(() => {
     if (verseRefUtils) {
       verseRefUtils.getVerseRef().then((verseRef: VerseRefValue) => {
@@ -100,13 +100,11 @@ export default function LexicalEditor({
     }
   }, [verseRefUtils]);
 
-  // Update scrRef when verse reference changes (but only on chapter/verse changes within same book)
   useEffect(() => {
     if (verseRefUtils) {
       const verseChangeListener = (verseRef: VerseRefValue) => {
         console.log('VerseRef changed in editor component', verseRef);
 
-        // If the book hasn't changed, update the scrRef
         if (verseRef.book === currentBookId) {
           setScrRef({
             book: verseRef.book as BookCode,
@@ -114,28 +112,22 @@ export default function LexicalEditor({
             verseNum: verseRef.verse,
           });
         } else {
-          // Book has changed, update our tracking
           setCurrentBookId(verseRef.book);
         }
       };
 
-      // Add the listener
       let disposable: { dispose: () => void } | undefined;
       verseRefUtils.onVerseRefChange(verseChangeListener);
 
-      // Clean up the listener when component unmounts
-      return () => {
-        // No need to call dispose since onVerseRefChange doesn't return a disposable
-      };
+      return () => {};
     }
   }, [verseRefUtils, currentBookId]);
 
-  // Update VerseRefUtils when scrRef changes from editor interaction
   useEffect(() => {
     console.log('scrRef changed in editor', scrRef);
     if (verseRefUtils && scrRef) {
       console.log('Updating VerseRefUtils', scrRef);
-      // Only update if this is a change within the same book
+
       verseRefUtils.getVerseRef().then((currentVerseRef) => {
         if (
           currentVerseRef.chapter !== scrRef.chapterNum ||
@@ -156,7 +148,6 @@ export default function LexicalEditor({
       console.log('Setting usjInput', usjInput);
       setUsj(usjInput);
 
-      // Extract book ID from USJ if available
       const bookMarker = usjInput.content.find(
         (item) => typeof item !== 'string' && item.type === 'book' && item.code
       ) as MarkerObject | undefined;
@@ -180,7 +171,7 @@ export default function LexicalEditor({
     (newUsj: Usj) => {
       if (onUsjUpdate) {
         console.log('Usj changed in editor', newUsj);
-        onUsjUpdate(newUsj); // Call the callback with the new USJ
+        onUsjUpdate(newUsj);
       }
     },
     [usj]
@@ -193,15 +184,13 @@ export default function LexicalEditor({
   }, [editorRef]);
 
   const navScope = {
-    availableBooks: new Set(['GEN', 'JHN', 'HAB', 'PSA']),
+    availableBooks: new Set(SCOPE),
   };
-  // Expose the focus method to parent components
+
   useEffect(() => {
-    // Make the focus method available to the parent DOM element
     if (editorRef.current && editorRef.current.addEventListener) {
       const container = document.querySelector('.lexical-editor-container');
       if (container) {
-        // Add a focus event listener to the container that will focus the editor
         container.addEventListener('focus', () => {
           focusEditor();
         });

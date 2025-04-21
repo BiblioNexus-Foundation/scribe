@@ -10,6 +10,7 @@
   cursor: pointer;
   border: none;
   transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
 }
 
 .scribe-toolbar-button:hover:not(:disabled) {
@@ -31,6 +32,8 @@
   background-color: #f0f0f0;
   padding: 8px;
   border-bottom: 1px solid #ddd;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .scribe-toolbar-group {
@@ -78,4 +81,29 @@
   color: #388e3c;
   font-size: 12px;
   font-weight: 500;
+}
+
+/* Responsive behavior for toolbar */
+@media (max-width: 768px) {
+  .scribe-toolbar {
+    justify-content: center;
+  }
+
+  .clipboard-actions-responsive {
+    display: none;
+  }
+
+  .clipboard-dropdown {
+    display: block;
+  }
+}
+
+@media (min-width: 769px) {
+  .clipboard-dropdown {
+    display: none;
+  }
+
+  .clipboard-actions-responsive {
+    display: flex;
+  }
 }
