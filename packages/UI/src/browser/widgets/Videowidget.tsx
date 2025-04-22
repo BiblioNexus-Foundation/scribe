@@ -1,9 +1,5 @@
 import * as React from "@theia/core/shared/react";
-import {
-  inject,
-  injectable,
-  postConstruct,
-} from "@theia/core/shared/inversify";
+import { inject, injectable, postConstruct } from "@theia/core/shared/inversify";
 import { ReactWidget } from "@theia/core/lib/browser/widgets/react-widget";
 import {
   AbstractViewContribution,

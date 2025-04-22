@@ -33,9 +33,7 @@ export const downloadDoor43Resource = async (
       const bufferContent = Buffer.from(await item.arrayBuffer());
       const path = [...item?.name?.split("/")];
       path.shift();
-      const fileUri = URI.fromFilePath(
-        downloadResourceFolder.path.join(path.join("/")).toString()
-      );
+      const fileUri = URI.fromFilePath(downloadResourceFolder.path.join(path.join("/")).toString());
       await fs.writeFile(fileUri, BinaryBuffer.wrap(bufferContent));
     }
   }
@@ -46,9 +44,7 @@ export const downloadDoor43Resource = async (
   data.meta = fullResource;
   data.lastUpdatedAg = moment().format();
   await fs.writeFile(
-    URI.fromFilePath(
-      downloadResourceFolder.path.join("metadata.json").toString()
-    ),
+    URI.fromFilePath(downloadResourceFolder.path.join("metadata.json").toString()),
     BinaryBuffer.fromString(JSON.stringify(data))
   );
 
@@ -93,9 +89,7 @@ export const fetchDoor43ResourceDisplayData = async (
   const response = await fetch(resourceUrl);
 
   if (!response.ok) {
-    throw new Error(
-      `Failed to fetch resources from Door43 API. Status: ${response.status}`
-    );
+    throw new Error(`Failed to fetch resources from Door43 API. Status: ${response.status}`);
   }
   const responseJson = (await response.json()) as Door43ApiResponse;
   if (responseJson?.data) {
@@ -250,10 +244,13 @@ export const parseTwlTsv = (tsv: string) => {
   const headers = lines[0].split("\t");
   const data = lines.slice(1).map((line) => line.split("\t"));
   const parsedTsv = data.map((line) => {
-    return headers.reduce((acc, header, i) => {
-      acc[header] = line[i];
-      return acc;
-    }, {} as Record<string, string>);
+    return headers.reduce(
+      (acc, header, i) => {
+        acc[header] = line[i];
+        return acc;
+      },
+      {} as Record<string, string>
+    );
   }) as TwlTsvRow[];
 
   return parsedTsv;

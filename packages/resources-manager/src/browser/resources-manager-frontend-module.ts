@@ -18,23 +18,12 @@ import { ResourceManagerFrontendContribution } from "./resource-manager-contribu
 import { ResourceManagerUtils } from "./utils";
 import { ResourceViewerFactory } from "./resource-viewer/resource-viewer-factory";
 import { ResourceViewerOpener } from "./resource-viewer/resource-viewer-opener";
-import {
-  ResourcePickerDialogProps,
-  ResourcesPickerWidget,
-} from "./resource-picker-widget";
+import { ResourcePickerDialogProps, ResourcesPickerWidget } from "./resource-picker-widget";
 import { ResourcePickerContribution } from "./resource-picker-contribution";
 import { CommandContribution, MenuContribution } from "@theia/core";
 
 export default new ContainerModule(
-  (
-    bind,
-    unbind,
-    isBound,
-    rebind,
-    unbindAsync,
-    onActivation,
-    onDeactivation
-  ) => {
+  (bind, unbind, isBound, rebind, unbindAsync, onActivation, onDeactivation) => {
     // Replace this line with the desired binding, e.g. "bind(CommandContribution).to(ScribeTheiaContribution)
     bind(ResourcesViewerWidget).toSelf();
     bind<WidgetFactory>(WidgetFactory).toDynamicValue((ctx) => ({
@@ -43,9 +32,7 @@ export default new ContainerModule(
     }));
     bind(ResourceManagerFactory).toSelf().inSingletonScope();
     bind(WidgetFactory).toService(ResourceManagerFactory);
-    bind(FrontendApplicationContribution).toService(
-      ResourceManagerFrontendContribution
-    );
+    bind(FrontendApplicationContribution).toService(ResourceManagerFrontendContribution);
     bindViewContribution(bind, ResourceManagerFrontendContribution);
     bind(StylingParticipant).toService(ResourceManagerFrontendContribution);
     bind(ResourceManagerUtils).toSelf().inSingletonScope();

@@ -23,20 +23,13 @@ type ReadResourceDataCtx = {
   verseRefUtils: VerseRefUtils;
 };
 export type ResourceViewerWidgetHandlers<T extends {}> = {
-  readResourceData: (
-    uri: URI,
-    fs: FileService,
-    ctx: ReadResourceDataCtx
-  ) => Promise<T>;
+  readResourceData: (uri: URI, fs: FileService, ctx: ReadResourceDataCtx) => Promise<T>;
   render: (data: T, ctx?: Context) => ReactNode | ReactNode[];
   id: string;
   verseRefSubscription?: boolean;
 };
 
-export class ResourceViewerWidget<TData extends {}>
-  extends ReactWidget
-  implements StatefulWidget
-{
+export class ResourceViewerWidget<TData extends {}> extends ReactWidget implements StatefulWidget {
   static FACTORY_ID = "resource-viewer";
   id: string;
 
@@ -59,8 +52,7 @@ export class ResourceViewerWidget<TData extends {}>
     verseRefUtils: VerseRefUtils
   ) {
     super();
-    this.id =
-      ResourceViewerWidget.FACTORY_ID + ":" + resource.type + ":" + resource.id;
+    this.id = ResourceViewerWidget.FACTORY_ID + ":" + resource.type + ":" + resource.id;
     this.title.label = `${resource.name}`;
     this.resource = resource;
     this.handler = handlers;
@@ -154,10 +146,7 @@ export class ResourceViewerWidget<TData extends {}>
       .readResourceData(this.resourceUri!, this.fs, {
         resource: this.resource,
         resourcesRootUri: URI.fromComponents({
-          path: this.workspaceUri!.path.join(
-            ".project",
-            "resources"
-          ).toString(),
+          path: this.workspaceUri!.path.join(".project", "resources").toString(),
           scheme: this.workspaceUri!.scheme,
           authority: this.workspaceUri!.authority,
           query: this.workspaceUri!.query,

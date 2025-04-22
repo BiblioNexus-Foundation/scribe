@@ -1,10 +1,6 @@
 import * as React from "@theia/core/shared/react";
 import { ReactWidget } from "@theia/core/lib/browser/widgets/react-widget";
-import {
-  injectable,
-  postConstruct,
-  inject,
-} from "@theia/core/shared/inversify";
+import { injectable, postConstruct, inject } from "@theia/core/shared/inversify";
 import { Message } from "@phosphor/messaging";
 import URI from "@theia/core/lib/common/uri";
 import { FileService } from "@theia/filesystem/lib/browser/file-service";
