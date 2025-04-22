@@ -253,16 +253,6 @@ export class FFmpegServerImpl implements FFmpegServer {
   async setSelectedDevice(device: string): Promise<void> {
     this.selectedDevice = device;
   }
-  // async setWorkspacePath(workspacePath: string): Promise<void> {
-  //   try {
-  //     this.outputDir = path.join(workspacePath, "audio-recordings");
-  //     await fs.mkdir(this.outputDir, { recursive: true });
-  //     console.log("Audio recordings directory set to:", this.outputDir);
-  //   } catch (error) {
-  //     console.error("Failed to set workspace path:", error);
-  //     throw error;
-  //   }
-  // }
   async getAudioFiles(): Promise<string[]> {
     try {
       const files = await fs.readdir(this.outputDir);
@@ -582,12 +572,17 @@ export class FFmpegServerImpl implements FFmpegServer {
     if (!this.isRecordingPaused) {
       throw new Error("No paused recording to resume");
     }
+    if (this.tempRecordings.length === 0) {
+      throw new Error("No previous recording segments found");
+    }
+    const chapterDir = path.dirname(this.tempRecordings[this.tempRecordings.length - 1]);
     this.currentOutputFile = path.join(
-      this.outputDir,
+      chapterDir,
       `temp_${this.segmentCounter.toString().padStart(3, "0")}_${this.currentStoryId}.wav`
     );
     return this.startRecording({
       storyId: this.currentStoryId || undefined,
+      chapterDir: chapterDir,
     });
   }
   getFFmpegPath(): Promise<string> {
