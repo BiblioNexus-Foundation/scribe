@@ -12,7 +12,9 @@
     "@theia/core": "1.57.0",
     "tailwindcss-animate": "^1.0.7",
     "@tailwindcss/typography": "^0.5.14",
-    "@tabler/icons-react": "^3.3.0"
+    "@tabler/icons-react": "^3.3.0",
+    "@scribe/theia-utils": "0.0.1"
+
   },
   "devDependencies": {
     "rimraf": "*",
