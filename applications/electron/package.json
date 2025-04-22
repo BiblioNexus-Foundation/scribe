@@ -36,7 +36,8 @@
             "height": 276,
             "width": 446
           }
-        }
+        },
+        "workspacesPath": ".scribe/workspaces"
       }
     },
     "backend": {
@@ -99,6 +100,7 @@
     "scribe-resources-manager": "0.0.1",
     "scribe-ui": "0.0.1",
     "scribe-usfm-editor": "0.0.0",
+    "project-manager": "0.0.0",
     "bcv-navigator": "0.0.0",
     "audio": "0.0.0"
   },

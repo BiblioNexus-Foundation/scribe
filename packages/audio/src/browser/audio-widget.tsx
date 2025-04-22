@@ -5,6 +5,7 @@ import { AudioPanel } from "../components/AudioPanel";
 import { ThemeService } from "@theia/core/lib/browser/theming";
 import { FFmpegServer } from "../common/audio-protocol";
 import { WorkspaceService } from "@theia/workspace/lib/browser/workspace-service";
+import { GlobalStateStorage } from "@scribe/theia-utils/lib/browser/global-state-storage";
 
 @injectable()
 export class AudioWidget extends ReactWidget {
@@ -20,6 +21,11 @@ export class AudioWidget extends ReactWidget {
   @inject(WorkspaceService)
   protected readonly workspaceService: WorkspaceService;
 
+  @inject(GlobalStateStorage)
+  protected readonly globalStateStorage: GlobalStateStorage;
+
+  private refValue: string = "";
+
   private currentTheme: string;
 
   @postConstruct()
@@ -27,6 +33,17 @@ export class AudioWidget extends ReactWidget {
     this.doInit();
   }
 
+  protected async updateRefValue(): Promise<void> {
+    // Fetch new refValue from storage
+    const newRefValue =
+      ((await this.globalStateStorage.getData("scribe-bible-verse-ref")) as string) || "";
+
+    // Only update and trigger re-render if refValue has changed
+    if (newRefValue !== this.refValue) {
+      this.refValue = newRefValue;
+      this.update(); // Trigger re-render
+    }
+  }
   protected async doInit(): Promise<void> {
     try {
       this.id = AudioWidget.ID;
@@ -34,9 +51,14 @@ export class AudioWidget extends ReactWidget {
       this.title.caption = AudioWidget.LABEL;
       this.title.closable = true;
       this.title.iconClass = "fa fa-window-maximize"; // example widget icon.
+      this.updateRefValue();
 
       // Set initial theme
       this.currentTheme = this.themeService.getCurrentTheme().type;
+      this.globalStateStorage.onUpdate("scribe-bible-verse-ref", (verse) => {
+        this.refValue = verse as string;
+        this.update();
+      });
 
       // Safely log the server reference
       if (this.server) {
@@ -119,6 +141,6 @@ export class AudioWidget extends ReactWidget {
   }
   render(): React.ReactElement {
     // Render AudioPanel with the current theme
-    return <AudioPanel theme={this.currentTheme} server={this.server} />;
+    return <AudioPanel theme={this.currentTheme} server={this.server} refValue={this.refValue} />;
   }
 }

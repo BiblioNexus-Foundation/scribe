@@ -10,12 +10,12 @@ const BACKEND_DIR_NAME = ".scribe";
 
 // Paths
 const homedir = os.homedir();
-const userDataDir = path.join(homedir, BACKEND_DIR_NAME);
-const pluginsUserDir = path.join(userDataDir, "plugins");
-const workspacesDir = path.join(userDataDir, "workspaces");
-const projectDir = path.join(userDataDir, "projects");
-const binaryDir = path.join(userDataDir, ".bin");
-const ffmpegUserDir = path.join(binaryDir, "ffmpeg");
+const userDataDir = path.resolve(homedir, BACKEND_DIR_NAME);
+const pluginsUserDir = path.resolve(userDataDir, "plugins");
+const workspacesDir = path.resolve(userDataDir, "workspaces");
+const projectDir = path.resolve(userDataDir, "projects");
+const binaryDir = path.resolve(userDataDir, ".bin");
+const ffmpegUserDir = path.resolve(binaryDir, "ffmpeg");
 const defaultPluginsDir = path.resolve(__dirname, "..", "plugins");
 
 // Get the current platform

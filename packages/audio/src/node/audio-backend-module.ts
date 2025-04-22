@@ -1,5 +1,5 @@
 import { injectable } from "@theia/core/shared/inversify";
-import { FFmpegServer, RecordingOptions, FileNode } from "../common/audio-protocol";
+import { FFmpegServer, RecordingOptions } from "../common/audio-protocol";
 import { spawn, execSync, ChildProcess, exec } from "child_process";
 import * as path from "path";
 import * as os from "os";
@@ -27,6 +27,57 @@ export class FFmpegServerImpl implements FFmpegServer {
       this.initializeDefaultWinDevices();
     }
   }
+
+  private async checkForScribeConfig(workspacePath: string): Promise<string | null> {
+    try {
+      const scribeJsonPath = path.join(workspacePath, "scribe.json");
+
+      // Check if the file exists
+      try {
+        await fs.access(scribeJsonPath);
+      } catch (error) {
+        console.log("No scribe.json found in workspace, using default audio directory");
+        return null;
+      }
+
+      // Read and parse the file
+      const fileContent = await fs.readFile(scribeJsonPath, "utf8");
+      const config = JSON.parse(fileContent);
+
+      if (config.audioDir) {
+        console.log(`Found audioDir in scribe.json: ${config.audioDir}`);
+        return config.audioDir;
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error reading scribe.json:", error);
+      return null;
+    }
+  }
+
+  async setWorkspacePath(workspacePath: string): Promise<void> {
+    try {
+      // Check for scribe.json configuration
+      const audioDir = await this.checkForScribeConfig(workspacePath);
+
+      if (audioDir) {
+        // Use the audioDir from scribe.json
+        this.outputDir = audioDir;
+      } else {
+        // Fall back to default audio-recordings directory
+        this.outputDir = path.join(workspacePath, "audio-recordings");
+      }
+
+      // Ensure directory exists
+      await fs.mkdir(this.outputDir, { recursive: true });
+      console.log("Audio recordings directory set to:", this.outputDir);
+    } catch (error) {
+      console.error("Failed to set workspace path:", error);
+      throw error;
+    }
+  }
+
   async openAudioSettings(): Promise<void> {
     if (os.platform() !== "linux") {
       throw new Error("This function is only supported on Linux systems");
@@ -202,61 +253,16 @@ export class FFmpegServerImpl implements FFmpegServer {
   async setSelectedDevice(device: string): Promise<void> {
     this.selectedDevice = device;
   }
-  async setWorkspacePath(workspacePath: string): Promise<void> {
-    try {
-      this.outputDir = path.join(workspacePath, "audio-recordings");
-      await fs.mkdir(this.outputDir, { recursive: true });
-      console.log("Audio recordings directory set to:", this.outputDir);
-    } catch (error) {
-      console.error("Failed to set workspace path:", error);
-      throw error;
-    }
-  }
-  async getFileTree(rootPath: string): Promise<FileNode> {
-    const buildTree = async (dirPath: string): Promise<FileNode[]> => {
-      try {
-        const entries = await fs.readdir(dirPath, { withFileTypes: true });
-        const items = await Promise.all(
-          entries.map(async (entry) => {
-            const fullPath = path.join(dirPath, entry.name);
-            if (entry.isDirectory()) {
-              const children = await buildTree(fullPath);
-              return {
-                name: entry.name,
-                type: "folder" as const,
-                path: fullPath,
-                children,
-              };
-            } else {
-              return {
-                name: entry.name,
-                type: "file" as const,
-                path: fullPath,
-              };
-            }
-          })
-        );
-        return items;
-      } catch (error) {
-        console.error("Error reading directory:", dirPath, error);
-        return [];
-      }
-    };
-    try {
-      const audioFolder = path.join(rootPath, "audio-recordings");
-      await fs.access(audioFolder);
-      const children = await buildTree(audioFolder);
-      return {
-        name: "audio-recordings",
-        type: "folder",
-        path: audioFolder,
-        children,
-      };
-    } catch (error) {
-      console.error("Failed to get file tree:", error);
-      throw error;
-    }
-  }
+  // async setWorkspacePath(workspacePath: string): Promise<void> {
+  //   try {
+  //     this.outputDir = path.join(workspacePath, "audio-recordings");
+  //     await fs.mkdir(this.outputDir, { recursive: true });
+  //     console.log("Audio recordings directory set to:", this.outputDir);
+  //   } catch (error) {
+  //     console.error("Failed to set workspace path:", error);
+  //     throw error;
+  //   }
+  // }
   async getAudioFiles(): Promise<string[]> {
     try {
       const files = await fs.readdir(this.outputDir);
@@ -276,15 +282,20 @@ export class FFmpegServerImpl implements FFmpegServer {
     const audioInput = this.getAudioInputFormat();
     console.log(audioInput, "audioInput");
     this.currentStoryId = options.storyId?.toString() ?? "default";
+    const outputDirectory = options.chapterDir || this.outputDir;
     if (!this.isRecordingPaused && this.tempRecordings.length === 0) {
       this.segmentCounter = 1;
     }
     if (!this.isRecordingPaused) {
       this.currentOutputFile = path.join(
-        this.outputDir,
-        `temp_${this.segmentCounter.toString().padStart(3, "0")}_story-${this.currentStoryId}.wav`
+        outputDirectory,
+        `temp_${this.segmentCounter.toString().padStart(3, "0")}_${this.currentStoryId}.wav`
       );
     }
+    if (!this.currentOutputFile) {
+      throw new Error("Output file path is null");
+    }
+    await fs.mkdir(path.dirname(this.currentOutputFile), { recursive: true });
     const command = [
       "-f",
       audioInput.format,
@@ -417,16 +428,14 @@ export class FFmpegServerImpl implements FFmpegServer {
       // Verify the current output file exists
       await fs.stat(this.currentOutputFile);
       this.tempRecordings.push(this.currentOutputFile);
+      const outputDirectory = path.dirname(this.currentOutputFile);
       this.currentOutputFile = null;
 
       if (this.tempRecordings.length === 0) {
         throw new Error("No recordings to process");
       }
 
-      const finalOutputFile = path.join(
-        this.outputDir,
-        `story-${this.currentStoryId || "default"}.wav`
-      );
+      const finalOutputFile = path.join(outputDirectory, `${this.currentStoryId || "default"}.wav`);
 
       const sortedRecordings = [...this.tempRecordings].sort((a, b) => {
         const segmentA = parseInt(path.basename(a).split("_")[1]) || 0;
@@ -575,10 +584,10 @@ export class FFmpegServerImpl implements FFmpegServer {
     }
     this.currentOutputFile = path.join(
       this.outputDir,
-      `temp_${this.segmentCounter.toString().padStart(3, "0")}_story-${this.currentStoryId}.wav`
+      `temp_${this.segmentCounter.toString().padStart(3, "0")}_${this.currentStoryId}.wav`
     );
     return this.startRecording({
-      storyId: this.currentStoryId ? parseInt(this.currentStoryId) : undefined,
+      storyId: this.currentStoryId || undefined,
     });
   }
   getFFmpegPath(): Promise<string> {
@@ -639,7 +648,6 @@ export class FFmpegServerImpl implements FFmpegServer {
       const homeDir = os.homedir();
       const userDataDir = path.join(homeDir, ".scribe");
       const userBinaryPath = path.join(userDataDir, ".bin", "ffmpeg", platform, binaryName);
-
       if (Fs.existsSync(userBinaryPath)) {
         console.log(`Found FFmpeg in user data directory: ${userBinaryPath}`);
         return userBinaryPath;
@@ -731,7 +739,7 @@ export class FFmpegServerImpl implements FFmpegServer {
     const currentOS = os.platform();
     return currentOS;
   }
-  
+
   private getAudioInputFormat(): { format: string; device: string } {
     switch (os.platform()) {
       case "win32":
@@ -843,6 +851,11 @@ export class FFmpegServerImpl implements FFmpegServer {
       throw error;
     }
   }
+
+  async getOutputDir(): Promise<string> {
+    return this.outputDir;
+  }
+
   dispose(): void {
     if (this.recordingProcess) {
       this.recordingProcess.kill();
