@@ -9,11 +9,16 @@ import {
 import { FrontendApplicationStateService } from "@theia/core/lib/browser/frontend-application-state";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
 import AudioComponents from "../../components/AudioComponents";
+import { VerseRefUtils } from "@scribe/theia-utils/lib/browser";
+
 
 @injectable()
 export class AudioWidget extends ReactWidget {
   static readonly ID = "Audio-page-widget";
   static readonly LABER = "main";
+
+  @inject(VerseRefUtils)
+  protected readonly verseRefUtils!: VerseRefUtils;
 
   @postConstruct()
   protected init(): void {
@@ -29,7 +34,7 @@ export class AudioWidget extends ReactWidget {
   }
 
   render(): React.ReactNode {
-    return <AudioComponents />;
+    return <AudioComponents verseRefUtils={this.verseRefUtils} />;
   }
 }
 
