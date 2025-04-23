@@ -57,14 +57,10 @@ const useTranslationWords = ({
     query: string
   ) => Promise<TranslationWord[]>;
 }) => {
-  const [translationWords, setTranslationWords] = React.useState<
-    TranslationWord[]
-  >(initialTranslationWords);
-  const [translationWord, setTranslationWord] =
-    React.useState<TranslationWord | null>(null);
-  const [category, setCategory] = React.useState<
-    "all" | "kt" | "names" | "other"
-  >("all");
+  const [translationWords, setTranslationWords] =
+    React.useState<TranslationWord[]>(initialTranslationWords);
+  const [translationWord, setTranslationWord] = React.useState<TranslationWord | null>(null);
+  const [category, setCategory] = React.useState<"all" | "kt" | "names" | "other">("all");
   const [twContent, setTwContent] = React.useState<string | null>(null);
 
   React.useEffect(() => {

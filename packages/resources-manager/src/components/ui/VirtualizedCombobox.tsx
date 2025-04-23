@@ -7,11 +7,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/utils/clsx";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Check, ChevronsUpDown, Search } from "lucide-react";
@@ -37,8 +33,7 @@ const VirtualizedCommand = ({
   selectedOption,
   onSelectOption,
 }: VirtualizedCommandProps) => {
-  const [filteredOptions, setFilteredOptions] =
-    React.useState<Option[]>(options);
+  const [filteredOptions, setFilteredOptions] = React.useState<Option[]>(options);
   const parentRef = React.useRef(null);
 
   React.useEffect(() => {
@@ -56,9 +51,7 @@ const VirtualizedCommand = ({
 
   const handleSearch = (search: string) => {
     setFilteredOptions(
-      options.filter((option) =>
-        option.value.toLowerCase().includes(search.toLowerCase() ?? [])
-      )
+      options.filter((option) => option.value.toLowerCase().includes(search.toLowerCase() ?? []))
     );
   };
 
@@ -78,8 +71,7 @@ const VirtualizedCommand = ({
           overflow: "auto",
           position: "relative",
         }}
-        ref={parentRef}
-      >
+        ref={parentRef}>
         <CommandEmpty>No item found.</CommandEmpty>
         <CommandGroup>
           <div
@@ -87,8 +79,7 @@ const VirtualizedCommand = ({
               height: `${virtualizer.getTotalSize()}px`,
               width: "100%",
               position: "relative",
-            }}
-          >
+            }}>
             {virtualOptions.map((virtualOption) => {
               return (
                 <CommandItem
@@ -102,13 +93,11 @@ const VirtualizedCommand = ({
                   }}
                   key={filteredOptions[virtualOption.index].value}
                   value={filteredOptions[virtualOption.index].value}
-                  onSelect={onSelectOption}
-                >
+                  onSelect={onSelectOption}>
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      selectedOption ===
-                        filteredOptions[virtualOption.index].value
+                      selectedOption === filteredOptions[virtualOption.index].value
                         ? "opacity-100"
                         : "opacity-0"
                     )}
@@ -157,14 +146,13 @@ export function VirtualizedCombobox({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="flex flex-1 gap-1 flex-row-reverse items-center">
-          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50  hidden" />
+        <div className="flex flex-1 flex-row-reverse items-center gap-1">
+          <Search className="mr-2 hidden h-4 w-4 shrink-0 opacity-50" />
           <Button
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className=" dark:border-cyan-900 py-0  flex-1 bg-cyan-100 hover:bg-cyan-200 dark:bg-cyan-950  border-cyan-300 text-cyan-700  font-semibold flex items-center justify-center uppercase "
-          >
+            className="flex flex-1 items-center justify-center border-cyan-300 bg-cyan-100 py-0 font-semibold uppercase text-cyan-700 hover:bg-cyan-200 dark:border-cyan-900 dark:bg-cyan-950">
             {selectedOption
               ? options.find((option) => option.value === selectedOption)?.label
               : searchPlaceholder}

@@ -14,21 +14,18 @@ const MediaPlayer = ({ type, source }: MediaPlayerProps) => {
     <div className="media-player bg-[var(--theia-editor-background)]">
       <div
         className={cn(
-          type === "image" ? "border-b mb-2" : "border-t  my-2  border-b",
-          "flex items-center py-2.5 px-2 border-[rgb(250 250 250 / 0.1)] justify-between"
-        )}
-      >
+          type === "image" ? "mb-2 border-b" : "my-2 border-b border-t",
+          "border-[rgb(250 250 250 / 0.1)] flex items-center justify-between px-2 py-2.5"
+        )}>
         <Badge variant="destructive">NTV</Badge>
         <div className="flex items-center gap-[5px]">
           <Button label="Mark" />
           <Button label="1" />
-          <Button
-            icon={<IconSettings size={14} stroke={2} strokeLinejoin="miter" />}
-          />
+          <Button icon={<IconSettings size={14} stroke={2} strokeLinejoin="miter" />} />
         </div>{" "}
       </div>
       {type === "image" ? (
-        <img src={source} alt="Media content" className="w-full h-[25vh]" />
+        <img src={source} alt="Media content" className="h-[25vh] w-full" />
       ) : (
         <iframe
           width="100%"

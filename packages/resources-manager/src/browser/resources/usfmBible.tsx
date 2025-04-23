@@ -19,10 +19,7 @@ type UsfmBibleValue = {
   bookID: string;
 };
 
-export const usfmBibleResource: ScribeResource<
-  Door43RepoResponse,
-  UsfmBibleValue
-> = {
+export const usfmBibleResource: ScribeResource<Door43RepoResponse, UsfmBibleValue> = {
   id: "codex.usfm-bible",
   displayLabel: "Bible",
   icon: <IconBook />,

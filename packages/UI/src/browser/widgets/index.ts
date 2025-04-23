@@ -5,23 +5,11 @@ import {
 } from "@theia/core/lib/browser";
 import { interfaces } from "@theia/core/shared/inversify";
 import { AiSidebar, AiSidebarContribution } from "./AiSidebar";
-import {
-  MainEditorLeftContribution,
-  MainEditorLeftWidget,
-} from "./MainEditorLeft";
+import { MainEditorLeftContribution, MainEditorLeftWidget } from "./MainEditorLeft";
 import { AudioWidget, AudioContribution } from "./AudioWidget";
-import {
-  MainEditorRightContribution,
-  MainEditorRightWidget,
-} from "./MainEditorRight";
-import {
-  BottomEditorLeft,
-  BottomEditorLeftContribution,
-} from "./BottomEditorLeft";
-import {
-  BottomEditorRightContribution,
-  BottomEditorRightWidget,
-} from "./BottomEditorRight";
+import { MainEditorRightContribution, MainEditorRightWidget } from "./MainEditorRight";
+import { BottomEditorLeft, BottomEditorLeftContribution } from "./BottomEditorLeft";
+import { BottomEditorRightContribution, BottomEditorRightWidget } from "./BottomEditorRight";
 import { ChatContribution, ChatWidget } from "./ChatWidget";
 import { VideoContribution, VideoWidget } from "./Videowidget";
 import { AudioPlayContribution, AudioPlayWidget } from "./AudioplayWidget";
@@ -52,8 +40,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   bind(WidgetFactory)
     .toDynamicValue((context) => ({
       id: MainEditorLeftWidget.ID,
-      createWidget: () =>
-        context.container.get<MainEditorLeftWidget>(MainEditorLeftWidget),
+      createWidget: () => context.container.get<MainEditorLeftWidget>(MainEditorLeftWidget),
     }))
     .inSingletonScope();
 
@@ -64,8 +51,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   bind(WidgetFactory)
     .toDynamicValue((context) => ({
       id: MainEditorRightWidget.ID,
-      createWidget: () =>
-        context.container.get<MainEditorRightWidget>(MainEditorRightWidget),
+      createWidget: () => context.container.get<MainEditorRightWidget>(MainEditorRightWidget),
     }))
     .inSingletonScope();
   // Bottom Editor Left
@@ -75,22 +61,18 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   bind(WidgetFactory)
     .toDynamicValue((context) => ({
       id: BottomEditorLeft.ID,
-      createWidget: () =>
-        context.container.get<BottomEditorLeft>(BottomEditorLeft),
+      createWidget: () => context.container.get<BottomEditorLeft>(BottomEditorLeft),
     }))
     .inSingletonScope();
 
   // Bottom Editor Right
   bindViewContribution(bind, BottomEditorRightContribution);
-  bind(FrontendApplicationContribution).toService(
-    BottomEditorRightContribution
-  );
+  bind(FrontendApplicationContribution).toService(BottomEditorRightContribution);
   bind(BottomEditorRightWidget).toSelf();
   bind(WidgetFactory)
     .toDynamicValue((context) => ({
       id: BottomEditorRightWidget.ID,
-      createWidget: () =>
-        context.container.get<BottomEditorRightWidget>(BottomEditorRightWidget),
+      createWidget: () => context.container.get<BottomEditorRightWidget>(BottomEditorRightWidget),
     }))
     .inSingletonScope();
 
@@ -134,8 +116,7 @@ export const bindAllWidgetsContributions = (bind: interfaces.Bind) => {
   bind(WidgetFactory)
     .toDynamicValue((context) => ({
       id: AudioPlayWidget.ID,
-      createWidget: () =>
-        context.container.get<AudioPlayWidget>(AudioPlayWidget),
+      createWidget: () => context.container.get<AudioPlayWidget>(AudioPlayWidget),
     }))
     .inSingletonScope();
 

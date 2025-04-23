@@ -1,11 +1,7 @@
 import { Message, ReactWidget } from "@theia/core/lib/browser";
 import * as React from "@theia/core/shared/react";
 
-import {
-  injectable,
-  inject,
-  postConstruct,
-} from "@theia/core/shared/inversify";
+import { injectable, inject, postConstruct } from "@theia/core/shared/inversify";
 import {
   AbstractViewContribution,
   FrontendApplicationContribution,
@@ -67,23 +63,22 @@ export class BottomEditorRightWidget extends ReactWidget {
     });
     return (
       <div className="bg-[var(--theia-editor-background)]">
-        <p className="font-semibold text-xs text-center tracking-wide leading-4 text-[var(--theia-settings-textInputForeground)]var(--theia-settings-textInputForeground)]">
+        <p className="text-[var(--theia-settings-textInputForeground)]var(--theia-settings-textInputForeground)] text-center text-xs font-semibold leading-4 tracking-wide">
           Tsv translation notes english
         </p>
-        <div className="mt-2.5 rounded-lg flex items-center justify-between gap-[5px] bg-[var(rgb(245 245 245 / 0.4))] p-[5px]">
+        <div className="bg-[var(rgb(245 245 245 / 0.4))] mt-2.5 flex items-center justify-between gap-[5px] rounded-lg p-[5px]">
           <Button
             label="Book"
-            className="dark:bg-zinc-800 bg-[var(--theia-editor-background)] text-[var(--theia-settings-textInputForeground)] w-1/3 uppercase font-semibold"
+            className="w-1/3 bg-[var(--theia-editor-background)] font-semibold uppercase text-[var(--theia-settings-textInputForeground)] dark:bg-zinc-800"
           />
           <Button
             label="Chapter"
-            className="dark:bg-zinc-800 bg-[var(--theia-editor-background)] text-[var(--theia-settings-textInputForeground)] w-1/3 uppercase font-semibold"
+            className="w-1/3 bg-[var(--theia-editor-background)] font-semibold uppercase text-[var(--theia-settings-textInputForeground)] dark:bg-zinc-800"
           />
           <Button
             label="Verse"
             onClick={async () => {
-              const rootUri = (await this.workspaceService.roots)?.[0]
-                ?.resource;
+              const rootUri = (await this.workspaceService.roots)?.[0]?.resource;
               if (!rootUri) return;
               const repos = await this.git.repositories(rootUri.toString(), {});
               await this.git.exec(repos[0], ["add", "-A"]);
@@ -92,13 +87,13 @@ export class BottomEditorRightWidget extends ReactWidget {
                 console.log("Ran with diffs", diffs);
               });
             }}
-            className="dark:bg-zinc-800 bg-[var(--theia-editor-background)] text-[var(--theia-settings-textInputForeground)] w-1/3 uppercase font-semibold"
+            className="w-1/3 bg-[var(--theia-editor-background)] font-semibold uppercase text-[var(--theia-settings-textInputForeground)] dark:bg-zinc-800"
           />
         </div>
-        <article className="text-[var(--theia-settings-textInputForeground)]leading-[18px] mt-2.5   text-xs tracking-wide text-center whitespace-pre-line">
-          1:9b and was baptized by John in the Jordan. and [then] John baptized
-          Jesus/him in the Jordan [River]. -OR- • [When he arrived at the place
-          where John was preaching,| John baptized him in the Jordan [River].
+        <article className="text-[var(--theia-settings-textInputForeground)]leading-[18px] mt-2.5 whitespace-pre-line text-center text-xs tracking-wide">
+          1:9b and was baptized by John in the Jordan. and [then] John baptized Jesus/him in the
+          Jordan [River]. -OR- • [When he arrived at the place where John was preaching,| John
+          baptized him in the Jordan [River].
         </article>
         <div></div>
       </div>
@@ -131,8 +126,6 @@ export class BottomEditorRightContribution
   async onStart(app: FrontendApplication): Promise<void> {
     this.stateService
       .reachedState("ready")
-      .then(() =>
-        this.openView({ reveal: false, area: "bottom", mode: "split-right" })
-      );
+      .then(() => this.openView({ reveal: false, area: "bottom", mode: "split-right" }));
   }
 }

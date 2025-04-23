@@ -8,16 +8,16 @@ export default function ProjectIntroLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="pt-14 w-[45%] mx-auto ">
-      <p className="font-bold text-center text-5xl">
-        <span className="dark:text-zinc-50 text-zinc-700 ">Welcome to </span>
+    <main className="mx-auto w-[45%] pt-14">
+      <p className="text-center text-5xl font-bold">
+        <span className="text-zinc-700 dark:text-zinc-50">Welcome to </span>
         <span className="text-cyan-500">Scribe 3.0</span>
       </p>
-      <p className="text-cyan-300 text-center mt-5 tracking-wide text-xl leading-6 font-normal">
+      <p className="mt-5 text-center text-xl font-normal leading-6 tracking-wide text-cyan-300">
         Scripture editing made simple
       </p>
-      <div className="space-y-8 flex flex-col w-full items-center justify-center">
-        <p className="font-normal mt-20 dark:text-zinc-50 text-zinc-600 tracking-wide text-sm text-center leading-4">
+      <div className="flex w-full flex-col items-center justify-center space-y-8">
+        <p className="mt-20 text-center text-sm font-normal leading-4 tracking-wide text-zinc-600 dark:text-zinc-50">
           {question}
         </p>
         <>{children}</>

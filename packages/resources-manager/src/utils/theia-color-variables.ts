@@ -146,15 +146,11 @@ const theiaThemeExample = {
   "--theia-merge-incomingContentBackground": "rgba(64, 166, 255, 0.2)",
   "--theia-merge-commonHeaderBackground": "rgba(96, 96, 96, 0.4)",
   "--theia-merge-commonContentBackground": "rgba(96, 96, 96, 0.16)",
-  "--theia-editorOverviewRuler-currentContentForeground":
-    "rgba(64, 200, 174, 0.5)",
-  "--theia-editorOverviewRuler-incomingContentForeground":
-    "rgba(64, 166, 255, 0.5)",
-  "--theia-editorOverviewRuler-commonContentForeground":
-    "rgba(96, 96, 96, 0.4)",
+  "--theia-editorOverviewRuler-currentContentForeground": "rgba(64, 200, 174, 0.5)",
+  "--theia-editorOverviewRuler-incomingContentForeground": "rgba(64, 166, 255, 0.5)",
+  "--theia-editorOverviewRuler-commonContentForeground": "rgba(96, 96, 96, 0.4)",
   "--theia-editorOverviewRuler-findMatchForeground": "rgba(209, 134, 22, 0.49)",
-  "--theia-editorOverviewRuler-selectionHighlightForeground":
-    "rgba(160, 160, 160, 0.8)",
+  "--theia-editorOverviewRuler-selectionHighlightForeground": "rgba(160, 160, 160, 0.8)",
   "--theia-minimap-findMatchHighlight": "#d18616",
   "--theia-minimap-selectionOccurrenceHighlight": "#c9c9c9",
   "--theia-minimap-selectionHighlight": "#add6ff",
@@ -206,8 +202,7 @@ const theiaThemeExample = {
   "--theia-editorGutter-background": "#18181b",
   "--theia-editorUnnecessaryCode-opacity": "rgba(0, 0, 0, 0.47)",
   "--theia-editorGhostText-foreground": "rgba(0, 0, 0, 0.47)",
-  "--theia-editorOverviewRuler-rangeHighlightForeground":
-    "rgba(0, 122, 204, 0.6)",
+  "--theia-editorOverviewRuler-rangeHighlightForeground": "rgba(0, 122, 204, 0.6)",
   "--theia-editorOverviewRuler-errorForeground": "rgba(255, 18, 18, 0.7)",
   "--theia-editorOverviewRuler-warningForeground": "#bf8803",
   "--theia-editorOverviewRuler-infoForeground": "#1a85ff",
@@ -217,8 +212,7 @@ const theiaThemeExample = {
   "--theia-editorBracketHighlight-foreground4": "rgba(0, 0, 0, 0)",
   "--theia-editorBracketHighlight-foreground5": "rgba(0, 0, 0, 0)",
   "--theia-editorBracketHighlight-foreground6": "rgba(0, 0, 0, 0)",
-  "--theia-editorBracketHighlight-unexpectedBracket-foreground":
-    "rgba(255, 18, 18, 0.8)",
+  "--theia-editorBracketHighlight-unexpectedBracket-foreground": "rgba(255, 18, 18, 0.8)",
   "--theia-editorBracketPairGuide-background1": "rgba(0, 0, 0, 0)",
   "--theia-editorBracketPairGuide-background2": "rgba(0, 0, 0, 0)",
   "--theia-editorBracketPairGuide-background3": "rgba(0, 0, 0, 0)",
@@ -285,14 +279,11 @@ const theiaThemeExample = {
   "--theia-peekViewResult-matchHighlightBackground": "rgba(234, 92, 0, 0.3)",
   "--theia-peekViewEditor-matchHighlightBackground": "rgba(245, 216, 2, 0.87)",
   "--theia-editorMarkerNavigationError-background": "#e51400",
-  "--theia-editorMarkerNavigationError-headerBackground":
-    "rgba(229, 20, 0, 0.1)",
+  "--theia-editorMarkerNavigationError-headerBackground": "rgba(229, 20, 0, 0.1)",
   "--theia-editorMarkerNavigationWarning-background": "#bf8803",
-  "--theia-editorMarkerNavigationWarning-headerBackground":
-    "rgba(191, 136, 3, 0.1)",
+  "--theia-editorMarkerNavigationWarning-headerBackground": "rgba(191, 136, 3, 0.1)",
   "--theia-editorMarkerNavigationInfo-background": "#1a85ff",
-  "--theia-editorMarkerNavigationInfo-headerBackground":
-    "rgba(26, 133, 255, 0.1)",
+  "--theia-editorMarkerNavigationInfo-headerBackground": "rgba(26, 133, 255, 0.1)",
   "--theia-editorMarkerNavigation-background": "#18181b",
   "--theia-editor-foldBackground": "rgba(173, 214, 255, 0.3)",
   "--theia-editorGutter-foldingControlForeground": "#424242",
@@ -309,12 +300,9 @@ const theiaThemeExample = {
   "--theia-editor-wordHighlightBackground": "rgba(87, 87, 87, 0.25)",
   "--theia-editor-wordHighlightStrongBackground": "rgba(14, 99, 156, 0.25)",
   "--theia-editor-wordHighlightTextBackground": "rgba(87, 87, 87, 0.25)",
-  "--theia-editorOverviewRuler-wordHighlightForeground":
-    "rgba(160, 160, 160, 0.8)",
-  "--theia-editorOverviewRuler-wordHighlightStrongForeground":
-    "rgba(192, 160, 192, 0.8)",
-  "--theia-editorOverviewRuler-wordHighlightTextForeground":
-    "rgba(160, 160, 160, 0.8)",
+  "--theia-editorOverviewRuler-wordHighlightForeground": "rgba(160, 160, 160, 0.8)",
+  "--theia-editorOverviewRuler-wordHighlightStrongForeground": "rgba(192, 160, 192, 0.8)",
+  "--theia-editorOverviewRuler-wordHighlightTextForeground": "rgba(160, 160, 160, 0.8)",
   "--theia-editorHoverWidget-highlightForeground": "#0066bf",
   "--theia-sash-activeBorder": "#0090f1",
   "--theia-activityBar-background": "#ececec",
@@ -451,8 +439,7 @@ const theiaThemeExample = {
   "--theia-terminal-ansiBrightCyan": "#0598bc",
   "--theia-terminal-ansiBrightWhite": "#a5a5a5",
   "--theia-editor-stackFrameHighlightBackground": "rgba(255, 255, 102, 0.45)",
-  "--theia-editor-focusedStackFrameHighlightBackground":
-    "rgba(206, 231, 206, 0.45)",
+  "--theia-editor-focusedStackFrameHighlightBackground": "rgba(206, 231, 206, 0.45)",
   "--theia-statusBar-debuggingBackground": "#cc6633",
   "--theia-statusBar-debuggingForeground": "#18181b",
   "--theia-debugExceptionWidget-border": "#a31515",
@@ -488,8 +475,7 @@ const theiaThemeExample = {
   "--theia-notebook-selectedCellBorder": "#e8e8e8",
   "--theia-notebook-focusedCellBorder": "#0090f1",
   "--theia-notebook-inactiveFocusedCellBorder": "#e8e8e8",
-  "--theia-notebook-cellStatusBarItemHoverBackground":
-    "rgba(255, 255, 255, 0.15)",
+  "--theia-notebook-cellStatusBarItemHoverBackground": "rgba(255, 255, 255, 0.15)",
   "--theia-notebook-cellInsertionIndicator": "#0090f1",
   "--theia-notebookScrollbarSlider-background": "rgba(100, 100, 100, 0.4)",
   "--theia-notebookScrollbarSlider-hoverBackground": "rgba(100, 100, 100, 0.7)",

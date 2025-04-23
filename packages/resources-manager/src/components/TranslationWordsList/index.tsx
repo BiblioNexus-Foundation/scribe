@@ -13,9 +13,7 @@ const TranslationWordsList = ({
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const [currentTranslationWordContent, setCurrentTranslationWord] = useState<
-    string | null
-  >(null);
+  const [currentTranslationWordContent, setCurrentTranslationWord] = useState<string | null>(null);
 
   const currentTranslationWord = useMemo(
     () =>
@@ -29,9 +27,7 @@ const TranslationWordsList = ({
 
   useEffect(() => {
     if (currentTranslationWord?.path) {
-      getTranslationWordContent(currentTranslationWord.path).then(
-        setCurrentTranslationWord
-      );
+      getTranslationWordContent(currentTranslationWord.path).then(setCurrentTranslationWord);
     }
   }, [currentTranslationWord?.path]);
 
@@ -49,14 +45,11 @@ const TranslationWordsList = ({
     <div className="flex flex-col">
       <div className="flex justify-between">
         <VSCodeButton
-          onClick={() =>
-            setCurrentIndex((prev) => (prev === 0 ? prev : prev - 1))
-          }
+          onClick={() => setCurrentIndex((prev) => (prev === 0 ? prev : prev - 1))}
           appearance="secondary"
           aria-label="left"
           className=""
-          disabled={currentIndex === 0}
-        >
+          disabled={currentIndex === 0}>
           <i className="codicon codicon-chevron-left"></i>
         </VSCodeButton>
 
@@ -64,16 +57,11 @@ const TranslationWordsList = ({
           {currentIndex + 1} / {diskTwl.length}
         </span>
         <VSCodeButton
-          onClick={() =>
-            setCurrentIndex((prev) =>
-              prev === diskTwl.length - 1 ? prev : prev + 1
-            )
-          }
+          onClick={() => setCurrentIndex((prev) => (prev === diskTwl.length - 1 ? prev : prev + 1))}
           appearance="secondary"
           aria-label="right"
           className=""
-          disabled={currentIndex === diskTwl.length - 1}
-        >
+          disabled={currentIndex === diskTwl.length - 1}>
           <i className="codicon codicon-chevron-right"></i>
         </VSCodeButton>
       </div>

@@ -31,9 +31,7 @@ export default new ContainerModule((bind, _unbind, isBound, rebind) => {
     .toDynamicValue((context) => ({
       id: GettingStartedWidget.ID,
       createWidget: () =>
-        context.container.get<TheiaIDEGettingStartedWidget>(
-          TheiaIDEGettingStartedWidget
-        ),
+        context.container.get<TheiaIDEGettingStartedWidget>(TheiaIDEGettingStartedWidget),
     }))
     .inSingletonScope();
   bindAllToolbarContributions(bind);

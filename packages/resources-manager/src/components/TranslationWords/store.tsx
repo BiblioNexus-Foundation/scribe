@@ -14,10 +14,7 @@ export interface TranslationWordStoreState {
   category: TWCategory;
   setCategory: (category: TWCategory) => void;
   translationWords: TranslationWord[];
-  searchTranslationWords: (
-    category: string,
-    query: string
-  ) => Promise<TranslationWord[]>;
+  searchTranslationWords: (category: string, query: string) => Promise<TranslationWord[]>;
 
   selectedWord: TranslationWord | null;
   setSelectedWord: (word: TranslationWord | null) => void;
@@ -28,10 +25,7 @@ const createTranslationWordStore = ({
   searchTranslationWords,
 }: {
   translationWords: TranslationWord[];
-  searchTranslationWords: (
-    category: TWCategory,
-    query: string
-  ) => Promise<TranslationWord[]>;
+  searchTranslationWords: (category: TWCategory, query: string) => Promise<TranslationWord[]>;
 }) =>
   createStore<TranslationWordStoreState>()((set) => ({
     search: {
@@ -44,8 +38,7 @@ const createTranslationWordStore = ({
     translationWords,
     searchTranslationWords: searchTranslationWords,
     selectedWord: null,
-    setSelectedWord: (word: TranslationWord | null) =>
-      set({ selectedWord: word }),
+    setSelectedWord: (word: TranslationWord | null) => set({ selectedWord: word }),
   }));
 
 type TranslationWordStore = ReturnType<typeof createTranslationWordStore>;
@@ -59,25 +52,20 @@ export const useTranslationWordStore = <S,>(
 ): S extends (store: TranslationWordStoreState) => infer Data
   ? Data
   : S extends undefined
-  ? TranslationWordStoreState
-  : never => {
+    ? TranslationWordStoreState
+    : never => {
   const store = useContext(TranslationWordStoreContext);
   if (!store) {
-    throw new Error(
-      "useTranslationWordStore must be used within a TranslationWordStoreProvider"
-    );
+    throw new Error("useTranslationWordStore must be used within a TranslationWordStoreProvider");
   }
 
-  const slice = useStore(
-    store,
-    selector as (store: TranslationWordStoreState) => unknown
-  );
+  const slice = useStore(store, selector as (store: TranslationWordStoreState) => unknown);
 
   return slice as S extends (store: TranslationWordStoreState) => infer Data
     ? Data
     : S extends undefined
-    ? TranslationWordStoreState
-    : never;
+      ? TranslationWordStoreState
+      : never;
 };
 
 export const TranslationWordStoreProvider = ({
@@ -87,10 +75,7 @@ export const TranslationWordStoreProvider = ({
 }: {
   children: React.ReactNode;
   translationWords: TranslationWord[];
-  searchTranslationWords: (
-    category: TWCategory,
-    query: string
-  ) => Promise<TranslationWord[]>;
+  searchTranslationWords: (category: TWCategory, query: string) => Promise<TranslationWord[]>;
 }) => {
   const translationWordStore = createTranslationWordStore({
     translationWords,
