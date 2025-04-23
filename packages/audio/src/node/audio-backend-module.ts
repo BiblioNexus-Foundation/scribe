@@ -1,9 +1,10 @@
 import { injectable } from "@theia/core/shared/inversify";
-import { FFmpegServer, RecordingOptions, FileNode } from "../common/audio-protocol";
+import { FFmpegServer, RecordingOptions } from "../common/audio-protocol";
 import { spawn, execSync, ChildProcess, exec } from "child_process";
 import * as path from "path";
 import * as os from "os";
 import * as fs from "fs/promises";
+import * as Fs from "fs";
 import { promisify } from "util";
 const execAsync = promisify(exec);
 @injectable()
@@ -26,6 +27,57 @@ export class FFmpegServerImpl implements FFmpegServer {
       this.initializeDefaultWinDevices();
     }
   }
+
+  private async checkForScribeConfig(workspacePath: string): Promise<string | null> {
+    try {
+      const scribeJsonPath = path.join(workspacePath, "scribe.json");
+
+      // Check if the file exists
+      try {
+        await fs.access(scribeJsonPath);
+      } catch (error) {
+        console.log("No scribe.json found in workspace, using default audio directory");
+        return null;
+      }
+
+      // Read and parse the file
+      const fileContent = await fs.readFile(scribeJsonPath, "utf8");
+      const config = JSON.parse(fileContent);
+
+      if (config.audioDir) {
+        console.log(`Found audioDir in scribe.json: ${config.audioDir}`);
+        return config.audioDir;
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error reading scribe.json:", error);
+      return null;
+    }
+  }
+
+  async setWorkspacePath(workspacePath: string): Promise<void> {
+    try {
+      // Check for scribe.json configuration
+      const audioDir = await this.checkForScribeConfig(workspacePath);
+
+      if (audioDir) {
+        // Use the audioDir from scribe.json
+        this.outputDir = audioDir;
+      } else {
+        // Fall back to default audio-recordings directory
+        this.outputDir = path.join(workspacePath, "audio-recordings");
+      }
+
+      // Ensure directory exists
+      await fs.mkdir(this.outputDir, { recursive: true });
+      console.log("Audio recordings directory set to:", this.outputDir);
+    } catch (error) {
+      console.error("Failed to set workspace path:", error);
+      throw error;
+    }
+  }
+
   async openAudioSettings(): Promise<void> {
     if (os.platform() !== "linux") {
       throw new Error("This function is only supported on Linux systems");
@@ -201,61 +253,6 @@ export class FFmpegServerImpl implements FFmpegServer {
   async setSelectedDevice(device: string): Promise<void> {
     this.selectedDevice = device;
   }
-  async setWorkspacePath(workspacePath: string): Promise<void> {
-    try {
-      this.outputDir = path.join(workspacePath, "audio-recordings");
-      await fs.mkdir(this.outputDir, { recursive: true });
-      console.log("Audio recordings directory set to:", this.outputDir);
-    } catch (error) {
-      console.error("Failed to set workspace path:", error);
-      throw error;
-    }
-  }
-  async getFileTree(rootPath: string): Promise<FileNode> {
-    const buildTree = async (dirPath: string): Promise<FileNode[]> => {
-      try {
-        const entries = await fs.readdir(dirPath, { withFileTypes: true });
-        const items = await Promise.all(
-          entries.map(async (entry) => {
-            const fullPath = path.join(dirPath, entry.name);
-            if (entry.isDirectory()) {
-              const children = await buildTree(fullPath);
-              return {
-                name: entry.name,
-                type: "folder" as const,
-                path: fullPath,
-                children,
-              };
-            } else {
-              return {
-                name: entry.name,
-                type: "file" as const,
-                path: fullPath,
-              };
-            }
-          })
-        );
-        return items;
-      } catch (error) {
-        console.error("Error reading directory:", dirPath, error);
-        return [];
-      }
-    };
-    try {
-      const audioFolder = path.join(rootPath, "audio-recordings");
-      await fs.access(audioFolder);
-      const children = await buildTree(audioFolder);
-      return {
-        name: "audio-recordings",
-        type: "folder",
-        path: audioFolder,
-        children,
-      };
-    } catch (error) {
-      console.error("Failed to get file tree:", error);
-      throw error;
-    }
-  }
   async getAudioFiles(): Promise<string[]> {
     try {
       const files = await fs.readdir(this.outputDir);
@@ -275,15 +272,20 @@ export class FFmpegServerImpl implements FFmpegServer {
     const audioInput = this.getAudioInputFormat();
     console.log(audioInput, "audioInput");
     this.currentStoryId = options.storyId?.toString() ?? "default";
+    const outputDirectory = options.chapterDir || this.outputDir;
     if (!this.isRecordingPaused && this.tempRecordings.length === 0) {
       this.segmentCounter = 1;
     }
     if (!this.isRecordingPaused) {
       this.currentOutputFile = path.join(
-        this.outputDir,
-        `temp_${this.segmentCounter.toString().padStart(3, "0")}_story-${this.currentStoryId}.wav`
+        outputDirectory,
+        `temp_${this.segmentCounter.toString().padStart(3, "0")}_${this.currentStoryId}.wav`
       );
     }
+    if (!this.currentOutputFile) {
+      throw new Error("Output file path is null");
+    }
+    await fs.mkdir(path.dirname(this.currentOutputFile), { recursive: true });
     const command = [
       "-f",
       audioInput.format,
@@ -416,16 +418,14 @@ export class FFmpegServerImpl implements FFmpegServer {
       // Verify the current output file exists
       await fs.stat(this.currentOutputFile);
       this.tempRecordings.push(this.currentOutputFile);
+      const outputDirectory = path.dirname(this.currentOutputFile);
       this.currentOutputFile = null;
 
       if (this.tempRecordings.length === 0) {
         throw new Error("No recordings to process");
       }
 
-      const finalOutputFile = path.join(
-        this.outputDir,
-        `story-${this.currentStoryId || "default"}.wav`
-      );
+      const finalOutputFile = path.join(outputDirectory, `${this.currentStoryId || "default"}.wav`);
 
       const sortedRecordings = [...this.tempRecordings].sort((a, b) => {
         const segmentA = parseInt(path.basename(a).split("_")[1]) || 0;
@@ -572,12 +572,17 @@ export class FFmpegServerImpl implements FFmpegServer {
     if (!this.isRecordingPaused) {
       throw new Error("No paused recording to resume");
     }
+    if (this.tempRecordings.length === 0) {
+      throw new Error("No previous recording segments found");
+    }
+    const chapterDir = path.dirname(this.tempRecordings[this.tempRecordings.length - 1]);
     this.currentOutputFile = path.join(
-      this.outputDir,
-      `temp_${this.segmentCounter.toString().padStart(3, "0")}_story-${this.currentStoryId}.wav`
+      chapterDir,
+      `temp_${this.segmentCounter.toString().padStart(3, "0")}_${this.currentStoryId}.wav`
     );
     return this.startRecording({
-      storyId: this.currentStoryId ? parseInt(this.currentStoryId) : undefined,
+      storyId: this.currentStoryId || undefined,
+      chapterDir: chapterDir,
     });
   }
   getFFmpegPath(): Promise<string> {
@@ -589,39 +594,145 @@ export class FFmpegServerImpl implements FFmpegServer {
   getClient?(): void | undefined {
     throw new Error("Method not implemented.");
   }
+
   private getPlatformSpecificFFmpegPath(): string {
-    const ffmpegDir = path.resolve(__dirname, "../../../../ffmpeg");
-    switch (os.platform()) {
-      case "win32":
-        return path.join(ffmpegDir, "win", "ffmpeg.exe");
-      case "darwin":
-        return path.join(ffmpegDir, "mac", "ffmpeg");
-      case "linux":
-        return path.join(ffmpegDir, "linux", "ffmpeg");
-      default:
-        throw new Error("Unsupported OS platform for FFmpeg");
+    try {
+      // Use the environment variable set in config.js
+      if (process.env.FFMPEG_DIR) {
+        const binaryName = os.platform() === "win32" ? "ffmpeg.exe" : "ffmpeg";
+        const ffmpegPath = path.join(process.env.FFMPEG_DIR, binaryName);
+
+        console.log(`Checking FFmpeg at path: ${ffmpegPath}`);
+
+        if (Fs.existsSync(ffmpegPath)) {
+          console.log(`Found FFmpeg at: ${ffmpegPath}`);
+
+          // On non-Windows platforms, ensure the binary is executable
+          if (os.platform() !== "win32") {
+            try {
+              // Get current permissions
+              const stats = Fs.statSync(ffmpegPath);
+              const currentMode = stats.mode;
+
+              // Add executable permission if not already set
+              if (!(currentMode & 0o111)) {
+                console.log(`Setting executable permissions for: ${ffmpegPath}`);
+                Fs.chmodSync(ffmpegPath, currentMode | 0o111);
+              }
+            } catch (error) {
+              console.warn(
+                `Warning: Could not check/set executable permissions: ${error instanceof Error ? error.message : String(error)}`
+              );
+            }
+          }
+
+          return ffmpegPath;
+        } else {
+          console.warn(`FFmpeg not found at configured path: ${ffmpegPath}`);
+        }
+      } else {
+        console.warn("FFMPEG_DIR environment variable not set");
+      }
+
+      // Fall back to searching in various locations
+      const platform =
+        os.platform() === "win32" ? "win" : os.platform() === "darwin" ? "mac" : "linux";
+      const binaryName = platform === "win" ? "ffmpeg.exe" : "ffmpeg";
+
+      // Check user data directory first
+      const homeDir = os.homedir();
+      const userDataDir = path.join(homeDir, ".scribe");
+      const userBinaryPath = path.join(userDataDir, ".bin", "ffmpeg", platform, binaryName);
+      if (Fs.existsSync(userBinaryPath)) {
+        console.log(`Found FFmpeg in user data directory: ${userBinaryPath}`);
+        return userBinaryPath;
+      }
+
+      // Check app directory
+      const appDir = path.resolve(__dirname, "..", "..", "..", "..", "ffmpeg");
+      const appBinaryPath = path.join(appDir, platform, binaryName);
+
+      if (Fs.existsSync(appBinaryPath)) {
+        console.log(`Found FFmpeg in app directory: ${appBinaryPath}`);
+        return appBinaryPath;
+      }
+
+      // Last resort - check resources directory if in a packaged app
+      if (process.resourcesPath) {
+        const resourcesBinaryPath = path.join(
+          process.resourcesPath,
+          "app",
+          "ffmpeg",
+          platform,
+          binaryName
+        );
+        if (Fs.existsSync(resourcesBinaryPath)) {
+          console.log(`Found FFmpeg in resources directory: ${resourcesBinaryPath}`);
+          return resourcesBinaryPath;
+        }
+      }
+
+      console.error("Could not find FFmpeg binary in any expected location");
+      throw new Error("FFmpeg binary not found");
+    } catch (error) {
+      console.error(
+        `Error finding FFmpeg path: ${error instanceof Error ? error.message : String(error)}`
+      );
+      throw error;
     }
   }
+
+  private async checkFFmpegInstallation(): Promise<void> {
+    try {
+      console.log(`Checking FFmpeg installation at: ${this.ffmpegPath}`);
+
+      // Verify file exists
+      if (!Fs.existsSync(this.ffmpegPath)) {
+        console.error(`FFmpeg binary not found at: ${this.ffmpegPath}`);
+        throw new Error(`FFmpeg binary not found at: ${this.ffmpegPath}`);
+      }
+
+      // Set executable permissions on non-Windows platforms
+      if (os.platform() !== "win32") {
+        try {
+          const stats = Fs.statSync(this.ffmpegPath);
+          Fs.chmodSync(this.ffmpegPath, stats.mode | 0o755);
+          console.log(`Set executable permissions for: ${this.ffmpegPath}`);
+        } catch (chmodErr) {
+          console.warn(
+            `Warning: Failed to set executable permissions: ${chmodErr instanceof Error ? chmodErr.message : String(chmodErr)}`
+          );
+        }
+      }
+
+      // Run FFmpeg version check
+      try {
+        const quotedPath = this.ffmpegPath.includes(" ") ? `"${this.ffmpegPath}"` : this.ffmpegPath;
+        const output = execSync(`${quotedPath} -version`, { encoding: "utf8" });
+        console.log(`FFmpeg version info: ${output.split("\n")[0]}`);
+      } catch (execErr) {
+        console.error(
+          `FFmpeg execution test failed: ${execErr instanceof Error ? execErr.message : String(execErr)}`
+        );
+        throw new Error(
+          `FFmpeg execution test failed: ${execErr instanceof Error ? execErr.message : String(execErr)}`
+        );
+      }
+
+      console.log(`FFmpeg installation check passed`);
+    } catch (err) {
+      console.error(
+        `FFmpeg installation check failed: ${err instanceof Error ? err.message : String(err)}`
+      );
+      throw new Error(
+        `FFmpeg is not installed or not functioning correctly: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+  }
+
   async getSystemOS() {
     const currentOS = os.platform();
     return currentOS;
-  }
-  private async checkFFmpegInstallation(): Promise<void> {
-    try {
-      await fs.access(this.ffmpegPath, fs.constants.F_OK);
-      if (os.platform() !== "win32") {
-        try {
-          await fs.chmod(this.ffmpegPath, 0o755);
-        } catch (chmodErr) {
-          console.warn("Warning: Failed to set executable permissions:", chmodErr);
-        }
-      }
-      await fs.access(this.ffmpegPath, fs.constants.X_OK);
-      execSync(`${this.ffmpegPath} -version`);
-    } catch (err) {
-      console.error("FFmpeg installation check failed:", err);
-      throw new Error("FFmpeg is not installed or not functioning correctly");
-    }
   }
 
   private getAudioInputFormat(): { format: string; device: string } {
@@ -735,6 +846,11 @@ export class FFmpegServerImpl implements FFmpegServer {
       throw error;
     }
   }
+
+  async getOutputDir(): Promise<string> {
+    return this.outputDir;
+  }
+
   dispose(): void {
     if (this.recordingProcess) {
       this.recordingProcess.kill();

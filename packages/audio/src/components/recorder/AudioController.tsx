@@ -1,4 +1,5 @@
 import { FFmpegServer, RecordingOptions } from "../../common/audio-protocol";
+import path from "path";
 
 export class AudioController {
   private isRecording: boolean = false;
@@ -9,24 +10,29 @@ export class AudioController {
 
   constructor(private server: FFmpegServer) {}
 
-  async startRecording(): Promise<void> {
-    try {
-      if (!this.isRecording) {
-        const options: RecordingOptions = {
-          sampleRate: 48000,
-          channels: 1,
-          format: "wav",
-          storyId: Date.now(),
-        };
-        await this.server.startRecording(options);
-        this.isRecording = true;
-        this.isPaused = false;
-        this.audioFile = undefined;
-      }
-    } catch (error) {
-      console.error("Error starting recording:", error);
-      throw error;
+  // Enhanced createFolders method that returns the created paths
+  async createFolders(
+    bookName: string,
+    chapter: string
+  ): Promise<{ bookDir: string; chapterDir: string }> {
+    if (!bookName) {
+      throw new Error("Book name is required");
     }
+
+    const outputDir = await this.server.getOutputDir();
+    const bookDir = path.join(outputDir, bookName);
+
+    // Create book directory if it doesn't exist
+    await this.server.createFolder(bookDir);
+
+    let chapterDir = bookDir;
+    if (chapter) {
+      chapterDir = path.join(bookDir, chapter);
+      // Create chapter directory if it doesn't exist
+      await this.server.createFolder(chapterDir);
+    }
+
+    return { bookDir, chapterDir };
   }
 
   async stopRecording(): Promise<string | undefined> {
@@ -45,6 +51,35 @@ export class AudioController {
     }
   }
 
+  async startRecording(bookName: string, chapter: string, verse: string): Promise<void> {
+    try {
+      if (!this.isRecording) {
+        // Create the directory structure for book and chapter
+        const { chapterDir } = await this.createFolders(bookName, chapter);
+
+        const options: RecordingOptions = {
+          sampleRate: 48000,
+          channels: 1,
+          format: "wav",
+          storyId: `${chapter}_${verse}`,
+          bookName: bookName,
+          chapterDir: chapterDir, // Pass the chapter directory path
+        };
+
+        await this.server.startRecording(options);
+        this.isRecording = true;
+        this.isPaused = false;
+        this.audioFile = undefined;
+        return;
+      }
+      throw new Error("Recording is already in progress.");
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      throw error;
+    }
+  }
+
+  // Rest of the AudioController methods remain the same
   async pauseRecording(): Promise<void> {
     try {
       if (this.isRecording && !this.isPaused) {

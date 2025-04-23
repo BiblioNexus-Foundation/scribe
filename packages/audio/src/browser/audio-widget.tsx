@@ -5,6 +5,7 @@ import { AudioPanel } from "../components/AudioPanel";
 import { ThemeService } from "@theia/core/lib/browser/theming";
 import { FFmpegServer } from "../common/audio-protocol";
 import { WorkspaceService } from "@theia/workspace/lib/browser/workspace-service";
+import { GlobalStateStorage } from "@scribe/theia-utils/lib/browser/global-state-storage";
 
 @injectable()
 export class AudioWidget extends ReactWidget {
@@ -20,6 +21,11 @@ export class AudioWidget extends ReactWidget {
   @inject(WorkspaceService)
   protected readonly workspaceService: WorkspaceService;
 
+  @inject(GlobalStateStorage)
+  protected readonly globalStateStorage: GlobalStateStorage;
+
+  private refValue: string = "";
+
   private currentTheme: string;
 
   @postConstruct()
@@ -27,27 +33,59 @@ export class AudioWidget extends ReactWidget {
     this.doInit();
   }
 
-  protected async doInit(): Promise<void> {
-    this.id = AudioWidget.ID;
-    this.title.label = AudioWidget.LABEL;
-    this.title.caption = AudioWidget.LABEL;
-    this.title.closable = true;
-    this.title.iconClass = "fa fa-window-maximize"; // example widget icon.
+  protected async updateRefValue(): Promise<void> {
+    // Fetch new refValue from storage
+    const newRefValue =
+      ((await this.globalStateStorage.getData("scribe-bible-verse-ref")) as string) || "";
 
-    // Set initial theme
-    this.currentTheme = this.themeService.getCurrentTheme().type;
-
-    console.log(this.server, "server");
-    // Subscribe to theme changes
-    this.themeService.onDidColorThemeChange(() => {
-      this.handleThemeChange();
-    });
-
-    await this.initializeWorkspace();
-
-    this.update(); // Force initial render
+    // Only update and trigger re-render if refValue has changed
+    if (newRefValue !== this.refValue) {
+      this.refValue = newRefValue;
+      this.update(); // Trigger re-render
+    }
   }
+  protected async doInit(): Promise<void> {
+    try {
+      this.id = AudioWidget.ID;
+      this.title.label = AudioWidget.LABEL;
+      this.title.caption = AudioWidget.LABEL;
+      this.title.closable = true;
+      this.title.iconClass = "fa fa-window-maximize"; // example widget icon.
+      this.updateRefValue();
 
+      // Set initial theme
+      this.currentTheme = this.themeService.getCurrentTheme().type;
+      this.globalStateStorage.onUpdate("scribe-bible-verse-ref", (verse) => {
+        this.refValue = verse as string;
+        this.update();
+      });
+
+      // Safely log the server reference
+      if (this.server) {
+        console.log("Audio server is available");
+      } else {
+        console.error("Audio server reference is missing or undefined");
+      }
+
+      // Subscribe to theme changes
+      this.themeService.onDidColorThemeChange(() => {
+        this.handleThemeChange();
+      });
+
+      // Make sure server is available before proceeding
+      if (this.server) {
+        await this.initializeWorkspace();
+      } else {
+        throw new Error("Cannot initialize workspace: server reference is not available");
+      }
+
+      this.update(); // Force initial render
+    } catch (error) {
+      console.error(
+        `Failed to initialize audio widget: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
   // Handles theme change and updates widget state
   protected handleThemeChange(): void {
     const newTheme = this.themeService.getCurrentTheme().type;
@@ -103,6 +141,6 @@ export class AudioWidget extends ReactWidget {
   }
   render(): React.ReactElement {
     // Render AudioPanel with the current theme
-    return <AudioPanel theme={this.currentTheme} server={this.server} />;
+    return <AudioPanel theme={this.currentTheme} server={this.server} refValue={this.refValue} />;
   }
 }
