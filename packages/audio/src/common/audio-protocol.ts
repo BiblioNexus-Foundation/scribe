@@ -8,8 +8,10 @@ export interface RecordingOptions {
   channels?: number;
   format?: string;
   device?: string;
-  storyId?: number;
+  storyId?: string;
   filename?: string;
+  bookName?: string;
+  chapterDir?: string;
 }
 
 export interface FileNode {
@@ -27,11 +29,11 @@ export interface FFmpegServer extends RpcServer<void> {
   getAudioFiles(): Promise<string[]>;
   deleteFile(path: string): Promise<void>;
   createFolder(path: string): Promise<void>;
-  getFileTree(rootPath: string): Promise<any>;
   setWorkspacePath(path: string): Promise<void>;
   resumeRecording(): Promise<string>;
   pauseRecording(): Promise<string>;
   getSystemOS(): Promise<string>;
   getAudioDevices(): Promise<Array<{ name: string; alternativeName: string }>>;
   openAudioSettings(): Promise<void>;
+  getOutputDir(): Promise<string>;
 }
