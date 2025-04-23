@@ -9,7 +9,9 @@
   color: #06b6d4; /* cyan-500 color */
   cursor: pointer;
   border: none;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
   white-space: nowrap;
 }
 
@@ -23,6 +25,12 @@
   color: #94a3b8; /* slate-400 color */
   cursor: not-allowed;
   opacity: 0.6;
+}
+.scribe-toolbar-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: #f0f0f0; /* same as .scribe-toolbar background */
 }
 
 .scribe-toolbar {

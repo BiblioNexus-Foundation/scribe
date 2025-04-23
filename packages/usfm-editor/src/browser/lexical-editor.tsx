@@ -1,9 +1,5 @@
-import * as React from '@theia/core/shared/react';
-import {
-  BookCode,
-  MarkerObject,
-  Usj,
-} from '@biblionexus-foundation/scripture-utilities';
+import * as React from "@theia/core/shared/react";
+import { BookCode, MarkerObject, Usj } from "@biblionexus-foundation/scripture-utilities";
 
 import {
   Editor,
@@ -11,7 +7,7 @@ import {
   DEFAULT_VIEW_MODE,
   immutableNoteCallerNodeName,
   UsjNodeOptions,
-} from '@biblionexus-foundation/scribe-editor';
+} from "@biblionexus-foundation/scribe-editor";
 import {
   SyntheticEvent,
   useCallback,
@@ -19,12 +15,11 @@ import {
   useState,
   useRef,
   useMemo,
-} from '@theia/core/shared/react';
-import { Emitter } from '@theia/core';
-import { VerseRefUtils, VerseRefValue } from '@scribe/theia-utils/lib/browser';
-import { SCOPE } from '@/utils/constants';
+} from "@theia/core/shared/react";
+import { Emitter } from "@theia/core";
+import { VerseRefUtils, VerseRefValue } from "@scribe/theia-utils/lib/browser";
 
-export type TextDirection = 'ltr' | 'rtl' | 'auto';
+export type TextDirection = "ltr" | "rtl" | "auto";
 export interface ScriptureReference {
   book: string;
   chapterNum: number;
@@ -33,12 +28,12 @@ export interface ScriptureReference {
   versificationStr?: string;
 }
 const defaultUsj: Usj = {
-  type: 'USJ',
-  version: '3.1',
+  type: "USJ",
+  version: "3.1",
   content: [],
 };
 const defaultScrRef: ScriptureReference = {
-  book: 'GEN',
+  book: "GEN",
   chapterNum: 1,
   verseNum: 1,
 };
@@ -60,14 +55,14 @@ export default function LexicalEditor({
   isDirty,
   onUsjUpdate,
   verseRefUtils,
-  readOnly = false,
+  scope = [],
 }: {
   usjInput?: Usj;
   isDirty?: boolean;
   onDirtyChangedEmitter?: Emitter<void>;
   onUsjUpdate?: (usj: Usj) => void;
   verseRefUtils?: VerseRefUtils;
-  readOnly?: boolean;
+  scope?: string[];
 }) {
   const [usj, setUsj] = useState<Usj>(defaultUsj);
   const editorRef = useRef<EditorRef>(null);
@@ -81,7 +76,7 @@ export default function LexicalEditor({
   const nodeOptions: UsjNodeOptions = {
     [immutableNoteCallerNodeName]: {
       onClick: (e: SyntheticEvent) => {
-        console.log('Note caller clicked', e);
+        console.log("Note caller clicked", e);
       },
     },
   };
@@ -103,7 +98,7 @@ export default function LexicalEditor({
   useEffect(() => {
     if (verseRefUtils) {
       const verseChangeListener = (verseRef: VerseRefValue) => {
-        console.log('VerseRef changed in editor component', verseRef);
+        console.log("VerseRef changed in editor component", verseRef);
 
         if (verseRef.book === currentBookId) {
           setScrRef({
@@ -124,12 +119,13 @@ export default function LexicalEditor({
   }, [verseRefUtils, currentBookId]);
 
   useEffect(() => {
-    console.log('scrRef changed in editor', scrRef);
+    console.log("scrRef changed in editor", scrRef);
     if (verseRefUtils && scrRef) {
-      console.log('Updating VerseRefUtils', scrRef);
+      console.log("Updating VerseRefUtils", scrRef);
 
       verseRefUtils.getVerseRef().then((currentVerseRef) => {
         if (
+          currentVerseRef.book !== scrRef.book ||
           currentVerseRef.chapter !== scrRef.chapterNum ||
           currentVerseRef.verse !== scrRef.verseNum
         ) {
@@ -145,11 +141,11 @@ export default function LexicalEditor({
 
   useEffect(() => {
     if (usjInput) {
-      console.log('Setting usjInput', usjInput);
+      console.log("Setting usjInput", usjInput);
       setUsj(usjInput);
 
       const bookMarker = usjInput.content.find(
-        (item) => typeof item !== 'string' && item.type === 'book' && item.code
+        (item) => typeof item !== "string" && item.type === "book" && item.code
       ) as MarkerObject | undefined;
 
       if (bookMarker?.code) {
@@ -170,7 +166,7 @@ export default function LexicalEditor({
   const onUsjChange = useCallback(
     (newUsj: Usj) => {
       if (onUsjUpdate) {
-        console.log('Usj changed in editor', newUsj);
+        console.log("Usj changed in editor", newUsj);
         onUsjUpdate(newUsj);
       }
     },
@@ -184,14 +180,14 @@ export default function LexicalEditor({
   }, [editorRef]);
 
   const navScope = {
-    availableBooks: new Set(SCOPE),
+    availableBooks: new Set(scope),
   };
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.addEventListener) {
-      const container = document.querySelector('.lexical-editor-container');
+      const container = document.querySelector(".lexical-editor-container");
       if (container) {
-        container.addEventListener('focus', () => {
+        container.addEventListener("focus", () => {
           focusEditor();
         });
       }
@@ -199,8 +195,8 @@ export default function LexicalEditor({
   }, [focusEditor]);
 
   return (
-    <div className='lexical-editor-container'>
-      <div className='editor-wrapper p-4 text-gray-600'>
+    <div className="lexical-editor-container">
+      <div className="editor-wrapper p-4 text-gray-600">
         <Editor
           usjInput={usj}
           ref={editorRef}
@@ -209,7 +205,6 @@ export default function LexicalEditor({
           nodeOptions={nodeOptions}
           scrRef={scrRef}
           setScrRef={setScrRef}
-          readOnly={readOnly}
           scope={navScope}
         />
       </div>

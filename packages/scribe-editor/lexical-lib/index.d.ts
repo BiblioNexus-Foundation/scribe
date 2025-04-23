@@ -1,5 +1,6 @@
 import { ForwardRefExoticComponent } from 'react';
 import { immutableNoteCallerNodeName } from 'shared-react/nodes/scripture/usj/ImmutableNoteCallerNode';
+import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RefAttributes } from 'react';
 import { ScriptureReference } from 'shared/utils/get-marker-action.model';
 import { Usj } from '@biblionexus-foundation/scripture-utilities';
@@ -33,7 +34,6 @@ declare type EditorProps = {
     nodeOptions?: UsjNodeOptions;
     scrRef: ScriptureReference;
     setScrRef: React.Dispatch<React.SetStateAction<ScriptureReference>>;
-    readOnly: boolean;
     scope?: Scope;
 };
 
@@ -54,6 +54,17 @@ export declare type EditorRef = {
 export declare function getViewOptions(viewMode?: string | undefined): ViewOptions | undefined;
 
 export { immutableNoteCallerNodeName }
+
+export declare function ReadOnlyEditor({ usjInput, viewOptions, }: {
+    usjInput?: Usj;
+    viewOptions?: ViewOptions;
+}): JSX_2.Element;
+
+/** Forward reference for the editor. */
+export declare type ReadOnlyEditorRef = {
+    /** Method to set the USJ Scripture data. */
+    setUsj(usj: Usj): void;
+};
 
 declare interface Scope {
     availableBooks: Set<string>;
