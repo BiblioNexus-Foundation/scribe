@@ -1,6 +1,18 @@
+
 import { useState, useEffect, useRef } from "react";
 import React = require("react");
 import versification from "../Assets/versification.json";
+
+interface TheiaTheme {
+  id: string;
+  type: string;
+  label: string;
+}
+
+interface TheiaThemeService {
+  getCurrentTheme(): TheiaTheme;
+  onThemeChange(callback: (theme: TheiaTheme) => void): { dispose: () => void };
+}
 
 // Scope interface
 interface Scope {
@@ -15,6 +27,19 @@ interface BibleNavState {
   verse: number;
 }
 
+// Add VerseRef interfaces from your code
+export interface VerseRefValue {
+  book: string;
+  chapter: number;
+  verse: number;
+}
+
+interface VerseRefUtilsInterface {
+  getVerseRef(): Promise<VerseRefValue>;
+  setVerseRef(verseRef: VerseRefValue): Promise<void>;
+  onVerseRefChange(callback: (verseRef: VerseRefValue) => void): Promise<void>;
+}
+
 interface NavigationProps {
   showPrevChapter?: boolean;
   showPrevVerse?: boolean;
@@ -22,7 +47,9 @@ interface NavigationProps {
   showNextChapter?: boolean;
   showBookChapter?: boolean;
   scope?: Scope;
+  verseRefUtils?: VerseRefUtilsInterface; // Add VerseRefUtils as an optional prop
 }
+
 interface VersificationData {
   maxVerses: Record<string, string[]>;
 }
@@ -300,6 +327,7 @@ const BibleNavigation: React.FC<NavigationProps> = ({
   showNextChapter = false,
   showBookChapter = false,
   scope = fullBibleScope,
+  verseRefUtils = undefined, // Add VerseRefUtils with default value
 }) => {
   const [currentChapter, setCurrentChapter] = useState<number>(1);
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
@@ -310,7 +338,11 @@ const BibleNavigation: React.FC<NavigationProps> = ({
   const [availableBooks, setAvailableBooks] = useState<string[]>([]);
   const [selectedBookAbbr, setSelectedBookAbbr] = useState<string>("");
   const [currentVerse, setCurrentVerse] = useState<number>(1);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  // const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean | undefined>(undefined);
+
+  // Flag to prevent triggering infinite update loops
+  const isUpdatingFromVerseRef = useRef<boolean>(false);
 
   // Add state to track whether verse navigation is active
   const isVerseNavigation = showNextVerse && showPrevVerse;
@@ -321,32 +353,150 @@ const BibleNavigation: React.FC<NavigationProps> = ({
   );
 
   // Effect to detect dark mode changes
+  
+
   useEffect(() => {
-    const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains("dark");
-      setIsDarkMode(isDark);
-    };
+    // Try to detect if we're in a Theia environment
+    const isTheiaEnvironment = typeof window !== 'undefined' && 
+      (window as any).theia !== undefined || document.body.classList.contains('theia-app');
+    
+    if (isTheiaEnvironment && (window as any).theia?.services?.themeService) {
+      // Access Theia theme service directly
+      const themeService = (window as any).theia.services.themeService as TheiaThemeService;
+      
+      // Function to check theme
+      const checkTheiaTheme = () => {
+        try {
+          const currentTheme = themeService.getCurrentTheme();
+          const isDark = currentTheme.type === 'dark' || 
+                        currentTheme.id.includes('dark') || 
+                        currentTheme.label.toLowerCase().includes('dark');
+          
+          console.debug("Theia theme detected:", currentTheme.label, isDark ? "dark" : "light");
+          console.log("Theia theme detected:", currentTheme.label, isDark ? "dark" : "light");
 
-    // Initial check
-    checkDarkMode();
-
-    // Create observer to watch for class changes
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === "class") {
-          checkDarkMode();
+          setIsDarkMode(isDark);
+        } catch (err) {
+          console.error("Error accessing Theia theme:", err);
+          fallbackThemeDetection();
         }
+      };
+      
+      // Initial theme check
+      checkTheiaTheme();
+      
+      // Listen for theme changes
+      try {
+        const themeListener = themeService.onThemeChange((theme: TheiaTheme) => {
+          const isDark = theme.type === 'dark' || 
+                        theme.id.includes('dark') || 
+                        theme.label.toLowerCase().includes('dark');
+          setIsDarkMode(isDark);
+        });
+        
+        return () => {
+          // Clean up the listener when component unmounts
+          if (themeListener && typeof themeListener.dispose === 'function') {
+            themeListener.dispose();
+          }
+        };
+      } catch (err) {
+        console.error("Could not listen for Theia theme changes:", err);
+        // If we can't listen for changes, set up fallback
+        fallbackThemeDetection();
+      }
+    } else {
+      // If Theia API not available, use fallback method
+      fallbackThemeDetection();
+    }
+    
+    // Fallback detection method using DOM and CSS
+    function fallbackThemeDetection() {
+      console.debug("Using fallback theme detection");
+      
+      const checkDarkMode = () => {
+        // Check for common dark theme classes
+        const hasTheiaDarkClass = document.body.classList.contains("theia-dark") || 
+                                document.documentElement.classList.contains("theia-dark");
+        
+        const hasVSCodeDarkClass = document.body.classList.contains("vscode-dark") || 
+                                document.body.classList.contains("vs-dark");
+        
+        const hasDataThemeDark = document.body.getAttribute("data-theme") === "dark";
+        
+        // Check computed styles
+        const computedStyle = window.getComputedStyle(document.body);
+        const backgroundColor = computedStyle.backgroundColor;
+        
+        // Check if background is dark
+        let isDarkBackground = false;
+        if (backgroundColor) {
+          // Parse RGB values
+          const rgbMatch = backgroundColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+          if (rgbMatch) {
+            const [r, g, b] = [parseInt(rgbMatch[1]), parseInt(rgbMatch[2]), parseInt(rgbMatch[3])];
+            // Calculate perceived brightness
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            isDarkBackground = brightness < 128; // Less than 128 is considered dark
+          }
+        }
+        
+        const isDark = hasTheiaDarkClass || hasVSCodeDarkClass || hasDataThemeDark || isDarkBackground;
+        
+        setIsDarkMode(isDark);
+      };
+      
+      // Delay initial check slightly
+      const initialCheckTimeout = setTimeout(() => {
+        checkDarkMode();
+      }, 100);
+      
+      // Set up observer for theme changes
+      const observer = new MutationObserver(() => {
+        checkDarkMode();
       });
-    });
-
-    // Start observing
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
+      
+      // Start observing document and body
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["class", "data-theme"]
+      });
+      
+      observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ["class", "data-theme"]
+      });
+      
+      return () => {
+        clearTimeout(initialCheckTimeout);
+        observer.disconnect();
+      };
+    }
   }, []);
+
+  
+  // Initialize from VerseRefUtils when available
+  useEffect(() => {
+    if (verseRefUtils) {
+      // Load initial verse reference
+      verseRefUtils.getVerseRef().then((verseRef) => {
+        isUpdatingFromVerseRef.current = true;
+        setSelectedBookAbbr(verseRef.book);
+        setCurrentChapter(verseRef.chapter);
+        setCurrentVerse(verseRef.verse);
+        isUpdatingFromVerseRef.current = false;
+      });
+
+      // Subscribe to verse reference changes
+      verseRefUtils.onVerseRefChange((verseRef) => {
+        isUpdatingFromVerseRef.current = true;
+        setSelectedBookAbbr(verseRef.book);
+        setCurrentChapter(verseRef.chapter);
+        setCurrentVerse(verseRef.verse);
+        isUpdatingFromVerseRef.current = false;
+      });
+    }
+  }, [verseRefUtils]);
 
   useEffect(() => {
     const scopeBooks = Object.keys(scope).filter((book) =>
@@ -364,7 +514,19 @@ const BibleNavigation: React.FC<NavigationProps> = ({
     }
   }, [scope]);
 
+  // Update VerseRefUtils when navigation changes
   useEffect(() => {
+    if (selectedBookAbbr && verseRefUtils && !isUpdatingFromVerseRef.current) {
+      // Only update VerseRefUtils if we have valid data and we're not already updating from it
+      verseRefUtils.setVerseRef({
+        book: selectedBookAbbr,
+        chapter: currentChapter,
+        verse: currentVerse,
+      }).catch(error => {
+        console.error("Failed to update verse reference:", error);
+      });
+    }
+
     if (selectedBookAbbr) {
       const testament = getTestamentForBook(selectedBookAbbr);
       const bookName = testament
@@ -384,7 +546,8 @@ const BibleNavigation: React.FC<NavigationProps> = ({
         window.dispatchEvent(new Event("bibleNavUpdated"));
       }
     }
-  }, [selectedBookAbbr, currentChapter, currentVerse, isVerseNavigation]);
+  }, [selectedBookAbbr, currentChapter, currentVerse, isVerseNavigation, verseRefUtils]);
+
   // Helper function to check if testament has any books in scope
   const hasTestamentBooks = (testament: BibleBooks): boolean => {
     return Object.keys(testament).length > 0;
@@ -419,6 +582,23 @@ const BibleNavigation: React.FC<NavigationProps> = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+
+  useEffect(() => {
+    if (dropdownOpen && selectedBookAbbr && bookRefs.current[selectedBookAbbr]) {
+      const bookElement = bookRefs.current[selectedBookAbbr];
+      const dropdownElement = dropdownRef.current;
+  
+      if (bookElement && dropdownElement) {
+        // Scroll the selected book into view within the dropdown
+        dropdownElement.scrollTo({
+          top: bookElement.offsetTop - dropdownElement.offsetTop,
+          behavior: "auto",
+        });
+      }
+    }
+  }, [dropdownOpen, selectedBookAbbr]);
+  
 
   // Book and chapter navigation helpers (memoized)
   const getAllBooks = React.useMemo(() => {
@@ -467,6 +647,69 @@ const BibleNavigation: React.FC<NavigationProps> = ({
   const isNextDisabled =
     selectedBookAbbr === availableBooks[availableBooks.length - 1] &&
     currentChapter === getTotalChapters(selectedBookAbbr || "");
+
+  // Add verse navigation functions
+  const getMaxVerses = (): number => {
+    if (!selectedBookAbbr) return 1;
+    const versesData = (versification as VersificationData).maxVerses[selectedBookAbbr];
+    return versesData && versesData[currentChapter - 1]
+      ? parseInt(versesData[currentChapter - 1])
+      : 1;
+  };
+
+  const prevVerse = () => {
+    if (currentVerse > 1) {
+      setCurrentVerse((prev) => prev - 1);
+    } else {
+      // Go to previous chapter's last verse
+      if (currentChapter > 1) {
+        const newChapter = currentChapter - 1;
+        const versesData = (versification as VersificationData).maxVerses[selectedBookAbbr];
+        const maxVerse = versesData && versesData[newChapter - 1]
+          ? parseInt(versesData[newChapter - 1])
+          : 1;
+        
+        setCurrentChapter(newChapter);
+        setCurrentVerse(maxVerse);
+      } else {
+        // Go to previous book's last chapter and verse
+        const prevBook = getAdjacentBook("prev");
+        if (prevBook) {
+          const prevChapter = getTotalChapters(prevBook);
+          const versesData = (versification as VersificationData).maxVerses[prevBook];
+          const maxVerse = versesData && versesData[prevChapter - 1]
+            ? parseInt(versesData[prevChapter - 1])
+            : 1;
+          
+          setSelectedBookAbbr(prevBook);
+          setCurrentChapter(prevChapter);
+          setCurrentVerse(maxVerse);
+        }
+      }
+    }
+  };
+
+  const nextVerse = () => {
+    const maxVerses = getMaxVerses();
+    
+    if (currentVerse < maxVerses) {
+      setCurrentVerse((prev) => prev + 1);
+    } else {
+      // Go to next chapter's first verse
+      if (currentChapter < getTotalChapters(selectedBookAbbr)) {
+        setCurrentChapter((prev) => prev + 1);
+        setCurrentVerse(1);
+      } else {
+        // Go to next book's first chapter and verse
+        const nextBook = getAdjacentBook("next");
+        if (nextBook) {
+          setSelectedBookAbbr(nextBook);
+          setCurrentChapter(1);
+          setCurrentVerse(1);
+        }
+      }
+    }
+  };
 
   // Modify chapter navigation to reset verse to 1
   const prevChapter = () => {
@@ -535,21 +778,41 @@ const BibleNavigation: React.FC<NavigationProps> = ({
 
   return (
     <div className="relative m-auto h-10 w-fit min-w-24 max-w-xs p-2">
+    
       <div className="flex justify-evenly align-middle">
         {showPrevChapter && (
           <button
             onClick={prevChapter}
             disabled={isPrevDisabled}
-            className={`mr-2 rounded-lg border-2 px-2 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700 text-zinc-50" : "text-zinc-700"} ${isPrevDisabled ? "cursor-not-allowed bg-gray-300" : ""}`}>
+            // style={{color:isDarkMode?"white":"black"}}
+            className={`mr-2 rounded-lg border-2 px-2 py-1 hover:border-blue-300  ${isDarkMode ? "border-cyan-700" : "text-zinc-700"} ${isPrevDisabled ? "cursor-not-allowed " : ""}`}>
             {"<<"}
+          </button>
+        )}
+
+        {showPrevVerse && (
+          <button
+
+            onClick={prevVerse}
+            className={`mr-2 rounded-lg border-2 px-2 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700" : "text-zinc-700"}`}>
+            {"<"}
+            
           </button>
         )}
 
         {showBookChapter && (
           <button
             onClick={handleDropdownToggle}
-            className={`mr-2 w-52 rounded-lg border-2 px-3 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700 text-zinc-50" : "text-zinc-700"} `}>
-            {getSelectedBookFullName()} {currentChapter}
+            className={`mr-2 w-52 rounded-lg border-2 px-3 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700 " : "text-zinc-700"} `}>
+            {getSelectedBookFullName()} {currentChapter}{isVerseNavigation ? `:${currentVerse}` : ""}
+          </button>
+        )}
+
+        {showNextVerse && (
+          <button
+            onClick={nextVerse}
+            className={`mr-2 rounded-lg border-2 px-2 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700 " : "text-zinc-700"}`}>
+            {">"}
           </button>
         )}
 
@@ -557,7 +820,7 @@ const BibleNavigation: React.FC<NavigationProps> = ({
           <button
             onClick={nextChapter}
             disabled={isNextDisabled}
-            className={`rounded-lg border-2 px-2 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700 text-zinc-50" : "text-zinc-700"} ${isNextDisabled ? "cursor-not-allowed bg-gray-300" : ""}`}>
+            className={`rounded-lg border-2 px-2 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700 " : "text-zinc-700"} ${isNextDisabled ? "cursor-not-allowed bg-gray-300" : ""}`}>
             {">>"}
           </button>
         )}
@@ -565,7 +828,7 @@ const BibleNavigation: React.FC<NavigationProps> = ({
 
       {dropdownOpen && (
         <div
-          className={`z-20 max-h-96 max-w-80 overflow-hidden border-2 border-blue-200 p-2.5 ${isDarkMode ? "bg-gray-900" : "bg-white"}`}>
+          className={`z-20 max-h-96 max-w-80 overflow-hidden border-2 border-blue-200 p-2.5 ${isDarkMode ? "bg-slate-900" : "bg-white"}`}>
           <div className="h-80 overflow-y-auto pb-4 pl-4 pr-4 pt-0" ref={dropdownRef}>
             {Object.entries(bibleBooks).map(
               ([testament, testamentBooks]: [string, BibleBooks]) =>
@@ -582,7 +845,7 @@ const BibleNavigation: React.FC<NavigationProps> = ({
                         className="relative w-full">
                         <button
                           onClick={(e) => handleBookClick(bookAbbr, e)}
-                          className={`'} relative mt-2 block w-full bg-gray-700 p-2 text-left text-white hover:border-2 hover:border-blue-300 ${selectedBookAbbr === bookAbbr ? "border-l-8 border-l-blue-700" : ""}`}>
+                          className={` relative mt-2 block w-full bg-gray-700 p-2 text-left text-white hover:border-2 hover:border-blue-300 ${selectedBookAbbr === bookAbbr ? "border-l-8 border-l-blue-700" : ""}`}>
                           {bookData.fullName}
                         </button>
 
