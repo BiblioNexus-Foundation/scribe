@@ -131,7 +131,7 @@
   },
   "scripts": {
     "prepare": "yarn run clean",
-    "clean": "theia clean && rimraf .browser_modules dist node_modules",
+    "clean": "theia clean && rimraf .browser_modules dist node_modules src-gen lib gen-webpack.config.js gen-webpack.node.config.js",
     "clean:dist": "rimraf dist",
     "build": "yarn -s rebuild && theia build --app-target=\"electron\"",
     "build:electron": "cross-env NODE_OPTIONS=--max-old-space-size=5120 yarn -s rebuild && cross-env NODE_OPTIONS=--max-old-space-size=5120 theia build --app-target=electron --mode development",

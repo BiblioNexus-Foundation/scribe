@@ -33,7 +33,7 @@
     "rebuild": "theia rebuild:browser --cacheRoot ../..",
     "start": "theia start",
     "watch": "yarn rebuild && theia build --watch --mode development",
-    "clean": "theia clean && rimraf .browser_modules dist node_modules",
+    "clean": "theia clean && rimraf .browser_modules dist node_modules lib src-gen gen-webpack.config.js gen-webpack.node.config.js",
     "build": "yarn bundle"
   },
   "theia": {
