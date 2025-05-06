@@ -1,7 +1,7 @@
-
 import { useState, useEffect, useRef } from "react";
 import React = require("react");
 import versification from "../Assets/versification.json";
+import { VerseRefUtils } from "@scribe/theia-utils/lib/browser";
 
 interface TheiaTheme {
   id: string;
@@ -34,12 +34,6 @@ export interface VerseRefValue {
   verse: number;
 }
 
-interface VerseRefUtilsInterface {
-  getVerseRef(): Promise<VerseRefValue>;
-  setVerseRef(verseRef: VerseRefValue): Promise<void>;
-  onVerseRefChange(callback: (verseRef: VerseRefValue) => void): Promise<void>;
-}
-
 interface NavigationProps {
   showPrevChapter?: boolean;
   showPrevVerse?: boolean;
@@ -47,7 +41,7 @@ interface NavigationProps {
   showNextChapter?: boolean;
   showBookChapter?: boolean;
   scope?: Scope;
-  verseRefUtils?: VerseRefUtilsInterface; // Add VerseRefUtils as an optional prop
+  verseRefUtils?: VerseRefUtils;
 }
 
 interface VersificationData {
@@ -353,25 +347,26 @@ const BibleNavigation: React.FC<NavigationProps> = ({
   );
 
   // Effect to detect dark mode changes
-  
 
   useEffect(() => {
     // Try to detect if we're in a Theia environment
-    const isTheiaEnvironment = typeof window !== 'undefined' && 
-      (window as any).theia !== undefined || document.body.classList.contains('theia-app');
-    
+    const isTheiaEnvironment =
+      (typeof window !== "undefined" && (window as any).theia !== undefined) ||
+      document.body.classList.contains("theia-app");
+
     if (isTheiaEnvironment && (window as any).theia?.services?.themeService) {
       // Access Theia theme service directly
       const themeService = (window as any).theia.services.themeService as TheiaThemeService;
-      
+
       // Function to check theme
       const checkTheiaTheme = () => {
         try {
           const currentTheme = themeService.getCurrentTheme();
-          const isDark = currentTheme.type === 'dark' || 
-                        currentTheme.id.includes('dark') || 
-                        currentTheme.label.toLowerCase().includes('dark');
-          
+          const isDark =
+            currentTheme.type === "dark" ||
+            currentTheme.id.includes("dark") ||
+            currentTheme.label.toLowerCase().includes("dark");
+
           console.debug("Theia theme detected:", currentTheme.label, isDark ? "dark" : "light");
           console.log("Theia theme detected:", currentTheme.label, isDark ? "dark" : "light");
 
@@ -381,22 +376,23 @@ const BibleNavigation: React.FC<NavigationProps> = ({
           fallbackThemeDetection();
         }
       };
-      
+
       // Initial theme check
       checkTheiaTheme();
-      
+
       // Listen for theme changes
       try {
         const themeListener = themeService.onThemeChange((theme: TheiaTheme) => {
-          const isDark = theme.type === 'dark' || 
-                        theme.id.includes('dark') || 
-                        theme.label.toLowerCase().includes('dark');
+          const isDark =
+            theme.type === "dark" ||
+            theme.id.includes("dark") ||
+            theme.label.toLowerCase().includes("dark");
           setIsDarkMode(isDark);
         });
-        
+
         return () => {
           // Clean up the listener when component unmounts
-          if (themeListener && typeof themeListener.dispose === 'function') {
+          if (themeListener && typeof themeListener.dispose === "function") {
             themeListener.dispose();
           }
         };
@@ -409,25 +405,27 @@ const BibleNavigation: React.FC<NavigationProps> = ({
       // If Theia API not available, use fallback method
       fallbackThemeDetection();
     }
-    
+
     // Fallback detection method using DOM and CSS
     function fallbackThemeDetection() {
       console.debug("Using fallback theme detection");
-      
+
       const checkDarkMode = () => {
         // Check for common dark theme classes
-        const hasTheiaDarkClass = document.body.classList.contains("theia-dark") || 
-                                document.documentElement.classList.contains("theia-dark");
-        
-        const hasVSCodeDarkClass = document.body.classList.contains("vscode-dark") || 
-                                document.body.classList.contains("vs-dark");
-        
+        const hasTheiaDarkClass =
+          document.body.classList.contains("theia-dark") ||
+          document.documentElement.classList.contains("theia-dark");
+
+        const hasVSCodeDarkClass =
+          document.body.classList.contains("vscode-dark") ||
+          document.body.classList.contains("vs-dark");
+
         const hasDataThemeDark = document.body.getAttribute("data-theme") === "dark";
-        
+
         // Check computed styles
         const computedStyle = window.getComputedStyle(document.body);
         const backgroundColor = computedStyle.backgroundColor;
-        
+
         // Check if background is dark
         let isDarkBackground = false;
         if (backgroundColor) {
@@ -440,33 +438,34 @@ const BibleNavigation: React.FC<NavigationProps> = ({
             isDarkBackground = brightness < 128; // Less than 128 is considered dark
           }
         }
-        
-        const isDark = hasTheiaDarkClass || hasVSCodeDarkClass || hasDataThemeDark || isDarkBackground;
-        
+
+        const isDark =
+          hasTheiaDarkClass || hasVSCodeDarkClass || hasDataThemeDark || isDarkBackground;
+
         setIsDarkMode(isDark);
       };
-      
+
       // Delay initial check slightly
       const initialCheckTimeout = setTimeout(() => {
         checkDarkMode();
       }, 100);
-      
+
       // Set up observer for theme changes
       const observer = new MutationObserver(() => {
         checkDarkMode();
       });
-      
+
       // Start observing document and body
       observer.observe(document.documentElement, {
         attributes: true,
-        attributeFilter: ["class", "data-theme"]
+        attributeFilter: ["class", "data-theme"],
       });
-      
+
       observer.observe(document.body, {
         attributes: true,
-        attributeFilter: ["class", "data-theme"]
+        attributeFilter: ["class", "data-theme"],
       });
-      
+
       return () => {
         clearTimeout(initialCheckTimeout);
         observer.disconnect();
@@ -474,7 +473,6 @@ const BibleNavigation: React.FC<NavigationProps> = ({
     }
   }, []);
 
-  
   // Initialize from VerseRefUtils when available
   useEffect(() => {
     if (verseRefUtils) {
@@ -518,13 +516,15 @@ const BibleNavigation: React.FC<NavigationProps> = ({
   useEffect(() => {
     if (selectedBookAbbr && verseRefUtils && !isUpdatingFromVerseRef.current) {
       // Only update VerseRefUtils if we have valid data and we're not already updating from it
-      verseRefUtils.setVerseRef({
-        book: selectedBookAbbr,
-        chapter: currentChapter,
-        verse: currentVerse,
-      }).catch(error => {
-        console.error("Failed to update verse reference:", error);
-      });
+      verseRefUtils
+        .setVerseRef({
+          book: selectedBookAbbr,
+          chapter: currentChapter,
+          verse: currentVerse,
+        })
+        .catch((error) => {
+          console.error("Failed to update verse reference:", error);
+        });
     }
 
     if (selectedBookAbbr) {
@@ -583,12 +583,11 @@ const BibleNavigation: React.FC<NavigationProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-
   useEffect(() => {
     if (dropdownOpen && selectedBookAbbr && bookRefs.current[selectedBookAbbr]) {
       const bookElement = bookRefs.current[selectedBookAbbr];
       const dropdownElement = dropdownRef.current;
-  
+
       if (bookElement && dropdownElement) {
         // Scroll the selected book into view within the dropdown
         dropdownElement.scrollTo({
@@ -598,7 +597,6 @@ const BibleNavigation: React.FC<NavigationProps> = ({
       }
     }
   }, [dropdownOpen, selectedBookAbbr]);
-  
 
   // Book and chapter navigation helpers (memoized)
   const getAllBooks = React.useMemo(() => {
@@ -665,10 +663,9 @@ const BibleNavigation: React.FC<NavigationProps> = ({
       if (currentChapter > 1) {
         const newChapter = currentChapter - 1;
         const versesData = (versification as VersificationData).maxVerses[selectedBookAbbr];
-        const maxVerse = versesData && versesData[newChapter - 1]
-          ? parseInt(versesData[newChapter - 1])
-          : 1;
-        
+        const maxVerse =
+          versesData && versesData[newChapter - 1] ? parseInt(versesData[newChapter - 1]) : 1;
+
         setCurrentChapter(newChapter);
         setCurrentVerse(maxVerse);
       } else {
@@ -677,10 +674,9 @@ const BibleNavigation: React.FC<NavigationProps> = ({
         if (prevBook) {
           const prevChapter = getTotalChapters(prevBook);
           const versesData = (versification as VersificationData).maxVerses[prevBook];
-          const maxVerse = versesData && versesData[prevChapter - 1]
-            ? parseInt(versesData[prevChapter - 1])
-            : 1;
-          
+          const maxVerse =
+            versesData && versesData[prevChapter - 1] ? parseInt(versesData[prevChapter - 1]) : 1;
+
           setSelectedBookAbbr(prevBook);
           setCurrentChapter(prevChapter);
           setCurrentVerse(maxVerse);
@@ -691,7 +687,7 @@ const BibleNavigation: React.FC<NavigationProps> = ({
 
   const nextVerse = () => {
     const maxVerses = getMaxVerses();
-    
+
     if (currentVerse < maxVerses) {
       setCurrentVerse((prev) => prev + 1);
     } else {
@@ -778,40 +774,38 @@ const BibleNavigation: React.FC<NavigationProps> = ({
 
   return (
     <div className="relative m-auto h-10 w-fit min-w-24 max-w-xs p-2">
-    
       <div className="flex justify-evenly align-middle">
         {showPrevChapter && (
           <button
             onClick={prevChapter}
             disabled={isPrevDisabled}
             // style={{color:isDarkMode?"white":"black"}}
-            className={`mr-2 rounded-lg border-2 px-2 py-1 hover:border-blue-300  ${isDarkMode ? "border-cyan-700" : "text-zinc-700"} ${isPrevDisabled ? "cursor-not-allowed " : ""}`}>
+            className={`mr-2 rounded-lg border-2 px-2 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700" : "text-zinc-700"} ${isPrevDisabled ? "cursor-not-allowed" : ""}`}>
             {"<<"}
           </button>
         )}
 
         {showPrevVerse && (
           <button
-
             onClick={prevVerse}
             className={`mr-2 rounded-lg border-2 px-2 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700" : "text-zinc-700"}`}>
             {"<"}
-            
           </button>
         )}
 
         {showBookChapter && (
           <button
             onClick={handleDropdownToggle}
-            className={`mr-2 w-52 rounded-lg border-2 px-3 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700 " : "text-zinc-700"} `}>
-            {getSelectedBookFullName()} {currentChapter}{isVerseNavigation ? `:${currentVerse}` : ""}
+            className={`mr-2 w-52 rounded-lg border-2 px-3 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700" : "text-zinc-700"} `}>
+            {getSelectedBookFullName()} {currentChapter}
+            {isVerseNavigation ? `:${currentVerse}` : ""}
           </button>
         )}
 
         {showNextVerse && (
           <button
             onClick={nextVerse}
-            className={`mr-2 rounded-lg border-2 px-2 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700 " : "text-zinc-700"}`}>
+            className={`mr-2 rounded-lg border-2 px-2 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700" : "text-zinc-700"}`}>
             {">"}
           </button>
         )}
@@ -820,7 +814,7 @@ const BibleNavigation: React.FC<NavigationProps> = ({
           <button
             onClick={nextChapter}
             disabled={isNextDisabled}
-            className={`rounded-lg border-2 px-2 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700 " : "text-zinc-700"} ${isNextDisabled ? "cursor-not-allowed bg-gray-300" : ""}`}>
+            className={`rounded-lg border-2 px-2 py-1 hover:border-blue-300 ${isDarkMode ? "border-cyan-700" : "text-zinc-700"} ${isNextDisabled ? "cursor-not-allowed bg-gray-300" : ""}`}>
             {">>"}
           </button>
         )}
@@ -845,7 +839,7 @@ const BibleNavigation: React.FC<NavigationProps> = ({
                         className="relative w-full">
                         <button
                           onClick={(e) => handleBookClick(bookAbbr, e)}
-                          className={` relative mt-2 block w-full bg-gray-700 p-2 text-left text-white hover:border-2 hover:border-blue-300 ${selectedBookAbbr === bookAbbr ? "border-l-8 border-l-blue-700" : ""}`}>
+                          className={`relative mt-2 block w-full bg-gray-700 p-2 text-left text-white hover:border-2 hover:border-blue-300 ${selectedBookAbbr === bookAbbr ? "border-l-8 border-l-blue-700" : ""}`}>
                           {bookData.fullName}
                         </button>
 

@@ -20,7 +20,7 @@ export class BcvNavigatorContribution extends AbstractViewContribution<BcvNaviga
     super({
       widgetId: BcvNavigatorWidget.ID,
       widgetName: BcvNavigatorWidget.LABEL,
-      defaultWidgetOptions: { area: "left" },
+      defaultWidgetOptions: { area: 'left' },
       toggleCommandId: BcvNavigatorCommand.id,
     });
   }
@@ -45,7 +45,7 @@ export class BcvNavigatorContribution extends AbstractViewContribution<BcvNaviga
    */
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(BcvNavigatorCommand, {
-      execute: () => super.openView({ activate: false, reveal: true }),
+      execute: () => super.openView({ activate: true, reveal: true }),
     });
   }
 

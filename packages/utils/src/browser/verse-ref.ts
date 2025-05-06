@@ -1,14 +1,19 @@
-import { inject, injectable, postConstruct } from "@theia/core/shared/inversify";
-import { GlobalStateStorage } from "./global-state-storage";
-import { URI } from "@theia/core";
+import {
+  inject,
+  injectable,
+  postConstruct,
+} from '@theia/core/shared/inversify';
+import { GlobalStateStorage } from './global-state-storage';
+import { URI } from '@theia/core';
+import { Disposable } from '@theia/core/lib/common/disposable';
 
 // FOR the documentation:
 const DEFAULT_VERSE_REF_URI = URI.fromComponents({
-  scheme: "scribe", // scheme is always scribe
-  path: "/GEN/1/1", // after the authority
-  authority: "bible.verse", // after scheme://
-  query: "", // after ?
-  fragment: "", // after #
+  scheme: 'scribe', // scheme is always scribe
+  path: '/GEN/1/1', // after the authority
+  authority: 'bible.verse', // after scheme://
+  query: '', // after ?
+  fragment: '', // after #
 });
 
 // bible.verse || bible.range/GEN/1,1-2,3
@@ -20,29 +25,61 @@ const DEFAULT_VERSE_REF_URI = URI.fromComponents({
 
 @injectable()
 export class VerseRefUtils {
-  static readonly VerseRefKey = "scribe-bible-verse-ref";
+  static readonly VerseRefKey = 'scribe-bible-verse-ref';
 
-  value: URI;
+  value: URI = DEFAULT_VERSE_REF_URI;
+  private initialized = false;
+  private readonly listeners = new Set<(verseRef: VerseRefValue) => void>();
 
   @inject(GlobalStateStorage)
   private readonly globalStateStorage: GlobalStateStorage;
 
   @postConstruct()
   init() {
+    // Non-async init to avoid Theia DI issues
     this.globalStateStorage
-      .getData(VerseRefUtils.VerseRefKey)
+      .getData<string>(VerseRefUtils.VerseRefKey)
       .then((verseRefString) => {
         if (!verseRefString) {
           this.value = DEFAULT_VERSE_REF_URI;
-          this.globalStateStorage.setData(VerseRefUtils.VerseRefKey, this.value.toString());
+          return this.globalStateStorage.setData(
+            VerseRefUtils.VerseRefKey,
+            this.value.toString()
+          );
         } else {
-          this.value = new URI(verseRefString as string);
+          this.value = new URI(verseRefString);
+          return Promise.resolve();
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Error initializing verse reference:', error);
         this.value = DEFAULT_VERSE_REF_URI;
-        this.globalStateStorage.setData(VerseRefUtils.VerseRefKey, this.value.toString());
+        return this.globalStateStorage.setData(
+          VerseRefUtils.VerseRefKey,
+          this.value.toString()
+        );
+      })
+      .then(() => {
+        // Set up the storage listener after initialization
+        this.globalStateStorage.onDidUpdateEvent((e) => {
+          if (
+            e.key === VerseRefUtils.VerseRefKey &&
+            typeof e.data === 'string'
+          ) {
+            this.value = new URI(e.data);
+            this.notifyListeners();
+          }
+        });
+
+        // Mark as initialized and notify listeners
+        this.initialized = true;
+        this.notifyListeners();
       });
+  }
+
+  private notifyListeners(): void {
+    const verseRef = this._pathToVerseRef(this.value.path.toString());
+    this.listeners.forEach((listener) => listener(verseRef));
   }
 
   async getVerseRefString(): Promise<string> {
@@ -55,9 +92,9 @@ export class VerseRefUtils {
   }
 
   private _pathToVerseRef(path: string): VerseRefValue {
-    const book = path.split("/")[1];
-    const chapter = parseInt(path.split("/")[2]);
-    const verse = parseInt(path.split("/")[3]);
+    const book = path.split('/')[1];
+    const chapter = parseInt(path.split('/')[2]);
+    const verse = parseInt(path.split('/')[3]);
     return { book, chapter, verse };
   }
 
@@ -71,17 +108,23 @@ export class VerseRefUtils {
     await this.globalStateStorage.setData(VerseRefUtils.VerseRefKey, this.value.toString());
   }
 
-  private _listenForVerseRefChanges(callback?: (verseRef: VerseRefValue) => void): void {
-    return this.globalStateStorage.onUpdate(VerseRefUtils.VerseRefKey, (data) => {
-      this.value = new URI(data as string);
-      if (callback) {
-        callback(this._pathToVerseRef(this.value.path.toString()));
-      }
-    });
-  }
+  /**
+   * Register a callback to be invoked when the verse reference changes.
+   * @param callback The function to call when the verse reference changes
+   * @returns A disposable that can be used to unregister the callback
+   */
+  onVerseRefChange(callback: (verseRef: VerseRefValue) => void): Disposable {
+    this.listeners.add(callback);
 
-  async onVerseRefChange(callback: (verseRef: VerseRefValue) => void): Promise<void> {
-    this._listenForVerseRefChanges(callback);
+    // If already initialized, immediately invoke the callback with current value
+    if (this.initialized) {
+      const verseRef = this._pathToVerseRef(this.value.path.toString());
+      callback(verseRef);
+    }
+
+    return Disposable.create(() => {
+      this.listeners.delete(callback);
+    });
   }
 
   getVerseRefUri(): URI {
