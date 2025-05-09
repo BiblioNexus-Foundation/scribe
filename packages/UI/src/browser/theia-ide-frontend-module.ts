@@ -9,7 +9,7 @@
 
 import "../../src/browser/styles/scribe-theia.css";
 import "../../lib/browser/output-tailwind.css";
-
+import "../../src/browser/styles/usfm-editor.css";
 import { WidgetFactory } from "@theia/core/lib/browser";
 import { ContainerModule } from "@theia/core/shared/inversify";
 import { GettingStartedWidget } from "@theia/getting-started/lib/browser/getting-started-widget";

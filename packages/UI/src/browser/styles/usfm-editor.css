@@ -1,0 +1,86 @@
+.editor-input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.formatted-font .usfm_c {
+  margin: 0;
+  display: block;
+  break-before: column;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 16px;
+  color: #0fb6d4;
+}
+.usfm_b {
+  display: none;
+}
+.formatted-font .usfm_c::before {
+  content: "Chapter : ";
+}
+
+.text-spacing[dir="ltr"] .usfm_c {
+  padding-left: 1rem;
+  text-align: left;
+}
+
+.text-spacing[dir="rtl"] .usfm_c {
+  padding-right: 1rem;
+  text-align: right;
+}
+
+.usfm_s {
+  text-align: center;
+  font-size: 16px;
+}
+.usfm_id {
+  font-size: 14px;
+  font-weight: lighter;
+  text-align: center;
+  /* color: #0fb6d4; */
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.formatted-font .usfm_s1 {
+  font-weight: bold;
+  font-size: 100%;
+  margin: 0;
+  /* text-transform: uppercase; */
+  /* color: #0fb6d4; */
+}
+.text-spacing .usfm_s1 {
+  text-align: center;
+  margin-bottom: 3pt;
+  margin-top: 3pt;
+}
+
+.formatted-font .usfm_p {
+  font-size: 100%;
+  margin: 0;
+}
+.text-spacing .usfm_p {
+  text-indent: 2.5vw;
+}
+
+.formatted-font .usfm_q1 {
+  font-size: 100%;
+}
+.usfm_v {
+  letter-spacing: 0.05em;
+  /* color: #0fb6d4; */
+  text-transform: uppercase;
+  margin-right: 2px;
+}
+/* .text-spacing .usfm_q1 {
+  text-indent: -10vw;
+} */
+/* .text-spacing[dir="ltr"] .usfm_q1 {
+  margin-left: 15vw;
+}
+.text-spacing[dir="rtl"] .usfm_q1 {
+  margin-right: 15vw;
+} */
